@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { User, Bell } from 'lucide-react';
-import { ShagLogo } from '../App';
 
 interface HeaderProps {
   onProfileClick: () => void;
@@ -16,7 +15,6 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onHomeClick }) =
           className="flex items-center gap-3 cursor-pointer group"
           onClick={onHomeClick}
         >
-          <ShagLogo className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
           <div className="flex flex-col">
             <span className="text-xl font-extrabold tracking-tight text-slate-900">ШАГ</span>
             <span className="text-[10px] font-bold text-indigo-600 tracking-[0.2em] uppercase -mt-1">платформа</span>

@@ -15,7 +15,7 @@ export enum AppTab {
   CATALOG = 'catalog',
   MEETINGS = 'meetings',
   PROFILE = 'profile',
-  SERVICES = 'services' // Новая вкладка для управления услугами
+  SERVICES = 'services'
 }
 
 export interface Service {
@@ -24,10 +24,14 @@ export interface Service {
   mentorName: string;
   title: string;
   description: string;
-  price: number;
+  price: number; // Цена за 1-на-1 (базовая)
+  groupPrice?: number; // Цена за группу
   format: MeetingFormat;
   duration: string;
   category: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  slots?: string; // JSON строка со слотами конкретно для этой услуги
 }
 
 export interface Mentor {
@@ -74,6 +78,7 @@ export interface UserSession {
   paymentUrl?: string;
 }
 
+// Added serviceId and serviceTitle properties to support service-specific bookings and resolve TS errors
 export interface Booking {
   id: string;
   mentorId: string;
@@ -86,4 +91,6 @@ export interface Booking {
   goal: string;
   slot?: string;
   price?: number;
+  serviceId?: string;
+  serviceTitle?: string;
 }

@@ -26,7 +26,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const res = await dbService.syncData(); // Admin gets everything
+      const res = await dbService.syncData();
       setData(res);
     } catch (e) {
       console.error('Failed to fetch admin data', e);
@@ -38,7 +38,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const stats = data ? {
     totalUsers: data.dynamicMentors?.length || 0,
     entrepreneurs: data.dynamicMentors?.filter((m: any) => m.industry !== 'Youth')?.length || 0,
-    talents: 0, // In real app, we count from users sheet
+    talents: 0, 
     totalServices: data.services?.length || 0,
     totalBookings: data.bookings?.length || 0
   } : null;
@@ -54,7 +54,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0b] flex flex-col lg:flex-row">
-      {/* Sidebar */}
       <aside className="w-full lg:w-72 bg-[#111114] border-r border-white/5 flex flex-col p-8">
         <div className="flex items-center gap-4 mb-16">
           <div className="p-3 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-600/20 text-white">
@@ -89,7 +88,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </button>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-8 md:p-12 lg:p-16 overflow-y-auto">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
           <div className="space-y-2">
@@ -111,16 +109,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                 className="w-full bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-2xl text-white text-sm outline-none focus:border-indigo-600 transition-all"
               />
             </div>
-            <button className="p-4 bg-white/5 border border-white/10 text-white rounded-2xl hover:bg-white/10 transition-all">
-              <Download className="w-5 h-5" />
-            </button>
           </div>
         </header>
 
         {activeView === 'stats' && stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
             <StatCard label="Всего участников" value={stats.totalUsers} icon={Users} trend="+12% за неделю" />
-            <StatCard label="Наставников" value={stats.entrepreneurs} icon={Briefcase} color="indigo" />
+            <StatCard label="Менторов" value={stats.entrepreneurs} icon={Briefcase} color="indigo" />
             <StatCard label="Активных услуг" value={stats.totalServices} icon={Layers} color="violet" />
             <StatCard label="Бронирований" value={stats.totalBookings} icon={Calendar} color="emerald" trend="+4 сегодня" />
             
@@ -182,7 +177,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                       </td>
                       <td className="p-8">
                         <span className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase ${u.industry === 'Youth' ? 'bg-violet-500/10 text-violet-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
-                          {u.industry === 'Youth' ? 'Талант' : 'Наставник'}
+                          {u.industry === 'Youth' ? 'Участник' : 'Ментор'}
                         </span>
                       </td>
                       <td className="p-8">
@@ -211,8 +206,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
             </div>
           </div>
         )}
-
-        {/* Similar views for services and bookings would go here */}
       </main>
     </div>
   );

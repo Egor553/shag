@@ -1,7 +1,7 @@
 
 import { UserSession, Mentor, Service, Booking } from '../types';
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw-vLE2tD_o_81T3UbQcVSiqKfR7GztS7uKXRv8-uQJnmyi_wfm27lkTr2hryllzvEz/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxh7EBk00r4sKIEd8D9Znt-4qFYB4MpOuw0vV1bqjk7YK2NFC-TA9WNE6fpdd2k6ZrG/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -28,24 +28,25 @@ export const dbService = {
   },
 
   async register(data: any) {
-    // Используем POST с mode: no-cors для обхода ограничений GAS на стороне браузера при записи
     return await fetch(WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
       cache: 'no-cache',
-      headers: {
-        'Content-Type': 'text/plain',
-      },
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action: 'register', ...data })
     });
   },
 
-  async updateAvatar(email: string, avatarUrl: string) {
+  async updateProfile(email: string, updates: Partial<UserSession | Mentor>) {
     return await fetch(WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ action: 'save_avatar', email, avatarUrl })
+      body: JSON.stringify({ action: 'update_profile', email, updates })
     });
+  },
+
+  async updateAvatar(email: string, avatarUrl: string) {
+    return this.updateProfile(email, { paymentUrl: avatarUrl } as any);
   },
 
   async saveService(service: Service) {
@@ -53,6 +54,14 @@ export const dbService = {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ action: 'save_service', ...service })
+    });
+  },
+
+  async updateService(id: string, updates: Partial<Service>) {
+    return await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'update_service', id, updates })
     });
   },
 
@@ -64,24 +73,11 @@ export const dbService = {
     });
   },
 
-  async saveMentorProfile(profile: Mentor, email: string) {
-    return await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify({ 
-        action: 'save_mentor', 
-        ...profile, 
-        ownerEmail: email,
-        createdAt: new Date().toISOString()
-      })
-    });
-  },
-
   async createBooking(booking: any) {
     return await fetch(WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: JSON.stringify({ action: 'booking', ...booking })
+      body: JSON.stringify({ action: 'booking', ...booking, id: Math.random().toString(36).substr(2, 9), status: 'pending' })
     });
   }
 };
