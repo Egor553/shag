@@ -13,9 +13,23 @@ export enum MeetingFormat {
 
 export enum AppTab {
   CATALOG = 'catalog',
+  JOBS = 'jobs',
   MEETINGS = 'meetings',
   PROFILE = 'profile',
   SERVICES = 'services'
+}
+
+export interface Job {
+  id: string;
+  mentorId: string;
+  mentorName: string;
+  title: string;
+  description: string;
+  reward: string; // Оплата или тип энергообмена
+  category: string;
+  deadline?: string;
+  status: 'active' | 'closed';
+  createdAt: string;
 }
 
 export interface Service {
@@ -24,14 +38,14 @@ export interface Service {
   mentorName: string;
   title: string;
   description: string;
-  price: number; // Цена за 1-на-1 (базовая)
-  groupPrice?: number; // Цена за группу
+  price: number;
+  groupPrice?: number;
   format: MeetingFormat;
   duration: string;
   category: string;
   imageUrl?: string;
   videoUrl?: string;
-  slots?: string; // JSON строка со слотами конкретно для этой услуги
+  slots?: string;
 }
 
 export interface Mentor {
@@ -78,7 +92,6 @@ export interface UserSession {
   paymentUrl?: string;
 }
 
-// Added serviceId and serviceTitle properties to support service-specific bookings and resolve TS errors
 export interface Booking {
   id: string;
   mentorId: string;

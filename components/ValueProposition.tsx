@@ -23,12 +23,12 @@ export const ValueProposition: React.FC<ValuePropositionProps> = ({ onStart }) =
           {/* Section 1: History */}
           <div className="space-y-6 animate-in slide-in-from-bottom-8 duration-700">
             <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-tight">
-              Более года мы общались с вашим поколением...
+              Год исследований вашего поколения...
             </h2>
             <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed">
-              Мы слушали, записывали и выявляли то, что действительно болит. 
-              Финансовая стабильность, поиск своего окружения, запрос на наставника, 
-              выход на новый уровень и первые настоящие клиенты.
+              Мы выявили то, что действительно болит. Поиск своего окружения, 
+              запрос на сильный энергообмен, выход на новый уровень и 
+              нужные смыслы в нужный момент.
             </p>
           </div>
 
@@ -39,7 +39,7 @@ export const ValueProposition: React.FC<ValuePropositionProps> = ({ onStart }) =
                 <Zap className="w-7 h-7" />
               </div>
               <p className="text-xl font-bold leading-snug">
-                Мы скажем честно: у нас нет «секретного ингредиента» или магического алгоритма успеха.
+                Мы не верим в скучные лекции. Мы верим в живую встречу двух энергий.
               </p>
             </div>
             <div className="p-10 bg-white/5 border border-white/10 rounded-[48px] backdrop-blur-xl space-y-6">
@@ -47,7 +47,7 @@ export const ValueProposition: React.FC<ValuePropositionProps> = ({ onStart }) =
                 <Users className="w-7 h-7" />
               </div>
               <p className="text-xl font-bold leading-snug">
-                Но мы знаем сотни людей, которые уже прошли этот путь и готовы отдавать свой опыт вам.
+                Предприниматели делятся опытом, а вы — свежим взглядом и драйвом.
               </p>
             </div>
           </div>
@@ -56,7 +56,7 @@ export const ValueProposition: React.FC<ValuePropositionProps> = ({ onStart }) =
           <div className="relative p-12 md:p-16 border-l-4 border-indigo-600 bg-indigo-600/5 rounded-r-[48px] animate-in fade-in duration-1000 delay-500">
             <Quote className="absolute top-8 right-8 w-20 h-20 text-indigo-600/20" />
             <p className="text-2xl md:text-4xl font-black italic tracking-tight leading-tight mb-6">
-              «Если ты не знаешь, как решить какой-то вопрос — просто спроси того, кто уже знает ответ»
+              «Энергия — это единственная валюта, которая растет, когда ты её отдаешь»
             </p>
             <cite className="text-indigo-400 font-black uppercase tracking-widest text-sm not-italic">
               — Саша Смирнов (Фрамбини)
@@ -66,15 +66,14 @@ export const ValueProposition: React.FC<ValuePropositionProps> = ({ onStart }) =
           {/* Section 4: Final Message */}
           <div className="text-center space-y-10 animate-in slide-in-from-bottom-8 duration-1000 delay-700">
             <p className="text-2xl font-medium text-slate-300 max-w-2xl mx-auto">
-              В ШАГе мы объединяем тех, кто ищет, с теми, кто нашел. 
-              Твой путь начинается здесь.
+              В ШАГе мы создаем мост для тех, кто готов к глубокому и честному энергообмену.
             </p>
             <button 
               onClick={onStart}
               className="group relative px-12 py-8 bg-indigo-600 rounded-[32px] font-black uppercase text-sm tracking-[0.3em] transition-all hover:scale-105 hover:bg-indigo-500 shadow-2xl shadow-indigo-600/40"
             >
               <span className="flex items-center gap-4">
-                Сделать первый ШАГ <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                Начать энергообмен <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </span>
             </button>
           </div>

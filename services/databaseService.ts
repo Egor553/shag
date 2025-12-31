@@ -1,5 +1,5 @@
 
-import { UserSession, Mentor, Service, Booking } from '../types';
+import { UserSession, Mentor, Service, Booking, Job } from '../types';
 
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxh7EBk00r4sKIEd8D9Znt-4qFYB4MpOuw0vV1bqjk7YK2NFC-TA9WNE6fpdd2k6ZrG/exec';
 
@@ -9,10 +9,11 @@ export const dbService = {
       const url = email ? `${WEBHOOK_URL}?action=sync&email=${encodeURIComponent(email)}` : `${WEBHOOK_URL}?action=sync`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Sync failed');
-      return await response.json();
+      const data = await response.json();
+      return data;
     } catch (e) {
       console.error('Sync error:', e);
-      return { result: 'error', dynamicMentors: [], services: [], bookings: [] };
+      return { result: 'error', dynamicMentors: [], services: [], bookings: [], jobs: [] };
     }
   },
 
@@ -70,6 +71,22 @@ export const dbService = {
       method: 'POST',
       mode: 'no-cors',
       body: JSON.stringify({ action: 'delete_service', id })
+    });
+  },
+
+  async saveJob(job: Job) {
+    return await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'save_job', ...job })
+    });
+  },
+
+  async deleteJob(id: string) {
+    return await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'delete_job', id })
     });
   },
 

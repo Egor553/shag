@@ -3,20 +3,21 @@ import React, { useState } from 'react';
 import { ArrowRight, Filter, LayoutGrid, Sparkles } from 'lucide-react';
 import { Mentor, Service } from '../../types';
 import { ServiceCard } from '../ServiceCard';
+import { AISearchModal } from '../AISearchModal';
 
 interface CatalogViewProps {
   services: Service[];
   mentors: Mentor[];
   onServiceClick: (service: Service) => void;
+  onSelectMentorFromSearch?: (mentor: Mentor) => void;
 }
 
-export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onServiceClick }) => {
+export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onServiceClick, onSelectMentorFromSearch }) => {
   const [activeCategory, setActiveCategory] = useState('Все');
+  const [isAISearchOpen, setIsAISearchOpen] = useState(false);
 
-  // Определяем список категорий динамически на основе имеющихся услуг + стандартные
+  // Определяем список категорий динамически на основе имеющихся услуг
   const categories = ['Все', ...new Set(services.map(s => s.category).filter(Boolean))];
-  
-  // Если стандартные категории из макета (Marketing, Tech и т.д.) нужны как дефолтные:
   const displayCategories = categories.length > 1 ? categories : ['Все', 'Маркетинг', 'IT', 'HoReCa', 'Продажи'];
 
   const filteredServices = activeCategory === 'Все' 
@@ -30,10 +31,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="w-8 h-px bg-indigo-500" />
-            <span className="text-indigo-500 font-bold text-[9px] uppercase tracking-[0.4em]">Marketplace of Steps</span>
+            <span className="text-indigo-500 font-bold text-[9px] uppercase tracking-[0.4em]">Exchange Opportunities</span>
           </div>
           <h1 className="text-[12vw] sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.9] uppercase font-syne">
-            УСЛУГИ<br/>
+            ВСТРЕЧИ<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ШАГОВ</span>
           </h1>
         </div>
@@ -74,14 +75,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
               <LayoutGrid className="w-10 h-10" />
            </div>
            <div className="space-y-2">
-              <h3 className="text-2xl font-black text-white uppercase font-syne">Пусто в "{activeCategory}"</h3>
-              <p className="text-slate-500 text-sm max-w-xs mx-auto">В этой категории пока нет активных предложений. Попробуйте выбрать другое направление.</p>
+              <h3 className="text-2xl font-black text-white uppercase font-syne">Пока пусто в "{activeCategory}"</h3>
+              <p className="text-slate-500 text-sm max-w-xs mx-auto">Здесь скоро появятся новые возможности для энергообмена.</p>
            </div>
            <button 
              onClick={() => setActiveCategory('Все')}
              className="text-indigo-500 font-black uppercase text-[10px] tracking-widest hover:text-indigo-400 transition-colors"
            >
-             Показать все услуги
+             Показать все встречи
            </button>
         </div>
       )}
@@ -93,16 +94,30 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
            <div className="space-y-3">
              <div className="flex items-center gap-2 text-indigo-400 mb-2">
                 <Sparkles className="w-5 h-5" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">AI Assistant</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">AI Matching</span>
              </div>
-             <h2 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase font-syne leading-none">УМНЫЙ ПОИСК</h2>
-             <p className="text-slate-400 text-sm md:text-lg max-w-sm">Опишите вашу проблему, и наш AI подберет конкретную услугу, которая решит ваш запрос.</p>
+             <h2 className="text-3xl md:text-6xl font-black text-white tracking-tighter uppercase font-syne leading-none">НАЙТИ ПАРТНЕРА</h2>
+             <p className="text-slate-400 text-sm md:text-lg max-w-sm">Опишите ваш запрос, и AI подберет человека для идеального обмена энергией и опытом.</p>
            </div>
-           <button className="w-full lg:w-auto px-10 py-6 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-4 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-600/30">
-             Найти решение <ArrowRight className="w-4 h-4" />
+           <button 
+             onClick={() => setIsAISearchOpen(true)}
+             className="w-full lg:w-auto px-10 py-6 bg-indigo-600 text-white rounded-2xl font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-4 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-600/30"
+           >
+             Запустить поиск <ArrowRight className="w-4 h-4" />
            </button>
         </div>
       </div>
+
+      {isAISearchOpen && (
+        <AISearchModal 
+          mentors={mentors} 
+          onClose={() => setIsAISearchOpen(false)}
+          onSelectMentor={(mentor) => {
+            setIsAISearchOpen(false);
+            if (onSelectMentorFromSearch) onSelectMentorFromSearch(mentor);
+          }}
+        />
+      )}
     </div>
   );
 };

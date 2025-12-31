@@ -76,7 +76,7 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
 
             <div className="flex-1 text-center md:text-left space-y-4">
               <span className="px-5 py-2 bg-indigo-500/10 text-indigo-400 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2">
-                <Briefcase className="w-3 h-3" /> Ментор
+                <Briefcase className="w-3 h-3" /> Предприниматель / Эксперт
               </span>
               <input 
                 className="w-full bg-transparent text-4xl md:text-5xl font-black text-white tracking-tighter leading-none outline-none focus:text-indigo-400 transition-colors font-syne"
@@ -90,13 +90,13 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-            <ProfileField label="Название компании" icon={Building} value={session?.companyName || ''} onChange={v => handleChange('companyName', v)} />
-            <ProfileField label="Оборот млн/руб." icon={TrendingUp} value={session?.turnover || ''} onChange={v => handleChange('turnover', v)} />
+            <ProfileField label="Проект / Компания" icon={Building} value={session?.companyName || ''} onChange={v => handleChange('companyName', v)} />
+            <ProfileField label="Оборот / Уровень млн." icon={TrendingUp} value={session?.turnover || ''} onChange={v => handleChange('turnover', v)} />
             <ProfileField label="Город" icon={MapPin} value={session?.city || ''} onChange={v => handleChange('city', v)} />
-            <ProfileField label="Лимит времени ч/мес" icon={Clock} value={session?.timeLimit || ''} onChange={v => handleChange('timeLimit', v)} />
+            <ProfileField label="Лимит ч/мес" icon={Clock} value={session?.timeLimit || ''} onChange={v => handleChange('timeLimit', v)} />
             <div className="md:col-span-2 space-y-3">
                <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest font-syne">
-                 <Briefcase className="w-3 h-3" /> Индустрия
+                 <Briefcase className="w-3 h-3" /> Ниша
                </label>
                <input value={session?.direction || ''} onChange={e => handleChange('direction', e.target.value)} className="w-full bg-white/5 p-5 rounded-2xl text-white font-bold outline-none focus:border-indigo-500 border border-transparent" />
             </div>
@@ -105,7 +105,7 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
           <div className="mt-16 flex justify-end">
              <button onClick={onSaveProfile} disabled={isSavingProfile} className="bg-white text-black px-12 py-6 rounded-[24px] font-black uppercase text-xs tracking-widest hover:scale-105 transition-all flex items-center gap-3">
                 {isSavingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Сохранить профиль
+                Сохранить
              </button>
           </div>
         </div>
@@ -116,7 +116,7 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
           <div className="bg-[#0a0a0b] p-8 rounded-[48px] shadow-3xl space-y-8 border border-white/5">
             <div className="flex items-center gap-4 border-b border-white/5 pb-6">
               <CalendarIcon className="w-6 h-6 text-indigo-500" />
-              <h3 className="text-2xl font-black text-white font-syne">Мой график</h3>
+              <h3 className="text-2xl font-black text-white font-syne">Мои слоты</h3>
             </div>
             <SlotCalendar 
               selectedSlots={JSON.parse(mentorProfile.slots || "{}")} 

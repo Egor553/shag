@@ -5,7 +5,7 @@ import { MainDashboard } from './components/dashboard/MainDashboard';
 import { AdminPanel } from './components/AdminPanel';
 import { ValueProposition } from './components/ValueProposition';
 import { MENTORS as STATIC_MENTORS } from './constants';
-import { Mentor, UserRole, UserSession, Service, Booking } from './types';
+import { Mentor, UserRole, UserSession, Service, Booking, Job } from './types';
 import { Loader2, ArrowRight, Star, Zap, Briefcase, Target, ShieldCheck } from 'lucide-react';
 import { dbService } from './services/databaseService';
 
@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [dynamicMentors, setDynamicMentors] = useState<Mentor[]>([]);
   const [allMentors, setAllMentors] = useState<Mentor[]>(STATIC_MENTORS);
   const [services, setServices] = useState<Service[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
   const [showWelcomeValue, setShowWelcomeValue] = useState(false);
@@ -83,6 +84,7 @@ const App: React.FC = () => {
         setDynamicMentors(data.dynamicMentors || []);
         setServices(data.services || []);
         setBookings(data.bookings || []);
+        setJobs(data.jobs || []);
       }
     } catch (e) { console.warn('Global load failed'); }
   };
@@ -94,6 +96,7 @@ const App: React.FC = () => {
         setDynamicMentors(data.dynamicMentors || []);
         setServices(data.services || []);
         setBookings(data.bookings || []);
+        setJobs(data.jobs || []);
         if (data.user && session) {
           const updatedSession = { ...session, ...data.user, isLoggedIn: true };
           setSession(updatedSession);
@@ -141,6 +144,30 @@ const App: React.FC = () => {
       await dbService.saveService(newService);
       setServices([...services, newService]);
     } catch (e) { alert('Ошибка сохранения услуги'); }
+  };
+
+  const handleSaveJob = async (jobData: Partial<Job>) => {
+    if (!session) return;
+    const newJob: Job = {
+      id: Math.random().toString(36).substr(2, 9),
+      mentorId: session.id || session.email,
+      mentorName: session.name,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      ...jobData
+    } as Job;
+    try {
+      await dbService.saveJob(newJob);
+      setJobs([...jobs, newJob]);
+    } catch (e) { alert('Ошибка сохранения задачи'); }
+  };
+
+  const handleDeleteJob = async (id: string) => {
+    if (!confirm("Удалить эту миссию?")) return;
+    try {
+      await dbService.deleteJob(id);
+      setJobs(jobs.filter(j => j.id !== id));
+    } catch (e) { alert('Ошибка удаления'); }
   };
 
   const handleUpdateService = async (id: string, updates: Partial<Service>) => {
@@ -215,22 +242,36 @@ const App: React.FC = () => {
           <header className="text-center space-y-8 animate-in fade-in zoom-in duration-1000">
              <div className="space-y-4 pt-12">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
-                   <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                   <span className="text-[9px] font-black text-white uppercase tracking-[0.4em]">Эксклюзивная сеть наставничества</span>
+                   <Zap className="w-3 h-3 text-indigo-400 fill-indigo-400" />
+                   <span className="text-[9px] font-black text-white uppercase tracking-[0.4em]">Платформа Встречи Энергообмена</span>
                 </div>
                 <h1 className="text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-none uppercase font-syne">Сделай свой <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/20">ШАГ</span></h1>
-                <p className="text-slate-400 text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">Платформа, где опыт предпринимателей трансформируется в энергию твоего роста.</p>
+                <p className="text-slate-400 text-xl md:text-2xl font-medium max-w-2xl mx-auto leading-relaxed">Встречи, где опыт предпринимателей трансформируется в энергию твоего роста.</p>
              </div>
           </header>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
             <div onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setRegStep(1); setAuthMode('register'); }} className="group relative bg-white/[0.02] border border-white/10 p-12 rounded-[48px] cursor-pointer transition-all hover:border-indigo-500/50">
-              <div className="relative z-10 space-y-12"><div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-white"><Zap className="w-8 h-8" /></div><div className="space-y-4"><h3 className="text-4xl font-black text-white uppercase font-syne">Стать Ментором</h3><p className="text-slate-400 text-lg leading-relaxed font-medium">Для предпринимателей, готовых делиться мудростью.</p></div><div className="flex items-center gap-3 text-indigo-400 font-black text-[10px] uppercase tracking-[0.3em]">Начать путь <ArrowRight className="w-4 h-4" /></div></div>
+              <div className="relative z-10 space-y-12">
+                <div className="w-16 h-16 rounded-2xl bg-indigo-500 flex items-center justify-center text-white"><Zap className="w-8 h-8" /></div>
+                <div className="space-y-4">
+                  <h3 className="text-4xl font-black text-white uppercase font-syne">Предприниматель / Эксперт</h3>
+                  <p className="text-slate-400 text-lg leading-relaxed font-medium">Готов делиться опытом, искать таланты и отдавать энергию.</p>
+                </div>
+                <div className="flex items-center gap-3 text-indigo-400 font-black text-[10px] uppercase tracking-[0.3em]">Начать путь <ArrowRight className="w-4 h-4" /></div>
+              </div>
             </div>
             <div onClick={() => { setTempRole(UserRole.YOUTH); setRegStep(1); setAuthMode('register'); }} className="group relative bg-white/[0.02] border border-white/10 p-12 rounded-[48px] cursor-pointer transition-all hover:border-violet-500/50">
-              <div className="relative z-10 space-y-12"><div className="w-16 h-16 rounded-2xl bg-violet-500 flex items-center justify-center text-white"><Star className="w-8 h-8" /></div><div className="space-y-4"><h3 className="text-4xl font-black text-white uppercase font-syne">Найти наставника</h3><p className="text-slate-400 text-lg leading-relaxed font-medium">Для молодых талантов, ищущих твердую опору.</p></div><div className="flex items-center gap-3 text-violet-400 font-black text-[10px] uppercase tracking-[0.3em]">Сделать шаг <ArrowRight className="w-4 h-4" /></div></div>
+              <div className="relative z-10 space-y-12">
+                <div className="w-16 h-16 rounded-2xl bg-violet-500 flex items-center justify-center text-white"><Star className="w-8 h-8" /></div>
+                <div className="space-y-4">
+                  <h3 className="text-4xl font-black text-white uppercase font-syne">Молодой талант</h3>
+                  <p className="text-slate-400 text-lg leading-relaxed font-medium">Ищу наставника, хочу расти в крутом окружении и приносить пользу.</p>
+                </div>
+                <div className="flex items-center gap-3 text-violet-400 font-black text-[10px] uppercase tracking-[0.3em]">Сделать шаг <ArrowRight className="w-4 h-4" /></div>
+              </div>
             </div>
           </div>
-          <footer className="pt-10 flex flex-col items-center gap-8"><button onClick={() => setAuthMode('login')} className="text-slate-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-[0.5em] py-4 px-10 rounded-full border border-white/5 hover:bg-white/5">Уже есть аккаунт? <span className="text-white">Войти</span></button></footer>
+          <footer className="pt-10 flex flex-col items-center gap-8"><button onClick={() => setAuthMode('login')} className="text-slate-500 hover:text-white transition-all font-black text-[10px] uppercase tracking-[0.5em] py-4 px-10 rounded-full border border-white/5 hover:bg-white/5">Уже в сообществе? <span className="text-white">Войти</span></button></footer>
         </div>
       </div>
     );
@@ -257,12 +298,14 @@ const App: React.FC = () => {
   if (session) return (
     <MainDashboard 
       session={session} allMentors={allMentors} services={services}
+      jobs={jobs}
       bookings={bookings}
       mentorProfile={mentorProfile} onLogout={logout}
       onUpdateMentorProfile={setMentorProfile} onSaveProfile={handleSaveProfile}
       onSaveService={handleSaveService} onUpdateService={handleUpdateService}
       onDeleteService={handleDeleteService} onUpdateAvatar={handleUpdateAvatar}
       onSessionUpdate={setSession} isSavingProfile={isSavingProfile}
+      onSaveJob={handleSaveJob} onDeleteJob={handleDeleteJob}
     />
   );
   return null;

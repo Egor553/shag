@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Users, Calendar as CalendarIcon, LayoutGrid, 
-  UserCircle, LogOut, ChevronLeft, ChevronRight
+  UserCircle, LogOut, ChevronLeft, ChevronRight, Briefcase
 } from 'lucide-react';
 import { AppTab, UserRole, UserSession } from '../../types';
 
@@ -30,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: 'dashboard', label: 'Статистика', isLogo: true },
     { id: AppTab.CATALOG, label: 'Галерея', icon: Users },
+    { id: AppTab.JOBS, label: 'Миссии', icon: Briefcase },
     ...(isEnt ? [{ id: AppTab.SERVICES, label: 'Услуги', icon: LayoutGrid }] : []),
     { id: AppTab.MEETINGS, label: 'Встречи', icon: CalendarIcon },
     { id: AppTab.PROFILE, label: 'Профиль', icon: UserCircle },
@@ -52,7 +53,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setActiveTab(item.id as any)}
               className={`w-full flex items-center justify-center relative group transition-all duration-500 py-3 ${isActive ? 'text-white' : 'text-slate-500 hover:text-white'}`}
             >
-              {/* Индикатор активного состояния в стиле капсулы */}
               {isActive && (
                 <div className={`absolute inset-y-0 left-3 right-3 bg-${accentColor}-600/20 border border-${accentColor}-500/30 rounded-[24px] z-0 animate-in fade-in zoom-in duration-300`} />
               )}

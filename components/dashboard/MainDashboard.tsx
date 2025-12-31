@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { CatalogView } from './CatalogView';
+import { JobsView } from './JobsView';
 import { EntrepreneurProfile } from '../profiles/EntrepreneurProfile';
 import { YouthProfile } from '../profiles/YouthProfile';
 import { ServiceBuilder } from '../ServiceBuilder';
 import { BookingModal } from '../BookingModal';
-import { AppTab, UserRole, UserSession, Mentor, Service, Booking } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, ArrowLeft, ChevronRight, Play } from 'lucide-react';
+import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job } from '../../types';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, ArrowLeft, ChevronRight, Briefcase } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
 import { ShagLogo } from '../../App';
 
@@ -15,6 +16,7 @@ interface MainDashboardProps {
   session: UserSession;
   allMentors: Mentor[];
   services: Service[];
+  jobs: Job[];
   bookings: Booking[];
   mentorProfile: Mentor | null;
   onLogout: () => void;
@@ -26,12 +28,15 @@ interface MainDashboardProps {
   onUpdateAvatar: (url: string) => Promise<void>;
   onSessionUpdate: (session: UserSession) => void;
   isSavingProfile: boolean;
+  onSaveJob: (j: Partial<Job>) => Promise<void>;
+  onDeleteJob: (id: string) => Promise<void>;
 }
 
 export const MainDashboard: React.FC<MainDashboardProps> = ({
   session,
   allMentors,
   services,
+  jobs,
   bookings,
   mentorProfile,
   onLogout,
@@ -42,7 +47,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   onDeleteService,
   onUpdateAvatar,
   onSessionUpdate,
-  isSavingProfile
+  isSavingProfile,
+  onSaveJob,
+  onDeleteJob
 }) => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.CATALOG);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -62,11 +69,24 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     }
   };
 
+  const handleSelectMentorFromSearch = (mentor: Mentor) => {
+    // В текущей реализации мы просто открываем первую услугу этого ментора для бронирования
+    // или можем переключить вкладку. Для простоты - открываем модалку бронирования.
+    const mentorService = services.find(s => String(s.mentorId) === String(mentor.id) || String(s.mentorId) === String(mentor.ownerEmail));
+    if (mentorService) {
+      handleServiceClick(mentorService);
+    } else {
+      setActiveMentor(mentor);
+      setShowBooking(true);
+    }
+  };
+
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
 
   const mobileNavItems = [
-    { id: AppTab.CATALOG, icon: Users, label: 'Услуги' },
+    { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
+    { id: AppTab.JOBS, icon: Briefcase, label: 'Миссии' },
     ...(isEnt ? [{ id: AppTab.SERVICES, icon: LayoutGrid, label: 'Кабинет' }] : []),
     { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'Встречи' },
     { id: AppTab.PROFILE, icon: UserCircle, label: 'Профиль' },
@@ -92,6 +112,16 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               services={services} 
               mentors={allMentors}
               onServiceClick={handleServiceClick} 
+              onSelectMentorFromSearch={handleSelectMentorFromSearch}
+            />
+          )}
+
+          {activeTab === AppTab.JOBS && (
+            <JobsView 
+              jobs={jobs}
+              session={session}
+              onSaveJob={onSaveJob}
+              onDeleteJob={onDeleteJob}
             />
           )}
 
@@ -167,22 +197,23 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         })}
       </nav>
 
-      {showBooking && activeMentor && selectedService && (
+      {showBooking && activeMentor && (
         <BookingModal 
           mentor={activeMentor} 
-          service={selectedService}
+          service={selectedService || undefined}
           bookings={bookings}
-          onClose={() => { setShowBooking(false); setSelectedService(null); }} 
+          onClose={() => { setShowBooking(false); setSelectedService(null); setActiveMentor(null); }} 
           onComplete={async (data) => {
             await dbService.createBooking({ 
               ...data, 
               userEmail: session.email, 
               userName: session.name,
-              serviceId: selectedService.id,
-              serviceTitle: selectedService.title
+              serviceId: selectedService?.id,
+              serviceTitle: selectedService?.title || 'Индивидуальный запрос'
             });
             setShowBooking(false);
             setSelectedService(null);
+            setActiveMentor(null);
           }} 
         />
       )}

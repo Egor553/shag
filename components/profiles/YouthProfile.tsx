@@ -66,7 +66,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
 
             <div className="flex-1 text-center md:text-left space-y-4">
               <span className="px-5 py-2 bg-violet-500/10 text-violet-400 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2">
-                <Zap className="w-3 h-3" /> Участник
+                <Zap className="w-3 h-3" /> Молодой талант
               </span>
               <input 
                 className="w-full bg-transparent text-4xl md:text-5xl font-black text-white outline-none focus:text-violet-400 font-syne"
@@ -81,7 +81,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
             <YouthField label="Город" icon={MapPin} value={session?.city || ''} onChange={v => handleChange('city', v)} />
             <YouthField label="Телефон" icon={Phone} value={session?.phone || ''} onChange={v => handleChange('phone', v)} />
             <div className="md:col-span-2 space-y-3">
-               <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase font-syne tracking-widest">Моя цель на год</label>
+               <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase font-syne tracking-widest">Цель развития на платформе</label>
                <textarea value={session?.focusGoal || ''} onChange={e => handleChange('focusGoal', e.target.value)} className="w-full bg-white/5 p-5 rounded-2xl text-white font-medium outline-none focus:border-violet-500 border border-transparent h-32" />
             </div>
           </div>
@@ -89,7 +89,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
           <div className="mt-16 flex justify-end">
              <button onClick={onSaveProfile} disabled={isSavingProfile} className="bg-white text-black px-12 py-6 rounded-[24px] font-black uppercase text-xs tracking-widest flex items-center gap-3">
                 {isSavingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Обновить данные
+                Обновить
              </button>
           </div>
         </div>
@@ -98,9 +98,9 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
       <div className="space-y-10">
         <div className="bg-violet-600 p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-full group">
           <Sparkles className="absolute top-0 right-0 p-8 opacity-10 w-40 h-40 group-hover:scale-110 transition-transform" />
-          <h4 className="text-3xl font-black font-syne">Твой путь</h4>
-          <p className="font-medium text-violet-100 text-lg">Выбирай менторов и достигай своих целей быстрее!</p>
-          <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10">К менторам</button>
+          <h4 className="text-3xl font-black font-syne">Твой успех</h4>
+          <p className="font-medium text-violet-100 text-lg">Забирай миссии, учись у лучших и становись частью сильного сообщества!</p>
+          <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10">Найти ментора</button>
         </div>
       </div>
     </div>
