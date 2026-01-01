@@ -2,24 +2,29 @@
 import React, { useState } from 'react';
 import { Booking, UserSession, UserRole } from '../../types';
 import { 
-  Calendar as CalendarIcon, Clock, User, MessageSquare, 
-  CreditCard, Zap, Info, XCircle, AlertCircle, RefreshCcw 
+  Calendar as CalendarIcon, Clock, User, 
+  CreditCard, Zap, Info, XCircle, AlertCircle, RefreshCcw, ArrowRightLeft
 } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
 
 interface MeetingsListViewProps {
   bookings: Booking[];
   session: UserSession;
-  onOpenChat: (booking: Booking) => void;
   onPay: (booking: Booking) => void;
+  onReschedule?: (booking: Booking) => void;
   onRefresh?: () => void;
 }
 
-export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ bookings, session, onOpenChat, onPay, onRefresh }) => {
+export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ 
+  bookings, 
+  session, 
+  onPay, 
+  onReschedule,
+  onRefresh 
+}) => {
   const [isCancelling, setIsCancelling] = useState<string | null>(null);
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   
-  // Фильтруем записи: ментор видит все свои (включая отмененные для истории), талант видит свои актуальные
   const myBookings = [...bookings].filter(b => 
     isEnt ? (String(b.mentorId) === String(session.id) || String(b.mentorId) === String(session.email))
           : (String(b.userEmail).toLowerCase() === String(session.email).toLowerCase())
@@ -27,13 +32,12 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ bookings, se
 
   const handleCancel = async (booking: Booking) => {
     const personName = isEnt ? booking.userName : (booking.mentorName || 'ментора');
-    if (!confirm(`Вы уверены, что хотите отменить запись ${personName}? Место снова станет доступным, а средства будут возвращены.`)) return;
+    if (!confirm(`Вы уверены, что хотите отменить запись ${personName}? Место снова станет доступным.`)) return;
     
     setIsCancelling(booking.id);
     try {
       const res = await dbService.cancelBooking(booking.id, isEnt ? 'Отменено ментором' : 'Отменено талантом');
       if (res.result === 'success') {
-        alert('Запись успешно отменена. Участник получит уведомление.');
         if (onRefresh) onRefresh();
       } else {
         alert('Ошибка при отмене: ' + (res.message || 'попробуйте позже'));
@@ -134,15 +138,10 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ bookings, se
                       <div className={`w-1.5 h-1.5 rounded-full ${booking.status === 'confirmed' ? 'bg-emerald-500' : (booking.status === 'pending' ? 'bg-amber-500 animate-pulse' : 'bg-slate-500')}`} />
                       {getStatusLabel(booking.status)}
                     </span>
-                    {booking.status === 'cancelled' && (
-                       <span className="text-[8px] font-black text-red-500 uppercase tracking-widest flex items-center gap-1">
-                         <AlertCircle className="w-3 h-3" /> Возврат средств инициирован
-                       </span>
-                    )}
                   </div>
                   
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-white uppercase font-syne leading-tight">{booking.serviceTitle}</h3>
+                    <h3 className="text-2xl font-black text-white uppercase font-syne leading-tight">{booking.serviceTitle || 'Индивидуальный ШАГ'}</h3>
                     <div className="flex items-center gap-3 text-slate-400">
                       <User className="w-4 h-4 text-indigo-500" />
                       <span className="text-xs font-bold">
@@ -153,25 +152,32 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ bookings, se
                 </div>
 
                 {/* Actions Block */}
-                <div className="lg:col-span-4 flex flex-col sm:flex-row items-center justify-between lg:justify-end gap-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-white/5">
+                <div className="lg:col-span-4 flex flex-col sm:flex-row items-center justify-between lg:justify-end gap-3 pt-6 lg:pt-0 border-t lg:border-t-0 border-white/5">
                   <div className="text-center lg:text-right shrink-0">
                     <p className="text-3xl font-black text-white font-syne">{booking.price || 0} ₽</p>
                   </div>
 
-                  <div className="flex gap-3 w-full sm:w-auto shrink-0">
-                    {booking.status === 'confirmed' && (
-                      <button onClick={() => onOpenChat(booking)} className="flex-1 sm:flex-none bg-indigo-600 text-white px-8 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center gap-2">Чат <MessageSquare className="w-4 h-4" /></button>
-                    )}
+                  <div className="flex gap-2 w-full sm:w-auto shrink-0">
                     {!isEnt && booking.status === 'pending' && (
-                      <button onClick={() => onPay(booking)} className="flex-1 sm:flex-none bg-emerald-600 text-white px-8 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-500 transition-all">Оплатить <CreditCard className="w-4 h-4" /></button>
+                      <button onClick={() => onPay(booking)} className="flex-1 sm:flex-none bg-emerald-600 text-white px-6 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-500 transition-all">Оплатить</button>
                     )}
                     
+                    {booking.status === 'confirmed' && onReschedule && (
+                      <button 
+                        onClick={() => onReschedule(booking)}
+                        className="flex-1 sm:flex-none bg-indigo-600 text-white px-5 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center gap-2"
+                        title="Перенести встречу"
+                      >
+                        <ArrowRightLeft className="w-4 h-4" /> Перенести
+                      </button>
+                    )}
+
                     {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                       <button 
                         disabled={isCancelling === booking.id}
                         onClick={() => handleCancel(booking)} 
-                        className={`p-5 rounded-2xl border transition-all ${isCancelling === booking.id ? 'opacity-50 cursor-not-allowed' : 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'}`}
-                        title="Отменить встречу"
+                        className={`p-4 rounded-2xl border transition-all ${isCancelling === booking.id ? 'opacity-50 cursor-not-allowed' : 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'}`}
+                        title="Отменить"
                       >
                         {isCancelling === booking.id ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
                       </button>

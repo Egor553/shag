@@ -1,42 +1,74 @@
 
 import React, { useState, useEffect } from 'react';
-import { Mentor, MeetingFormat, Service, Booking } from '../types';
-import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles } from 'lucide-react';
+import { Mentor, MeetingFormat, Service, Booking, UserSession } from '../types';
+import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle, Eye } from 'lucide-react';
 import { PaymentStub } from './payment/PaymentStub';
+import { dbService } from '../services/databaseService';
 
 interface BookingModalProps {
   mentor: Mentor;
   service?: Service;
   bookings: Booking[]; 
-  existingBooking?: Booking; // Новое поле для оплаты существующей брони
+  session: UserSession; // Добавлена сессия
+  existingBooking?: Booking; // Для оплаты или ПЕРЕНОСА
   onClose: () => void;
   onComplete: (data: any) => void;
 }
 
-export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, bookings, existingBooking, onClose, onComplete }) => {
+export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, bookings, session, existingBooking, onClose, onComplete }) => {
   const [format, setFormat] = useState<MeetingFormat>(existingBooking?.format || service?.format || MeetingFormat.ONLINE_1_ON_1);
   const [step, setStep] = useState(existingBooking ? 4 : 1);
   const [goal, setGoal] = useState(existingBooking?.goal || '');
   const [exchange, setExchange] = useState('');
   const [selectedDate, setSelectedDate] = useState<string | null>(existingBooking?.date || null);
   const [selectedSlot, setSelectedSlot] = useState(existingBooking?.time || '');
-  const [showPayment, setShowPayment] = useState(!!existingBooking);
+  const [showPayment, setShowPayment] = useState(false);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  const isGroupRequest = format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE;
+  // Режим перезаписи: если запись уже подтверждена, мы просто меняем время
+  const isRescheduleMode = existingBooking?.status === 'confirmed';
+  
+  // Режим предпросмотра: если ментор открыл свою собственную услугу
+  const isOwner = session.email === (mentor.ownerEmail || mentor.email);
 
   const getPrice = () => {
     if (existingBooking) return existingBooking.price || 0;
     if (service) {
-      return isGroupRequest ? (service.groupPrice || service.price) : service.price;
+      return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE) 
+        ? (service.groupPrice || service.price) 
+        : service.price;
     }
-    return isGroupRequest ? mentor.groupPrice : mentor.singlePrice;
+    return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE) 
+      ? mentor.groupPrice 
+      : mentor.singlePrice;
+  };
+
+  const handleAction = async () => {
+    if (isRescheduleMode) {
+      setIsRescheduling(true);
+      try {
+        const res = await dbService.rescheduleBooking(existingBooking!.id, selectedDate!, selectedSlot);
+        if (res.result === 'success') {
+          onComplete({ id: existingBooking!.id, date: selectedDate, time: selectedSlot, status: 'confirmed' });
+        } else {
+          alert('Ошибка при переносе: ' + res.message);
+        }
+      } catch (e) {
+        alert('Ошибка связи с сервером');
+      } finally {
+        setIsRescheduling(false);
+      }
+    } else {
+      setShowPayment(true);
+    }
   };
 
   const handlePaySuccess = () => {
     onComplete({
-      id: existingBooking?.id, // Передаем ID если это обновление
+      id: existingBooking?.id,
       mentorId: mentor.id,
-      mentorEmail: mentor.ownerEmail,
+      mentorEmail: mentor.ownerEmail || mentor.email,
       serviceId: existingBooking?.serviceId || service?.id,
       format,
       goal,
@@ -48,6 +80,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
     });
   };
 
+  const slotsSource = service?.slots || mentor.slots || '{}';
+  const availableSlots = JSON.parse(slotsSource);
+
+  const photoUrl = mentor.paymentUrl || mentor.avatarUrl;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl">
       <div className="bg-white w-full max-w-xl rounded-[56px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto no-scrollbar">
@@ -57,24 +94,57 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
 
         <div className="p-10 md:p-14">
           <div className="flex items-center gap-6 mb-12">
-            <div className="w-20 h-20 bg-indigo-600 rounded-[32px] overflow-hidden shadow-2xl border-4 border-slate-50">
-               <img src={mentor.avatarUrl} className="w-full h-full object-cover" alt={mentor.name} />
+            <div className="w-20 h-20 bg-indigo-600 rounded-[32px] overflow-hidden shadow-2xl border-4 border-slate-50 flex items-center justify-center">
+               {!imgError && photoUrl ? (
+                 <img src={photoUrl} className="w-full h-full object-cover" alt={mentor.name} onError={() => setImgError(true)} />
+               ) : (
+                 <User className="w-10 h-10 text-white" />
+               )}
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-black text-slate-900 leading-none uppercase font-syne tracking-tight mb-1">
-                {existingBooking ? existingBooking.serviceTitle : (service?.title || 'Персональный ШАГ')}
+                {isOwner ? 'ВАШ ШАГ' : (isRescheduleMode ? 'ПЕРЕНОС ШАГА' : (existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'))}
               </h2>
               <p className="text-indigo-600 font-black text-[10px] uppercase tracking-widest">ментор: {mentor.name}</p>
             </div>
           </div>
           
-          {!showPayment ? (
-            <div className="space-y-10">
-              <div className="flex gap-2 mb-12 bg-slate-50 p-1 rounded-full">
-                {[1, 2, 3, 4].map((s) => (
-                  <div key={s} className={`flex-1 h-2 rounded-full transition-all duration-500 ${s <= step ? 'bg-indigo-600' : 'bg-slate-200'}`} />
-                ))}
+          {isOwner ? (
+            <div className="space-y-8 animate-in fade-in">
+              <div className="p-8 bg-indigo-50 border border-indigo-100 rounded-[32px] space-y-4">
+                <div className="flex items-center gap-3 text-indigo-600">
+                  <Eye className="w-5 h-5" />
+                  <span className="font-black text-[10px] uppercase tracking-widest">Режим предпросмотра</span>
+                </div>
+                <p className="text-sm font-medium text-slate-700 leading-relaxed">
+                  Так вашу услугу видят таланты и другие менторы. Вы можете редактировать описание и расписание в разделе «Мои ШАГи».
+                </p>
               </div>
+              <div className="space-y-6">
+                <h3 className="text-lg font-black text-slate-900 uppercase font-syne">Описание</h3>
+                <p className="text-slate-500 text-sm leading-relaxed italic">«{service?.description || mentor.description}»</p>
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                  <div className="p-5 bg-slate-50 rounded-2xl">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Соло ШАГ</span>
+                    <p className="text-xl font-black text-slate-900">{service?.price || mentor.singlePrice} ₽</p>
+                  </div>
+                  <div className="p-5 bg-slate-50 rounded-2xl">
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Длительность</span>
+                    <p className="text-xl font-black text-slate-900">{service?.duration || '60 мин'}</p>
+                  </div>
+                </div>
+              </div>
+              <button onClick={onClose} className="w-full bg-slate-900 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest">Понятно</button>
+            </div>
+          ) : !showPayment ? (
+            <div className="space-y-10">
+              {!isRescheduleMode && (
+                <div className="flex gap-2 mb-12 bg-slate-50 p-1 rounded-full">
+                  {[1, 2, 3, 4].map((s) => (
+                    <div key={s} className={`flex-1 h-2 rounded-full transition-all duration-500 ${s <= step ? 'bg-indigo-600' : 'bg-slate-200'}`} />
+                  ))}
+                </div>
+              )}
 
               {step === 1 && (
                 <div className="space-y-8 animate-in slide-in-from-right-4">
@@ -88,7 +158,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                         </div>
                         <span className="text-lg font-black font-syne text-indigo-600">{service?.price || mentor.singlePrice} ₽</span>
                       </button>
-                      {((service?.groupPrice || mentor.groupPrice) > 0) && (
+                      {((service?.groupPrice || mentor.groupPrice || 0) > 0) && (
                         <button onClick={() => setFormat(MeetingFormat.GROUP_OFFLINE)} className={`p-6 rounded-[32px] border-2 transition-all flex items-center justify-between ${format === MeetingFormat.GROUP_OFFLINE ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100'}`}>
                           <div className="flex items-center gap-4 text-left">
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${format === MeetingFormat.GROUP_OFFLINE ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'}`}><UsersIcon className="w-5 h-5" /></div>
@@ -130,31 +200,47 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                   <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Доступные даты</label>
                     <div className="flex flex-wrap gap-2">
-                        {Object.keys(JSON.parse(service?.slots || mentor.slots || '{}')).map(date => (
+                        {Object.keys(availableSlots).length > 0 ? Object.keys(availableSlots).map(date => (
                           <button key={date} onClick={() => { setSelectedDate(date); setSelectedSlot(''); }} className={`px-6 py-4 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all ${selectedDate === date ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-100 hover:border-indigo-200'}`}>
                             {date.split('-').reverse().slice(0, 2).join('.')}
                           </button>
-                        ))}
+                        )) : (
+                          <p className="p-4 text-slate-400 text-xs font-bold uppercase italic">Нет свободных дат в календаре</p>
+                        )}
                     </div>
                   </div>
-                  {selectedDate && (
+                  {selectedDate && availableSlots[selectedDate] && (
                     <div className="space-y-4 animate-in fade-in">
                       <div className="grid grid-cols-3 gap-3">
-                          {JSON.parse(service?.slots || mentor.slots || '{}')[selectedDate].map((slot: string) => (
+                          {availableSlots[selectedDate].map((slot: string) => (
                             <button key={slot} onClick={() => setSelectedSlot(slot)} className={`p-5 rounded-2xl border-2 font-black text-xs transition-all ${selectedSlot === slot ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 hover:border-indigo-50'}`}>{slot}</button>
                           ))}
                       </div>
                     </div>
                   )}
-                  <button disabled={!selectedSlot} onClick={() => setShowPayment(true)} className="w-full bg-slate-900 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest shadow-2xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-30 transition-all">
-                    К ОПЛАТЕ ШАГА <ArrowRight className="w-5 h-5" />
+                  <button 
+                    disabled={!selectedSlot || isRescheduling} 
+                    onClick={handleAction} 
+                    className="w-full bg-slate-900 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest shadow-2xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-30 transition-all"
+                  >
+                    {isRescheduling ? <RefreshCw className="w-5 h-5 animate-spin" /> : (
+                      isRescheduleMode ? 'ПОДТВЕРДИТЬ ПЕРЕНОС' : 'К ОПЛАТЕ ШАГА'
+                    )}
+                    {!isRescheduling && <ArrowRight className="w-5 h-5" />}
                   </button>
-                  <button onClick={() => setStep(3)} className="w-full text-slate-400 font-black uppercase text-[10px] tracking-widest">Назад</button>
+                  {!isRescheduleMode && (
+                    <button onClick={() => setStep(3)} className="w-full text-slate-400 font-black uppercase text-[10px] tracking-widest">Назад</button>
+                  )}
                 </div>
               )}
             </div>
           ) : (
-            <PaymentStub amount={getPrice()} title={existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'} onSuccess={handlePaySuccess} onCancel={() => existingBooking ? onClose() : setShowPayment(false)} />
+            <PaymentStub 
+              amount={getPrice()} 
+              title={existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'} 
+              onSuccess={handlePaySuccess} 
+              onCancel={() => existingBooking ? onClose() : setShowPayment(false)} 
+            />
           )}
         </div>
       </div>

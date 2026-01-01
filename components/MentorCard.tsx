@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Mentor } from '../types';
-import { MapPin, ArrowUpRight, Zap } from 'lucide-react';
+import { MapPin, Zap, User } from 'lucide-react';
 
 interface MentorCardProps {
   mentor: Mentor;
@@ -21,18 +21,28 @@ const getTimeAgo = (dateStr?: string) => {
 };
 
 export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
+  const [imgError, setImgError] = useState(false);
+  const photoUrl = mentor.paymentUrl || mentor.avatarUrl;
+
   return (
     <div 
       onClick={() => onClick(mentor)}
-      className="group relative h-[480px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-700"
+      className="group relative h-[480px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-700 hover:shadow-[0_0_50px_rgba(79,70,229,0.15)]"
     >
       {/* Image with adaptive overlay */}
       <div className="absolute inset-0">
-        <img 
-          src={mentor.avatarUrl} 
-          alt={mentor.name} 
-          className="w-full h-full object-cover grayscale-[0.2] transition-transform duration-1000 group-hover:scale-105"
-        />
+        {!imgError && photoUrl ? (
+          <img 
+            src={photoUrl} 
+            alt={mentor.name} 
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover grayscale-[0.2] transition-transform duration-1000 group-hover:scale-105 group-hover:grayscale-0"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black flex items-center justify-center">
+            <User className="w-24 h-24 text-white/10" />
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
       </div>
 
@@ -40,7 +50,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
       <div className="absolute top-5 inset-x-5 flex justify-between items-start z-10">
         <div className="flex flex-col gap-1.5">
           <div className="px-3 py-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[8px] font-black text-white uppercase tracking-widest">
-             {mentor.industry.split(' / ')[0]}
+             {(mentor.industry || 'Business').split(' / ')[0]}
           </div>
           <div className="flex items-center gap-1.5 px-1 py-1 text-white/40 text-[7px] font-bold uppercase tracking-widest">
              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
@@ -66,13 +76,13 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
            <div className="space-y-0.5">
               <span className="text-[7px] font-bold text-white/30 uppercase tracking-widest">Exchange</span>
               <p className="text-xl md:text-3xl font-black text-white tracking-tighter leading-none font-syne">
-                {mentor.groupPrice} <span className="text-xs font-bold text-white/40">₽</span>
+                {mentor.groupPrice || mentor.singlePrice} <span className="text-xs font-bold text-white/40">₽</span>
               </p>
            </div>
            
            <div className="flex items-center gap-1.5 text-white/60">
              <MapPin className="w-3 h-3" />
-             <span className="text-[9px] font-bold uppercase tracking-widest">{mentor.city}</span>
+             <span className="text-[9px] font-bold uppercase tracking-widest">{mentor.city || 'Planet'}</span>
            </div>
         </div>
       </div>

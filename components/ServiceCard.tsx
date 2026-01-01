@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Service } from '../types';
-import { Clock, Tag, ArrowRight, User, Zap, Globe, MapPin, Users as UsersIcon, ShieldCheck } from 'lucide-react';
+import { Clock, Tag, ArrowRight, User, Zap, Globe, MapPin, Users as UsersIcon, ShieldCheck, AlertCircle } from 'lucide-react';
 
 interface ServiceCardProps {
   service: Service;
@@ -9,6 +9,8 @@ interface ServiceCardProps {
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) => {
+  const isFull = (service.maxParticipants || 1) <= (service.currentParticipants || 0);
+
   return (
     <div 
       onClick={() => onClick(service)}
@@ -27,13 +29,18 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-transparent to-transparent opacity-60" />
         
-        <div className="absolute top-5 left-5 flex gap-2">
+        <div className="absolute top-5 left-5 flex flex-wrap gap-2">
            <span className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[8px] font-black uppercase tracking-widest shadow-xl">
              {service.category}
            </span>
            <span className="px-3 py-1 bg-black/40 backdrop-blur-md text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-white/10">
              {service.duration}
            </span>
+           {isFull && (
+             <span className="px-3 py-1 bg-red-600 text-white rounded-lg text-[8px] font-black uppercase tracking-widest animate-pulse">
+               Мест нет
+             </span>
+           )}
         </div>
 
         <div className="absolute bottom-5 left-5 flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md rounded-xl">
@@ -88,7 +95,11 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
                <span className="text-[8px] font-black uppercase tracking-widest">{service.format}</span>
                <Globe className="w-3 h-3" />
             </div>
-            <span className="text-[7px] font-bold uppercase tracking-widest opacity-40">Места ограничены</span>
+            {isFull ? (
+              <span className="text-[7px] font-black uppercase tracking-widest text-red-500">Запись закрыта</span>
+            ) : (
+              <span className="text-[7px] font-bold uppercase tracking-widest opacity-40">Места есть</span>
+            )}
           </div>
         </div>
       </div>

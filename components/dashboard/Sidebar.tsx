@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Users, Calendar as CalendarIcon, LayoutGrid, 
-  UserCircle, LogOut, ChevronLeft, ChevronRight, Briefcase, MessageSquare, Info, Star, Heart
+  UserCircle, LogOut, ChevronLeft, ChevronRight, Briefcase, Info, Star, Heart
 } from 'lucide-react';
 import { AppTab, UserRole, UserSession } from '../../types';
 
@@ -30,7 +30,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: AppTab.CATALOG, label: 'Галерея ШАГов', icon: Users },
     { id: AppTab.JOBS, label: 'Миссии (Work)', icon: Briefcase },
-    { id: AppTab.CHATS, label: 'Сообщения', icon: MessageSquare },
     ...(isEnt ? [{ id: AppTab.SERVICES, label: 'Мои ШАГи', icon: LayoutGrid }] : []),
     { id: AppTab.MEETINGS, label: 'Мои События', icon: CalendarIcon },
     { id: AppTab.MISSION, label: 'Наша Миссия', icon: Info },

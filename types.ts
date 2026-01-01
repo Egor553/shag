@@ -9,14 +9,13 @@ export enum MeetingFormat {
   ONLINE_1_ON_1 = 'Онлайн 1 на 1',
   OFFLINE_1_ON_1 = 'Оффлайн 1 на 1',
   GROUP_OFFLINE = 'Групповая встреча (до 10 чел)',
-  GROUP_ONLINE = 'Групповой онлайн-созвон'
+  GROUP_ONLINE = 'Групбовой онлайн-созвон'
 }
 
 export enum AppTab {
   CATALOG = 'catalog',
   JOBS = 'jobs',
   MEETINGS = 'meetings',
-  CHATS = 'chats',
   MISSION = 'mission',
   PROFILE = 'profile',
   SERVICES = 'services'

@@ -66,6 +66,14 @@ export const dbService = {
     });
   },
 
+  async rescheduleBooking(bookingId: string, newDate: string, newTime: string) {
+    return this.postAction({
+      action: 'update_booking',
+      id: bookingId,
+      updates: { date: newDate, time: newTime, status: 'confirmed' }
+    });
+  },
+
   async updateProfile(email: string, updates: Partial<UserSession>) {
     return this.postAction({ action: 'update_profile', email, updates });
   },
@@ -76,19 +84,6 @@ export const dbService = {
 
   async createBooking(booking: any) {
     return this.postAction({ action: 'booking', ...booking });
-  },
-
-  async sendMessage(message: ChatMessage) {
-    return this.postAction({ action: 'send_message', ...message });
-  },
-
-  async getMessages(bookingId: string): Promise<ChatMessage[]> {
-    try {
-      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.messages || [];
-    } catch (e) { return []; }
   },
 
   async saveJob(job: Job) {
@@ -105,6 +100,25 @@ export const dbService = {
 
   async deleteService(id: string) {
     return this.postAction({ action: 'delete_service', id });
+  },
+
+  // Fix: Added missing getMessages method for ChatManager component
+  async getMessages(bookingId: string) {
+    try {
+      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      const data = await response.json();
+      return data.messages || [];
+    } catch (e) {
+      console.error('getMessages error:', e);
+      return [];
+    }
+  },
+
+  // Fix: Added missing sendMessage method for ChatManager component
+  async sendMessage(message: ChatMessage) {
+    return this.postAction({ action: 'send_message', ...message });
   },
 
   async updateAvatar(email: string, avatarUrl: string) {

@@ -16,17 +16,12 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
   const [activeCategory, setActiveCategory] = useState('Все');
   const [isAISearchOpen, setIsAISearchOpen] = useState(false);
 
-  // Фильтрация: Категория + Проверка на заполненность
-  const availableServices = services.filter(s => {
-    const isCategoryMatch = activeCategory === 'Все' || s.category === activeCategory;
-    const isNotFull = (s.maxParticipants || 1) > (s.currentParticipants || 0);
-    return isCategoryMatch && isNotFull;
+  // Фильтрация только по категории, чтобы все видели все услуги
+  const filteredServices = services.filter(s => {
+    return activeCategory === 'Все' || s.category === activeCategory;
   });
 
   const categories = ['Все', ...new Set(services.map(s => s.category).filter(Boolean))];
-
-  // Топ менторы (для горизонтального скролла)
-  const topMentors = mentors.slice(0, 5);
 
   return (
     <div className="space-y-12 md:space-y-24 animate-in fade-in duration-1000 pb-20">
@@ -42,31 +37,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
           </h1>
         </div>
 
-        {/* Featured Mentors Horizontal Scroll */}
-        <div className="space-y-6">
-           <div className="flex items-center gap-3 text-amber-500">
-              <Star className="w-4 h-4 fill-current" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Менторы недели</span>
-           </div>
-           <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 -mx-5 px-5">
-              {topMentors.map(mentor => (
-                <button 
-                  key={mentor.id}
-                  onClick={() => onSelectMentorFromSearch?.(mentor)}
-                  className="shrink-0 flex items-center gap-4 bg-white/[0.03] border border-white/5 p-4 rounded-3xl hover:border-indigo-500/50 transition-all group"
-                >
-                   <div className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10">
-                      <img src={mentor.paymentUrl || mentor.avatarUrl} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={mentor.name} />
-                   </div>
-                   <div className="text-left pr-4">
-                      <p className="text-white font-black text-sm uppercase font-syne truncate w-32">{mentor.name}</p>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{mentor.direction || mentor.industry}</p>
-                   </div>
-                </button>
-              ))}
-           </div>
-        </div>
-
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-6 -mx-2 px-2">
            {categories.map(cat => (
              <button 
@@ -80,9 +50,9 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
         </div>
       </div>
 
-      {availableServices.length > 0 ? (
+      {filteredServices.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-          {availableServices.map((service, idx) => (
+          {filteredServices.map((service, idx) => (
             <div key={service.id} className="animate-in fade-in slide-in-from-bottom-6 duration-700" style={{ animationDelay: `${idx * 150}ms` }}>
               <ServiceCard service={service} onClick={onServiceClick} />
             </div>
@@ -94,8 +64,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
              <UserX className="w-12 h-12" />
            </div>
            <div className="space-y-3">
-              <h3 className="text-3xl font-black text-white uppercase font-syne tracking-tighter">Мест пока нет</h3>
-              <p className="text-slate-500 text-sm max-w-xs mx-auto font-medium">В категории "{activeCategory}" сейчас все окна забронированы. Менторы скоро обновят расписание!</p>
+              <h3 className="text-3xl font-black text-white uppercase font-syne tracking-tighter">Пока пусто</h3>
+              <p className="text-slate-500 text-sm max-w-xs mx-auto font-medium">В этой категории еще нет опубликованных ШАГов.</p>
            </div>
         </div>
       )}

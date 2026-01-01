@@ -4,14 +4,13 @@ import { Sidebar } from './Sidebar';
 import { CatalogView } from './CatalogView';
 import { JobsView } from './JobsView';
 import { MeetingsListView } from './MeetingsListView';
-import { ChatManager } from './ChatManager';
 import { MissionView } from './MissionView';
 import { EntrepreneurProfile } from '../profiles/EntrepreneurProfile';
 import { YouthProfile } from '../profiles/YouthProfile';
 import { ServiceBuilder } from '../ServiceBuilder';
 import { BookingModal } from '../BookingModal';
-import { AppTab, UserRole, UserSession, Mentor, Service, Booking, ChatMessage, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, MessageSquare, Info, Heart, Zap, TrendingUp, Sparkles } from 'lucide-react';
+import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, Info, Heart, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
 import { ShagLogo } from '../../App';
 
@@ -70,12 +69,11 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     setLocalBookings(bookings);
   }, [bookings]);
 
-  const handleSendMessage = async (bookingId: string, text: string) => {
-    console.debug(`Message for ${bookingId} queued`);
-  };
-
   const handleServiceClick = (service: Service) => {
-    const mentor = allMentors.find(m => String(m.id) === String(service.mentorId) || String(m.ownerEmail) === String(service.mentorId));
+    const mentor = allMentors.find(m => 
+      String(m.id) === String(service.mentorId) || 
+      String(m.ownerEmail || m.email).toLowerCase() === String(service.mentorId).toLowerCase()
+    );
     if (mentor) {
       setActiveMentor(mentor);
       setSelectedService(service);
@@ -85,7 +83,10 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   };
 
   const handleSelectMentorFromSearch = (mentor: Mentor) => {
-    const mentorService = services.find(s => String(s.mentorId) === String(mentor.id) || String(s.mentorId) === String(mentor.ownerEmail));
+    const mentorService = services.find(s => 
+      String(s.mentorId) === String(mentor.id) || 
+      String(s.mentorId).toLowerCase() === String(mentor.ownerEmail || mentor.email).toLowerCase()
+    );
     if (mentorService) {
       handleServiceClick(mentorService);
     } else {
@@ -96,7 +97,10 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   };
 
   const handlePayFromList = (booking: Booking) => {
-    const mentor = allMentors.find(m => String(m.id) === String(booking.mentorId) || String(m.ownerEmail) === String(booking.mentorId));
+    const mentor = allMentors.find(m => 
+      String(m.id) === String(booking.mentorId) || 
+      String(m.ownerEmail || m.email).toLowerCase() === String(booking.mentorId).toLowerCase()
+    );
     if (mentor) {
       setActiveMentor(mentor);
       setPendingPaymentBooking(booking);
@@ -104,10 +108,21 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     }
   };
 
+  const handleReschedule = (booking: Booking) => {
+    const mentor = allMentors.find(m => 
+      String(m.id) === String(booking.mentorId) || 
+      String(m.ownerEmail || m.email).toLowerCase() === String(booking.mentorId).toLowerCase()
+    );
+    if (mentor) {
+      setActiveMentor(mentor);
+      setPendingPaymentBooking(booking); 
+      setShowBooking(true);
+    }
+  };
+
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
 
-  // Расчет глобальной статистики для виджета
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
 
@@ -115,7 +130,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
     { id: AppTab.JOBS, icon: Briefcase, label: 'Миссии' },
     { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
-    { id: AppTab.CHATS, icon: MessageSquare, label: 'Чат' },
     { id: AppTab.PROFILE, icon: UserCircle, label: 'ЛК' },
   ];
 
@@ -138,7 +152,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
       <main className={`flex-1 transition-all duration-700 relative z-10 w-full min-w-0 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-28'}`}>
         <div className="px-5 md:px-16 pt-8 pb-32 md:py-20 max-w-7xl mx-auto">
           
-          {/* Global Pulse Bar */}
           {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
             <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-1000">
                <div className="bg-white/[0.03] border border-white/5 rounded-[32px] p-6 flex flex-wrap items-center justify-between gap-8 backdrop-blur-xl">
@@ -174,16 +187,12 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />
             )}
 
-            {activeTab === AppTab.CHATS && (
-              <ChatManager bookings={localBookings} session={session} onSendMessage={handleSendMessage} />
-            )}
-
             {activeTab === AppTab.MEETINGS && (
               <MeetingsListView 
                 bookings={localBookings} 
                 session={session} 
-                onOpenChat={() => setActiveTab(AppTab.CHATS)} 
                 onPay={handlePayFromList} 
+                onReschedule={handleReschedule}
                 onRefresh={onRefresh}
               />
             )}
@@ -238,7 +247,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
                 </div>
                 <div className="pt-8">
                   <ServiceBuilder 
-                    services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId) === String(session.email))} 
+                    services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} 
                     onSave={onSaveService} 
                     onUpdate={onUpdateService} 
                     onDelete={onDeleteService} 
@@ -276,30 +285,12 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
           mentor={activeMentor} 
           service={selectedService || undefined} 
           bookings={localBookings} 
+          session={session} // Передаем сессию
           existingBooking={pendingPaymentBooking || undefined}
           onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} 
           onComplete={async (data) => {
-            try {
-              if (data.id) {
-                await dbService.createBooking(data); 
-              } else {
-                const newBooking = { 
-                  ...data, 
-                  userEmail: session.email, 
-                  userName: session.name, 
-                  mentorName: activeMentor.name, 
-                  mentorEmail: activeMentor.ownerEmail || activeMentor.email,
-                  serviceId: selectedService?.id, 
-                  serviceTitle: selectedService?.title || 'Индивидуальный запрос', 
-                  id: Math.random().toString(36).substr(2, 9) 
-                };
-                await dbService.createBooking(newBooking);
-              }
-              if (onRefresh) onRefresh();
-              setShowBooking(false);
-            } catch (e) {
-              alert("Ошибка при сохранении бронирования");
-            }
+            if (onRefresh) onRefresh();
+            setShowBooking(false);
           }} 
         />
       )}
