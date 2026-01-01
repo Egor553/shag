@@ -1,5 +1,5 @@
 
-# ШАГ — Backend (Google Apps Script v22.0)
+# ШАГ — Backend (Google Apps Script v23.0)
 
 Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение с доступом "Anyone".
 
@@ -176,6 +176,16 @@ function getOrCreateSheet(ss, name, headers) {
   if (!sheet) {
     sheet = ss.insertSheet(name);
     sheet.appendRow(headers);
+  } else {
+    // Check for missing headers and sync them if they are missing
+    var currentData = sheet.getDataRange().getValues();
+    var currentHeaders = currentData[0];
+    var missingHeaders = headers.filter(function(h) { return currentHeaders.indexOf(h) === -1; });
+    
+    if (missingHeaders.length > 0) {
+      var lastCol = sheet.getLastColumn();
+      sheet.getRange(1, lastCol + 1, 1, missingHeaders.length).setValues([missingHeaders]);
+    }
   }
   return sheet;
 }

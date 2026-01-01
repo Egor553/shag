@@ -17,19 +17,34 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Инициализируем форму, пытаясь подтянуть контакт из профиля если он есть
   const [formData, setFormData] = useState<Partial<Job>>({
     title: '',
     description: '',
     reward: '',
     category: 'Маркетинг',
-    telegram: '',
+    telegram: session.phone || '', 
     deadline: ''
   });
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
 
+  const handleOpenForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      reward: '',
+      category: 'Маркетинг',
+      telegram: formData.telegram || session.phone || '',
+      deadline: ''
+    });
+    setIsFormOpen(true);
+  };
+
   const handleSave = async () => {
-    if (!formData.title || !formData.description || !formData.telegram || isSubmitting) {
+    const trimmedTg = String(formData.telegram || '').trim();
+    if (!formData.title || !formData.description || !trimmedTg || isSubmitting) {
       alert("Пожалуйста, заполните заголовок, описание и Telegram для связи");
       return;
     }
@@ -38,13 +53,14 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
     try {
       await onSaveJob({
         ...formData,
+        telegram: trimmedTg,
         mentorId: session.id || session.email,
         mentorName: session.name,
         createdAt: new Date().toISOString(),
         status: 'active'
       });
       setIsFormOpen(false);
-      setFormData({ title: '', description: '', reward: '', category: 'Маркетинг', telegram: '', deadline: '' });
+      setFormData({ ...formData, title: '', description: '', reward: '', deadline: '' });
     } catch (e) {
       console.error("Failed to save job", e);
       alert("Ошибка при создании миссии");
@@ -67,7 +83,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
           </h1>
         </div>
         {isEnt && !isFormOpen && (
-          <button onClick={() => setIsFormOpen(true)} className="bg-white text-black px-10 py-6 rounded-[32px] font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl active:scale-95">
+          <button onClick={handleOpenForm} className="bg-white text-black px-10 py-6 rounded-[32px] font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl active:scale-95">
             <Plus className="w-5 h-5" /> Создать миссию
           </button>
         )}
@@ -104,7 +120,9 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                </div>
                <div className="pt-10 border-t border-white/5 flex gap-4">
                   <button onClick={() => setIsFormOpen(false)} className="flex-1 py-6 rounded-2xl font-black uppercase text-[10px] text-slate-500">Отмена</button>
-                  <button onClick={handleSave} className="flex-[2] bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl">Опубликовать</button>
+                  <button onClick={handleSave} className="flex-[2] bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl">
+                    {isSubmitting ? 'Публикация...' : 'Опубликовать'}
+                  </button>
                </div>
             </div>
           </div>
@@ -114,8 +132,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {jobs.map((job) => {
           const isMyJob = String(job.mentorId) === String(session.id) || String(job.mentorId).toLowerCase() === String(session.email).toLowerCase();
-          // Гарантируем, что telegram — строка для проверки
-          const hasTg = job.telegram && String(job.telegram).trim().length > 0;
+          const jobTelegram = job.telegram ? String(job.telegram).trim() : '';
+          const hasTg = jobTelegram.length > 0;
           
           return (
             <div key={job.id} onClick={() => setSelectedJob(job)} className={`bg-[#0a0a0b] border p-8 rounded-[40px] flex flex-col h-full group transition-all duration-500 cursor-pointer ${isMyJob ? 'border-indigo-500/40' : 'border-white/5 hover:border-violet-500/50'}`}>
@@ -135,12 +153,11 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
               <h3 className="text-2xl font-black text-white leading-tight uppercase font-syne mb-4">{job.title}</h3>
               <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 mb-6 italic">«{job.description}»</p>
               
-              {/* Telegram Handle Visibility */}
               <div className="mb-6 mt-auto">
                 {hasTg ? (
                   <div className="flex items-center gap-2 text-[10px] font-black text-violet-400 uppercase tracking-widest bg-violet-500/5 p-3 rounded-xl border border-violet-500/10">
                     <Zap className="w-3 h-3 fill-current" />
-                    <span>TG: {job.telegram}</span>
+                    <span>TG: {jobTelegram}</span>
                   </div>
                 ) : (
                   <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest p-3 bg-white/5 rounded-xl">Контакты скрыты</div>

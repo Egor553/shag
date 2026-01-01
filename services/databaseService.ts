@@ -2,7 +2,7 @@
 import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
 
 // Актуальный URL вебхука Google Apps Script
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx1_hHdkSr9Yb9zV3T2uij6Jv97puEsSFn9lJjoS04l6woCnKJ4uAW3X4niz7Y9BMo/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymDOl3mFQMO9lTJkyJB_MduY-qRikjh0Fzo1MZd97DdK2swS0kkGBS5zNQMV2qkaPq/exec';
 
 export const dbService = {
   async syncData(email?: string) {
