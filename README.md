@@ -1,5 +1,5 @@
 
-# ШАГ — Backend (Google Apps Script v21.0)
+# ШАГ — Backend (Google Apps Script v22.0)
 
 Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение с доступом "Anyone".
 
@@ -67,13 +67,7 @@ function doPost(e) {
     return createResponse({ result: 'success' });
   }
 
-  if (action === 'delete_service') {
-    deleteRow(ss.getSheetByName('Services'), 'id', data.id);
-    SpreadsheetApp.flush();
-    return createResponse({ result: 'success' });
-  }
-
-  // --- МИССИИ ---
+  // --- МИССИИ (ПОДРАБОТКА) ---
   if (action === 'save_job') {
     var sheet = getOrCreateSheet(ss, 'Jobs', ["id", "mentorId", "mentorName", "title", "description", "reward", "category", "telegram", "deadline", "status", "createdAt"]);
     appendData(sheet, data);
