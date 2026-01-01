@@ -74,6 +74,14 @@ export const dbService = {
     });
   },
 
+  async updateBookingStatus(id: string, status: string) {
+    return this.postAction({
+      action: 'update_booking',
+      id: id,
+      updates: { status }
+    });
+  },
+
   async updateProfile(email: string, updates: Partial<UserSession>) {
     return this.postAction({ action: 'update_profile', email, updates });
   },
@@ -90,6 +98,10 @@ export const dbService = {
     return this.postAction({ action: 'save_job', ...job });
   },
 
+  async updateJob(id: string, updates: Partial<Job>) {
+    return this.postAction({ action: 'update_job', id, updates });
+  },
+
   async deleteJob(id: string) {
     return this.postAction({ action: 'delete_job', id });
   },
@@ -102,7 +114,6 @@ export const dbService = {
     return this.postAction({ action: 'delete_service', id });
   },
 
-  // Fix: Added missing getMessages method for ChatManager component
   async getMessages(bookingId: string) {
     try {
       const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
@@ -116,7 +127,6 @@ export const dbService = {
     }
   },
 
-  // Fix: Added missing sendMessage method for ChatManager component
   async sendMessage(message: ChatMessage) {
     return this.postAction({ action: 'send_message', ...message });
   },

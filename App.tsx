@@ -84,46 +84,28 @@ const App: React.FC = () => {
     setIsAuthLoading(true);
     setErrorMsg(null);
     try {
-      // Специальная проверка для админа
       if (loginEmail === 'admin' && loginPassword === 'admin123') {
-        const adminSess = { 
-          id: 'admin-001', 
-          email: 'admin', 
-          name: 'Administrator', 
-          role: UserRole.ADMIN, 
-          isLoggedIn: true 
-        } as UserSession;
+        const adminSess = { id: 'admin-001', email: 'admin', name: 'Administrator', role: UserRole.ADMIN, isLoggedIn: true } as UserSession;
         setSession(adminSess);
         localStorage.setItem('shag_session', JSON.stringify(adminSess));
         await syncUserData('admin');
         setAuthMode(null);
         return;
       }
-
       const userData = await dbService.login({ email: loginEmail, password: loginPassword });
       const sess = { ...userData, isLoggedIn: true } as UserSession;
       setSession(sess);
       localStorage.setItem('shag_session', JSON.stringify(sess));
       await syncUserData(loginEmail);
       setAuthMode(null);
-    } catch (e: any) {
-      setErrorMsg(e.message || 'Пользователь не найден или пароль неверен');
-    } finally { setIsAuthLoading(false); }
+    } catch (e: any) { setErrorMsg(e.message || 'Ошибка входа'); } finally { setIsAuthLoading(false); }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (regStep < 3) { setRegStep(regStep + 1); return; }
-    
     setIsAuthLoading(true);
-    setErrorMsg(null);
-    const newUser = { 
-      id: Math.random().toString(36).substr(2, 9), 
-      role: tempRole, 
-      ...regData,
-      slots: JSON.stringify(regData.slots),
-      balance: 0
-    };
+    const newUser = { id: Math.random().toString(36).substr(2, 9), role: tempRole, ...regData, slots: JSON.stringify(regData.slots), balance: 0 };
     try {
       const res = await dbService.register(newUser);
       if (res.result === 'success') {
@@ -132,12 +114,8 @@ const App: React.FC = () => {
         localStorage.setItem('shag_session', JSON.stringify(sess));
         await syncUserData(newUser.email);
         setAuthMode(null);
-      } else {
-        setErrorMsg(res.message || 'Email или телефон уже заняты');
-      }
-    } catch (e) { 
-      setErrorMsg('Ошибка связи с сервером'); 
-    } finally { setIsAuthLoading(false); }
+      } else { setErrorMsg(res.message); }
+    } catch (e) { setErrorMsg('Ошибка регистрации'); } finally { setIsAuthLoading(false); }
   };
 
   if (isAppLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600 w-12 h-12" /></div>;
@@ -156,23 +134,34 @@ const App: React.FC = () => {
         onUpdateMentorProfile={setMentorProfile}
         onSaveProfile={async () => { await dbService.updateProfile(session.email, session); syncUserData(session.email); }}
         onSaveService={async (s) => { 
-          // Фикс: Принудительно добавляем автора при сохранении услуги
-          const serviceToSave = {
-            ...s,
-            mentorId: session.id || session.email,
-            mentorName: session.name
-          } as Service;
-          await dbService.saveService(serviceToSave); 
+          const sToSave = { ...s, id: s.id || Math.random().toString(36).substr(2, 9), mentorId: session.id || session.email, mentorName: session.name } as Service;
+          setServices(prev => [...prev, sToSave]); // Оптимистично
+          await dbService.saveService(sToSave); 
           syncUserData(session.email); 
         }}
-        onUpdateService={async (id, u) => { await dbService.updateService(id, u); syncUserData(session.email); }}
-        onDeleteService={async (id) => { await dbService.deleteService(id); syncUserData(session.email); }}
+        onUpdateService={async (id, u) => { 
+          setServices(prev => prev.map(s => s.id === id ? { ...s, ...u } : s)); // Оптимистично без дублирования
+          await dbService.updateService(id, u); 
+          syncUserData(session.email); 
+        }}
+        onDeleteService={async (id) => { 
+          setServices(prev => prev.filter(s => s.id !== id)); // Мгновенное удаление из UI
+          await dbService.deleteService(id); 
+        }}
         onUpdateAvatar={async (u) => { await dbService.updateAvatar(session.email, u); setSession({...session, paymentUrl: u}); }}
         onSessionUpdate={setSession}
         onRefresh={() => syncUserData(session.email)}
         isSavingProfile={false}
-        onSaveJob={async (j) => { await dbService.saveJob(j as Job); syncUserData(session.email); }}
-        onDeleteJob={async (id) => { await dbService.deleteJob(id); syncUserData(session.email); }}
+        onSaveJob={async (j) => { 
+          const jToSave = { ...j, id: j.id || Math.random().toString(36).substr(2, 9) } as Job;
+          setJobs(prev => [...prev, jToSave]); 
+          await dbService.saveJob(jToSave); 
+          syncUserData(session.email); 
+        }}
+        onDeleteJob={async (id) => { 
+          setJobs(prev => prev.filter(j => j.id !== id)); // Мгновенное удаление
+          await dbService.deleteJob(id); 
+        }}
       />
     );
   }

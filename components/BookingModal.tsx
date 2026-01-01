@@ -176,7 +176,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
               {step === 2 && (
                 <div className="space-y-8 animate-in slide-in-from-right-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Твой запрос</label>
-                  <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="В чем именно тебе нужна помощь наставника?" className="w-full p-8 rounded-[32px] border-2 border-slate-100 focus:border-indigo-500 bg-slate-50/50 outline-none h-40 text-sm font-bold transition-all" />
+                  <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="В чем именно тебе нужна помощь наставника?" className="w-full p-8 rounded-[32px] border-2 border-slate-100 focus:border-indigo-500 bg-slate-50/50 outline-none h-40 text-sm font-bold transition-all text-slate-900" />
                   <div className="flex gap-4">
                     <button onClick={() => setStep(1)} className="flex-1 font-black uppercase text-[10px] text-slate-400 tracking-widest">Назад</button>
                     <button disabled={!goal} onClick={() => setStep(3)} className="flex-[2] bg-indigo-600 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest">Далее</button>
@@ -187,7 +187,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
               {step === 3 && (
                 <div className="space-y-8 animate-in slide-in-from-right-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Твой вклад (Энергообмен)</label>
-                  <textarea value={exchange} onChange={(e) => setExchange(e.target.value)} placeholder="Чем ты можешь быть полезен ментору?" className="w-full p-8 rounded-[32px] border-2 border-slate-100 focus:border-indigo-500 bg-slate-50/50 outline-none h-40 text-sm font-bold transition-all" />
+                  <textarea value={exchange} onChange={(e) => setExchange(e.target.value)} placeholder="Чем ты можешь быть полезен ментору?" className="w-full p-8 rounded-[32px] border-2 border-slate-100 focus:border-indigo-500 bg-slate-50/50 outline-none h-40 text-sm font-bold transition-all text-slate-900" />
                   <div className="flex gap-4">
                     <button onClick={() => setStep(2)} className="flex-1 font-black uppercase text-[10px] text-slate-400 tracking-widest">Назад</button>
                     <button disabled={!exchange} onClick={() => setStep(4)} className="flex-[2] bg-indigo-600 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest">Выбрать дату</button>
@@ -201,7 +201,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Доступные даты</label>
                     <div className="flex flex-wrap gap-2">
                         {Object.keys(availableSlots).length > 0 ? Object.keys(availableSlots).map(date => (
-                          <button key={date} onClick={() => { setSelectedDate(date); setSelectedSlot(''); }} className={`px-6 py-4 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all ${selectedDate === date ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-100 hover:border-indigo-200'}`}>
+                          <button key={date} onClick={() => { setSelectedDate(date); setSelectedSlot(''); }} className={`px-6 py-4 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest transition-all ${selectedDate === date ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-100 text-slate-600 hover:border-indigo-200'}`}>
                             {date.split('-').reverse().slice(0, 2).join('.')}
                           </button>
                         )) : (
@@ -213,7 +213,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                     <div className="space-y-4 animate-in fade-in">
                       <div className="grid grid-cols-3 gap-3">
                           {availableSlots[selectedDate].map((slot: string) => (
-                            <button key={slot} onClick={() => setSelectedSlot(slot)} className={`p-5 rounded-2xl border-2 font-black text-xs transition-all ${selectedSlot === slot ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 hover:border-indigo-50'}`}>{slot}</button>
+                            <button key={slot} onClick={() => setSelectedSlot(slot)} className={`p-5 rounded-2xl border-2 font-black text-xs transition-all ${selectedSlot === slot ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-100 text-slate-600 hover:border-indigo-50'}`}>{slot}</button>
                           ))}
                       </div>
                     </div>
