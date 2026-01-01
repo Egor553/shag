@@ -134,33 +134,59 @@ const App: React.FC = () => {
         onUpdateMentorProfile={setMentorProfile}
         onSaveProfile={async () => { await dbService.updateProfile(session.email, session); syncUserData(session.email); }}
         onSaveService={async (s) => { 
-          const sToSave = { ...s, id: s.id || Math.random().toString(36).substr(2, 9), mentorId: session.id || session.email, mentorName: session.name } as Service;
-          setServices(prev => [...prev, sToSave]); // Оптимистично
-          await dbService.saveService(sToSave); 
+          const sToSave = { 
+            ...s, 
+            id: s.id || Math.random().toString(36).substr(2, 9), 
+            mentorId: session.id || session.email, 
+            mentorName: session.name 
+          } as Service;
+          
+          if (s.id) {
+            // Редактирование существующего
+            setServices(prev => prev.map(item => item.id === s.id ? sToSave : item));
+            await dbService.updateService(s.id, sToSave);
+          } else {
+            // Создание нового
+            setServices(prev => [...prev, sToSave]);
+            await dbService.saveService(sToSave);
+          }
           syncUserData(session.email); 
         }}
         onUpdateService={async (id, u) => { 
-          setServices(prev => prev.map(s => s.id === id ? { ...s, ...u } : s)); // Оптимистично без дублирования
+          setServices(prev => prev.map(s => s.id === id ? { ...s, ...u } : s));
           await dbService.updateService(id, u); 
           syncUserData(session.email); 
         }}
         onDeleteService={async (id) => { 
-          setServices(prev => prev.filter(s => s.id !== id)); // Мгновенное удаление из UI
+          setServices(prev => prev.filter(s => s.id !== id));
           await dbService.deleteService(id); 
+          syncUserData(session.email);
         }}
         onUpdateAvatar={async (u) => { await dbService.updateAvatar(session.email, u); setSession({...session, paymentUrl: u}); }}
         onSessionUpdate={setSession}
         onRefresh={() => syncUserData(session.email)}
         isSavingProfile={false}
         onSaveJob={async (j) => { 
-          const jToSave = { ...j, id: j.id || Math.random().toString(36).substr(2, 9) } as Job;
-          setJobs(prev => [...prev, jToSave]); 
-          await dbService.saveJob(jToSave); 
+          const jToSave = { 
+            ...j, 
+            id: j.id || Math.random().toString(36).substr(2, 9),
+            mentorId: session.id || session.email,
+            mentorName: session.name
+          } as Job;
+          
+          if (j.id) {
+            setJobs(prev => prev.map(item => item.id === j.id ? jToSave : item));
+            await dbService.updateJob(j.id, jToSave);
+          } else {
+            setJobs(prev => [...prev, jToSave]);
+            await dbService.saveJob(jToSave); 
+          }
           syncUserData(session.email); 
         }}
         onDeleteJob={async (id) => { 
-          setJobs(prev => prev.filter(j => j.id !== id)); // Мгновенное удаление
+          setJobs(prev => prev.filter(j => j.id !== id));
           await dbService.deleteJob(id); 
+          syncUserData(session.email);
         }}
       />
     );

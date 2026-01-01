@@ -1,7 +1,7 @@
 
 import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzapwgjqnLFpiygB9RFNHsOxPeqpSF4LdCtUo6djHhpaRQ0krRyC0MVa8fRjXDozIHc/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwI2HOGm0v9rqv972LExg678PA9mOJdhuG1VJ-JSo49ZDV0K3T5lp41R6A6ec_3ddbS/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -87,6 +87,9 @@ export const dbService = {
   },
 
   async saveService(service: Service) {
+    if (service.id) {
+      return this.updateService(service.id, service);
+    }
     return this.postAction({ action: 'save_service', ...service });
   },
 
@@ -95,6 +98,9 @@ export const dbService = {
   },
 
   async saveJob(job: Job) {
+    if (job.id) {
+      return this.updateJob(job.id, job);
+    }
     return this.postAction({ action: 'save_job', ...job });
   },
 
@@ -112,6 +118,10 @@ export const dbService = {
 
   async deleteService(id: string) {
     return this.postAction({ action: 'delete_service', id });
+  },
+
+  async clearAll(type: 'services' | 'jobs' | 'bookings') {
+    return this.postAction({ action: 'clear_all', type });
   },
 
   async getMessages(bookingId: string) {
