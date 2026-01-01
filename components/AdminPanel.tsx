@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Layers, Calendar, TrendingUp, Search, 
   Trash2, Edit3, X, Save, ShieldCheck, Briefcase, 
-  Loader2, CheckCircle, Info, Target, User as UserIcon, AlertTriangle, RefreshCw
+  Loader2, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { dbService } from '../services/databaseService';
-import { UserRole, Mentor, Service, Job, Booking } from '../types';
 
 interface AdminPanelProps {
   onLogout: () => void;
@@ -61,12 +60,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   };
 
   const handleDelete = async (type: string, id: string) => {
-    if (!confirm(`ВНИМАНИЕ: Удалить ${type} навсегда? Данные будут стерты из базы данных.`)) return;
+    if (!confirm(`ВНИМАНИЕ: Удалить ${type} навсегда? Данные будут стерты из базы.`)) return;
     
-    // Оптимистичное удаление из UI
+    // Мгновенное удаление из интерфейса (Optimistic Update)
     const prevData = { ...data };
     if (type === 'service') setData({ ...data, services: data.services.filter((s: any) => s.id !== id) });
     if (type === 'job') setData({ ...data, jobs: data.jobs.filter((j: any) => j.id !== id) });
+    if (type === 'booking') setData({ ...data, bookings: data.bookings.filter((b: any) => b.id !== id) });
 
     try {
       let res;
@@ -74,32 +74,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
       else if (type === 'job') res = await dbService.deleteJob(id);
       else if (type === 'booking') res = await dbService.updateBookingStatus(id, 'cancelled');
 
-      if (res?.result !== 'success') {
-        alert("Ошибка удаления на сервере. Синхронизируем...");
-        setData(prevData);
+      if (!res || res.result !== 'success') {
+        alert("Ошибка на сервере. Синхронизируем базу...");
+        fetchAdminData();
       }
     } catch (e) {
-      alert("Ошибка связи с сервером");
       setData(prevData);
+      alert("Ошибка сети при удалении");
     }
   };
 
   const handleClearAll = async (type: 'services' | 'jobs' | 'bookings') => {
     const label = type === 'services' ? 'ШАГи' : (type === 'jobs' ? 'Миссии' : 'Записи');
     if (!confirm(`ВЫ СОБИРАЕТЕСЬ УДАЛИТЬ ВСЕ ${label.toUpperCase()} ИЗ БАЗЫ! Это действие нельзя отменить.`)) return;
-    if (!confirm(`ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ: Точно очистить всё?`)) return;
+    if (!confirm(`ПОДТВЕРДИТЕ ЕЩЕ РАЗ: Точно очистить всю таблицу ${label}?`)) return;
 
     setIsBulkLoading(true);
     try {
       const res = await dbService.clearAll(type);
-      if (res.result === 'success') {
-        alert(`Все ${label} успешно удалены из базы данных`);
+      if (res && res.result === 'success') {
+        alert(`Все ${label} успешно удалены`);
         await fetchAdminData();
       } else {
-        alert("Ошибка сервера при массовом удалении");
+        alert("Ошибка сервера при очистке");
       }
     } catch (e) {
-      alert("Ошибка сети");
+      alert("Ошибка связи с сервером");
     } finally {
       setIsBulkLoading(false);
     }
@@ -108,26 +108,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const filteredData = () => {
     if (!data) return [];
     const term = searchTerm.toLowerCase();
-    
-    const safeString = (val: any) => (val?.toString() || '').toLowerCase();
+    const safeStr = (v: any) => (v?.toString() || '').toLowerCase();
 
     switch(activeView) {
-      case 'users': 
-        return (data.dynamicMentors || []).filter((u: any) => 
-          safeString(u.name).includes(term) || safeString(u.email).includes(term)
-        );
-      case 'services': 
-        return (data.services || []).filter((s: any) => 
-          safeString(s.title).includes(term) || safeString(s.mentorName).includes(term)
-        );
-      case 'jobs': 
-        return (data.jobs || []).filter((j: any) => 
-          safeString(j.title).includes(term) || safeString(j.mentorName).includes(term)
-        );
-      case 'bookings': 
-        return (data.bookings || []).filter((b: any) => 
-          safeString(b.userName).includes(term) || safeString(b.serviceTitle).includes(term)
-        );
+      case 'users': return (data.dynamicMentors || []).filter((u: any) => safeStr(u.name).includes(term) || safeStr(u.email).includes(term));
+      case 'services': return (data.services || []).filter((s: any) => safeStr(s.title).includes(term) || safeStr(s.mentorName).includes(term));
+      case 'jobs': return (data.jobs || []).filter((j: any) => safeStr(j.title).includes(term) || safeStr(j.mentorName).includes(term));
+      case 'bookings': return (data.bookings || []).filter((b: any) => safeStr(b.userName).includes(term) || safeStr(b.serviceTitle).includes(term));
       default: return [];
     }
   };
@@ -168,18 +155,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
         <div className="mt-auto space-y-4">
            {isBulkLoading && (
-             <div className="p-4 bg-indigo-600/10 border border-indigo-600/20 rounded-2xl flex items-center gap-3">
-               <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-               <span className="text-[8px] font-black uppercase text-indigo-500">Очистка базы...</span>
+             <div className="p-4 bg-red-600/10 border border-red-600/20 rounded-2xl flex items-center gap-3">
+               <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+               <span className="text-[8px] font-black uppercase text-red-500">Удаление данных...</span>
              </div>
            )}
            <button onClick={onLogout} className="w-full flex items-center gap-3 p-4 text-red-500 text-xs font-bold hover:bg-red-500/10 rounded-2xl transition-all">
-             <Trash2 className="w-4 h-4" /> Выход
+             <Trash2 className="w-4 h-4" /> Выйти
            </button>
         </div>
       </aside>
 
-      {/* Content Area */}
+      {/* Main Content */}
       <main className="flex-1 p-8 lg:p-12 overflow-y-auto no-scrollbar">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div className="space-y-1">
@@ -194,7 +181,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                <button 
                  disabled={isBulkLoading}
                  onClick={() => handleClearAll(activeView as any)}
-                 className="px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-red-700 transition-all shadow-lg shadow-red-900/20"
+                 className="px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-red-700 transition-all shadow-lg"
                >
                  <AlertTriangle className="w-4 h-4" /> Очистить всё в базе
                </button>
@@ -213,10 +200,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
         {activeView === 'stats' && data && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in">
-             <StatBox label="Участников" value={data.dynamicMentors?.length} icon={Users} />
-             <StatBox label="Услуг (ШАГи)" value={data.services?.length} icon={Layers} />
-             <StatBox label="Подработок" value={data.jobs?.length} icon={Briefcase} />
-             <StatBox label="Встреч" value={data.bookings?.length} icon={Calendar} />
+             <StatBox label="Участников" value={data.dynamicMentors?.length} />
+             <StatBox label="Услуг (ШАГи)" value={data.services?.length} />
+             <StatBox label="Подработок" value={data.jobs?.length} />
+             <StatBox label="Встреч" value={data.bookings?.length} />
              
              <div className="sm:col-span-2 lg:col-span-4 bg-white/5 border border-white/10 p-10 rounded-[40px] mt-8 flex items-center justify-between">
                 <div className="space-y-4">
@@ -248,7 +235,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                    </thead>
                    <tbody className="divide-y divide-white/5">
                       {filteredData().map((item: any) => (
-                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
+                        <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
                            <td className="p-6">
                               <p className="font-black text-white uppercase truncate max-w-[200px]">{item.title || item.name || 'Без названия'}</p>
                               <p className="text-[9px] text-slate-600 font-bold uppercase mt-1">ID: {item.id}</p>
@@ -257,12 +244,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                               <p className="font-bold text-slate-300">{item.mentorName || item.userEmail || item.email || '—'}</p>
                            </td>
                            <td className="p-6">
-                              <span className={`px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase ${item.status === 'confirmed' ? 'text-emerald-500 border-emerald-500/20' : ''}`}>
+                              <span className={`px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase`}>
                                 {item.status || item.role || item.category || 'Активен'}
                               </span>
                            </td>
                            <td className="p-6 text-right">
-                              <div className="flex justify-end gap-3 transition-opacity">
+                              <div className="flex justify-end gap-3">
                                  <button onClick={() => setEditingItem({ type: activeView.slice(0, -1), data: {...item} })} className="p-3 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                                     <Edit3 className="w-4 h-4" />
                                  </button>
@@ -274,12 +261,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                         </tr>
                       ))}
                       {filteredData().length === 0 && (
-                        <tr>
-                           <td colSpan={4} className="p-20 text-center space-y-4 opacity-30">
-                              <AlertTriangle className="w-12 h-12 mx-auto" />
-                              <p className="text-xs font-black uppercase tracking-widest">Нет данных для отображения</p>
-                           </td>
-                        </tr>
+                        <tr><td colSpan={4} className="p-20 text-center opacity-30 uppercase font-black text-xs">Нет данных</td></tr>
                       )}
                    </tbody>
                 </table>
@@ -290,78 +272,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
       {/* Editor Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-in fade-in duration-300">
-           <div className="bg-[#0a0a0b] w-full max-w-2xl rounded-[48px] border border-white/10 p-12 relative shadow-[0_0_100px_rgba(0,0,0,1)]">
-              <button onClick={() => setEditingItem(null)} className="absolute top-8 right-8 text-slate-500 hover:text-white transition-colors"><X className="w-10 h-10"/></button>
-              
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl">
+           <div className="bg-[#0a0a0b] w-full max-w-2xl rounded-[48px] border border-white/10 p-12 relative shadow-3xl">
+              <button onClick={() => setEditingItem(null)} className="absolute top-8 right-8 text-slate-500 hover:text-white"><X className="w-10 h-10"/></button>
               <div className="space-y-10">
-                 <div className="space-y-2">
-                    <h2 className="text-3xl font-black font-syne uppercase">Правка объекта</h2>
-                    <div className="flex items-center gap-2">
-                       <span className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">{editingItem.type}</span>
-                       <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">Global Master Override</span>
-                    </div>
-                 </div>
-
-                 <div className="space-y-6 max-h-[50vh] overflow-y-auto pr-6 no-scrollbar text-slate-900">
+                 <h2 className="text-3xl font-black font-syne uppercase">Правка {editingItem.type}</h2>
+                 <div className="space-y-6 max-h-[50vh] overflow-y-auto no-scrollbar">
                     <AdminField label="Заголовок / Имя" value={editingItem.data.title || editingItem.data.name} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, title: v, name: v}})} />
-                    
                     {editingItem.type === 'service' && (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
-                           <AdminField label="Цена (₽)" type="number" value={editingItem.data.price} onChange={(v: any) => setEditingItem({...editingItem, data: {...editingItem.data, price: Number(v)}})} />
-                           <AdminField label="Категория" value={editingItem.data.category} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, category: v}})} />
-                        </div>
+                        <AdminField label="Цена (₽)" type="number" value={editingItem.data.price} onChange={(v: any) => setEditingItem({...editingItem, data: {...editingItem.data, price: Number(v)}})} />
                         <AdminField label="Описание" isTextArea value={editingItem.data.description} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, description: v}})} />
                       </>
                     )}
-
                     {editingItem.type === 'job' && (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
-                           <AdminField label="Награда" value={editingItem.data.reward} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, reward: v}})} />
-                           <AdminField label="Telegram" value={editingItem.data.telegram} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, telegram: v}})} />
-                        </div>
-                        <AdminField label="Текст задания" isTextArea value={editingItem.data.description} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, description: v}})} />
+                        <AdminField label="Награда" value={editingItem.data.reward} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, reward: v}})} />
+                        <AdminField label="Telegram" value={editingItem.data.telegram} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, telegram: v}})} />
+                        <AdminField label="Описание" isTextArea value={editingItem.data.description} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, description: v}})} />
                       </>
-                    )}
-
-                    {editingItem.type === 'user' && (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                           <AdminField label="Город" value={editingItem.data.city} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, city: v}})} />
-                           <AdminField label="Телефон" value={editingItem.data.phone} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, phone: v}})} />
-                        </div>
-                        <AdminField label="О себе" isTextArea value={editingItem.data.description || editingItem.data.qualities} onChange={(v: string) => setEditingItem({...editingItem, data: {...editingItem.data, description: v, qualities: v}})} />
-                      </>
-                    )}
-
-                    {editingItem.type === 'booking' && (
-                      <div className="space-y-4">
-                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Статус бронирования</label>
-                         <select 
-                           value={editingItem.data.status}
-                           onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, status: e.target.value}})}
-                           className="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-white font-black uppercase text-xs outline-none focus:border-indigo-600"
-                         >
-                           <option value="pending" className="bg-[#0a0a0b]">Ожидает оплаты</option>
-                           <option value="confirmed" className="bg-[#0a0a0b]">Подтверждено</option>
-                           <option value="cancelled" className="bg-[#0a0a0b]">Отменено</option>
-                           <option value="completed" className="bg-[#0a0a0b]">Завершено</option>
-                         </select>
-                      </div>
                     )}
                  </div>
-
                  <div className="pt-8 border-t border-white/5 flex gap-4">
-                    <button onClick={() => setEditingItem(null)} className="flex-1 py-6 text-slate-500 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">Отмена</button>
-                    <button 
-                      onClick={handleUpdate}
-                      disabled={isSaving}
-                      className="flex-[2] bg-indigo-600 text-white py-6 rounded-[24px] font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"
-                    >
+                    <button onClick={() => setEditingItem(null)} className="flex-1 py-6 text-slate-500 font-black uppercase text-[10px]">Отмена</button>
+                    <button onClick={handleUpdate} disabled={isSaving} className="flex-[2] bg-indigo-600 text-white py-6 rounded-[24px] font-black uppercase text-[10px] flex items-center justify-center gap-3">
                       {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
-                      Сохранить изменения
+                      Применить
                     </button>
                  </div>
               </div>
@@ -372,18 +308,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   );
 };
 
-const StatBox = ({ label, value, icon: Icon }: any) => (
-  <div className="bg-[#111114] border border-white/5 p-8 rounded-[40px] space-y-6 shadow-2xl relative overflow-hidden group">
-    <div className="absolute -top-4 -right-4 w-24 h-24 bg-indigo-600/10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700">
-       <Icon className="w-10 h-10 text-indigo-500/20" />
-    </div>
-    <div className="space-y-2 relative z-10">
-       <div className="flex items-center gap-2 text-indigo-500">
-          <Icon className="w-4 h-4" />
-          <p className="text-[10px] font-black uppercase tracking-widest">{label}</p>
-       </div>
-       <p className="text-6xl font-black text-white font-syne tracking-tighter">{value || 0}</p>
-    </div>
+const StatBox = ({ label, value }: any) => (
+  <div className="bg-[#111114] border border-white/5 p-8 rounded-[40px] space-y-4 shadow-2xl">
+     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
+     <p className="text-6xl font-black text-white font-syne tracking-tighter">{value || 0}</p>
   </div>
 );
 
@@ -391,18 +319,9 @@ const AdminField = ({ label, value, onChange, type = 'text', isTextArea = false 
   <div className="space-y-3">
     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">{label}</label>
     {isTextArea ? (
-      <textarea 
-        value={value || ''} 
-        onChange={e => onChange(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-white font-medium outline-none focus:border-indigo-600 h-40 resize-none transition-all"
-      />
+      <textarea value={value || ''} onChange={e => onChange(e.target.value)} className="w-full bg-white/5 border border-white/10 p-6 rounded-3xl text-white font-medium outline-none focus:border-indigo-600 h-32 resize-none" />
     ) : (
-      <input 
-        type={type}
-        value={value || ''}
-        onChange={e => onChange(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 p-6 rounded-[24px] text-white font-black outline-none focus:border-indigo-600 uppercase text-xs transition-all"
-      />
+      <input type={type} value={value || ''} onChange={e => onChange(e.target.value)} className="w-full bg-white/5 border border-white/10 p-6 rounded-[24px] text-white font-black outline-none focus:border-indigo-600 uppercase text-xs" />
     )}
   </div>
 );

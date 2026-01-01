@@ -134,9 +134,11 @@ const App: React.FC = () => {
         onUpdateMentorProfile={setMentorProfile}
         onSaveProfile={async () => { await dbService.updateProfile(session.email, session); syncUserData(session.email); }}
         onSaveService={async (s) => { 
+          // Генерируем ID только если его нет
+          const serviceId = s.id || Math.random().toString(36).substr(2, 9);
           const sToSave = { 
             ...s, 
-            id: s.id || Math.random().toString(36).substr(2, 9), 
+            id: serviceId, 
             mentorId: session.id || session.email, 
             mentorName: session.name 
           } as Service;
@@ -144,18 +146,20 @@ const App: React.FC = () => {
           if (s.id) {
             // Редактирование существующего
             setServices(prev => prev.map(item => item.id === s.id ? sToSave : item));
+            // Fix: Pass sToSave directly as Partial<Service>
             await dbService.updateService(s.id, sToSave);
           } else {
             // Создание нового
             setServices(prev => [...prev, sToSave]);
             await dbService.saveService(sToSave);
           }
-          syncUserData(session.email); 
+          // Небольшая задержка перед синхронизацией для гарантии записи в Google Sheets
+          setTimeout(() => syncUserData(session.email), 800);
         }}
         onUpdateService={async (id, u) => { 
           setServices(prev => prev.map(s => s.id === id ? { ...s, ...u } : s));
           await dbService.updateService(id, u); 
-          syncUserData(session.email); 
+          setTimeout(() => syncUserData(session.email), 800);
         }}
         onDeleteService={async (id) => { 
           setServices(prev => prev.filter(s => s.id !== id));
@@ -167,21 +171,23 @@ const App: React.FC = () => {
         onRefresh={() => syncUserData(session.email)}
         isSavingProfile={false}
         onSaveJob={async (j) => { 
+          const jobId = j.id || Math.random().toString(36).substr(2, 9);
           const jToSave = { 
             ...j, 
-            id: j.id || Math.random().toString(36).substr(2, 9),
+            id: jobId,
             mentorId: session.id || session.email,
             mentorName: session.name
           } as Job;
           
           if (j.id) {
             setJobs(prev => prev.map(item => item.id === j.id ? jToSave : item));
+            // Fix: Pass jToSave directly as Partial<Job>
             await dbService.updateJob(j.id, jToSave);
           } else {
             setJobs(prev => [...prev, jToSave]);
             await dbService.saveJob(jToSave); 
           }
-          syncUserData(session.email); 
+          setTimeout(() => syncUserData(session.email), 800);
         }}
         onDeleteJob={async (id) => { 
           setJobs(prev => prev.filter(j => j.id !== id));

@@ -1,7 +1,7 @@
 
 import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwI2HOGm0v9rqv972LExg678PA9mOJdhuG1VJ-JSo49ZDV0K3T5lp41R6A6ec_3ddbS/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzGvbkgGUUDev56sbtQJU8W6ciMJLiyemVQNLKA3tD-I2jxjCkHV7klugCS_AIF2Wpc/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -87,9 +87,8 @@ export const dbService = {
   },
 
   async saveService(service: Service) {
-    if (service.id) {
-      return this.updateService(service.id, service);
-    }
+    // Исправлено: не вызываем updateService внутри saveService, так как ID генерируется на фронте заранее
+    // Теперь App.tsx сам решает, вызвать saveService или updateService
     return this.postAction({ action: 'save_service', ...service });
   },
 
@@ -98,9 +97,6 @@ export const dbService = {
   },
 
   async saveJob(job: Job) {
-    if (job.id) {
-      return this.updateJob(job.id, job);
-    }
     return this.postAction({ action: 'save_job', ...job });
   },
 
