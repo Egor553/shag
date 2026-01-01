@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { Video, Mail, Building, MapPin, TrendingUp, Clock, Key, User, Briefcase } from 'lucide-react';
+import { Video, Mail, Building, MapPin, TrendingUp, Clock, Key, User, Briefcase, Sparkles, Target, Calendar as CalendarIcon } from 'lucide-react';
 import { SlotCalendar } from '../SlotCalendar';
-import { Sparkles, Target, Calendar as CalendarIcon } from 'lucide-react';
 
 interface EntrepreneurRegFormProps {
   regStep: number;

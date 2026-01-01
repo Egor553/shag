@@ -1,9 +1,12 @@
 
-import { Mentor } from './types';
+import { Mentor, UserRole } from './types';
 
 export const MENTORS: Mentor[] = [
   {
     id: '1',
+    role: UserRole.ENTREPRENEUR,
+    email: 'sokolovsky@example.com',
+    isLoggedIn: false,
     name: 'Александр Соколовский',
     industry: 'Маркетинг / Образование',
     city: 'Москва',
@@ -14,7 +17,8 @@ export const MENTORS: Mentor[] = [
       'Автор топового YouTube канала',
       'Более 5000 учеников'
     ],
-    request: 'Ищу свежие идеи в сфере AI-маркетинга и ассистента с горящими глазами.',
+    // Fix: renamed request to requestToYouth
+    requestToYouth: 'Ищу свежие идеи в сфере AI-маркетинга и ассистента с горящими глазами.',
     values: ['Честность', 'Скорость', 'Твердость'],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     avatarUrl: 'https://picsum.photos/seed/alex/400/400',
@@ -23,6 +27,9 @@ export const MENTORS: Mentor[] = [
   },
   {
     id: '2',
+    role: UserRole.ENTREPRENEUR,
+    email: 'sidorova@example.com',
+    isLoggedIn: false,
     name: 'Мария Сидорова',
     industry: 'HoReCa',
     city: 'Санкт-Петербург',
@@ -33,7 +40,8 @@ export const MENTORS: Mentor[] = [
       'Семья, двое детей',
       'Выручка 150млн+ в год'
     ],
-    request: 'Хочу познакомиться с молодыми талантами в дизайне интерьеров.',
+    // Fix: renamed request to requestToYouth
+    requestToYouth: 'Хочу познакомиться с молодыми талантами в дизайне интерьеров.',
     values: ['Семейные ценности', 'Искренность', 'Труд'],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     avatarUrl: 'https://picsum.photos/seed/maria/400/400',
@@ -42,6 +50,9 @@ export const MENTORS: Mentor[] = [
   },
   {
     id: '3',
+    role: UserRole.ENTREPRENEUR,
+    email: 'petrov@example.com',
+    isLoggedIn: false,
     name: 'Иван Петров',
     industry: 'Финтех',
     city: 'Новосибирск',
@@ -52,7 +63,8 @@ export const MENTORS: Mentor[] = [
       'Опыт управления командами 100+',
       'Твердые навыки в масштабировании'
     ],
-    request: 'Ищу контакты в сфере блокчейн-разработки.',
+    // Fix: renamed request to requestToYouth
+    requestToYouth: 'Ищу контакты в сфере блокчейн-разработки.',
     values: ['Инновации', 'Ответственность', 'Масштаб'],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     avatarUrl: 'https://picsum.photos/seed/ivan/400/400',
@@ -61,6 +73,9 @@ export const MENTORS: Mentor[] = [
   },
   {
     id: '4',
+    role: UserRole.ENTREPRENEUR,
+    email: 'grebenyuk@example.com',
+    isLoggedIn: false,
     name: 'Михаил Гребенюк',
     industry: 'Продажи',
     city: 'Москва',
@@ -71,7 +86,8 @@ export const MENTORS: Mentor[] = [
       'Медийный предприниматель',
       'Автор книг-бестселлеров'
     ],
-    request: 'Обмен энергией с амбициозными ребятами. Ищу таланты в команду.',
+    // Fix: renamed request to requestToYouth
+    requestToYouth: 'Обмен энергией с амбициозными ребятами. Ищу таланты в команду.',
     values: ['Результат', 'Дисциплина', 'Энергия'],
     videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
     avatarUrl: 'https://picsum.photos/seed/misha/400/400',

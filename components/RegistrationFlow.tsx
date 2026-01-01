@@ -29,12 +29,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
   const isEnt = tempRole === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
 
-  // В этой итерации мы убрали regStep === 0, переход идет сразу к форме.
-  
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 md:p-12 overflow-y-auto font-['Plus_Jakarta_Sans']">
       <div className="w-full max-w-3xl bg-[#0a0a0b] border border-white/10 p-8 md:p-20 rounded-[48px] md:rounded-[64px] shadow-[0_0_100px_rgba(0,0,0,1)] relative overflow-hidden">
-        {/* Декоративный элемент фона */}
         <div className={`absolute top-[-50px] right-[-50px] w-64 h-64 bg-${accentColor}-600/10 blur-[100px] rounded-full`} />
         
         <button 
@@ -57,7 +54,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                   ))}
                 </div>
              </div>
-            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
+            <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none font-syne">
               {isEnt ? 'АНКЕТА' : 'ТВОЙ'}<br/>
               <span className={`text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500`}>
                 {isEnt ? 'МЕНТОРА' : 'ПРОФИЛЬ'}
