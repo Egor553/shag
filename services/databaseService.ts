@@ -1,8 +1,7 @@
 
-import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
+import { UserSession } from '../types';
 
-// Актуальный URL вебхука Google Apps Script
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbymDOl3mFQMO9lTJkyJB_MduY-qRikjh0Fzo1MZd97DdK2swS0kkGBS5zNQMV2qkaPq/exec';
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz9Wop9I4Ka1XCf6XVeL1b0E2b_I5xpuK7jPEqRU1aYO6NYCHYMex22lvOwiKgI_-QR/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -67,11 +66,7 @@ export const dbService = {
     return this.postAction({ action: 'update_profile', email, updates });
   },
 
-  async saveService(service: Service) {
-    return this.postAction({ action: 'save_service', ...service });
-  },
-
-  async updateService(id: string, updates: Partial<Service>) {
+  async updateService(id: string, updates: any) {
     return this.postAction({ action: 'update_service', id, updates });
   },
 
@@ -79,11 +74,7 @@ export const dbService = {
     return this.postAction({ action: 'delete_service', id });
   },
 
-  async saveJob(job: Job) {
-    return this.postAction({ action: 'save_job', ...job });
-  },
-
-  async updateJob(id: string, updates: Partial<Job>) {
+  async updateJob(id: string, updates: any) {
     return this.postAction({ action: 'update_job', id, updates });
   },
 
@@ -91,8 +82,29 @@ export const dbService = {
     return this.postAction({ action: 'delete_job', id });
   },
 
-  async createBooking(booking: any) {
-    return this.postAction({ action: 'booking', ...booking });
+  async getMessages(bookingId: string) {
+    try {
+      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      const data = await response.json();
+      return data.messages || [];
+    } catch (e) {
+      console.error('getMessages error:', e);
+      return [];
+    }
+  },
+
+  async sendMessage(message: any) {
+    return this.postAction({ action: 'send_message', ...message });
+  },
+
+  async updateAvatar(email: string, avatarUrl: string) {
+    return this.updateProfile(email, { paymentUrl: avatarUrl });
+  },
+
+  async clearAll(type: 'services' | 'jobs' | 'bookings') {
+    return this.postAction({ action: 'clear_all', type });
   },
 
   async updateBookingStatus(id: string, status: string) {
@@ -117,30 +129,5 @@ export const dbService = {
       id: bookingId,
       updates: { date: newDate, time: newTime, status: 'confirmed' }
     });
-  },
-
-  async clearAll(type: 'services' | 'jobs' | 'bookings') {
-    return this.postAction({ action: 'clear_all', type });
-  },
-
-  async getMessages(bookingId: string) {
-    try {
-      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const data = await response.json();
-      return data.messages || [];
-    } catch (e) {
-      console.error('getMessages error:', e);
-      return [];
-    }
-  },
-
-  async sendMessage(message: ChatMessage) {
-    return this.postAction({ action: 'send_message', ...message });
-  },
-
-  async updateAvatar(email: string, avatarUrl: string) {
-    return this.updateProfile(email, { paymentUrl: avatarUrl });
   }
 };

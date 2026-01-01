@@ -1,7 +1,9 @@
 
 import { useState, useCallback } from 'react';
-import { Mentor, Service, Job, Booking, Transaction, UserSession, UserRole } from '../types';
+import { Mentor, Service, Job, Booking, Transaction, UserSession } from '../types';
 import { dbService } from '../services/databaseService';
+import { shagService } from '../services/shagService';
+import { missionService } from '../services/missionService';
 import { MENTORS } from '../constants';
 
 export const useShagData = () => {
@@ -58,15 +60,15 @@ export const useShagData = () => {
     } as Service;
     
     if (s.id) {
-      await dbService.updateService(s.id, sToSave);
+      await shagService.update(s.id, sToSave);
     } else {
-      await dbService.saveService(sToSave);
+      await shagService.save(sToSave);
     }
     await syncUserData(session.email);
   };
 
   const deleteService = async (id: string, email: string) => {
-    await dbService.deleteService(id);
+    await shagService.delete(id);
     await syncUserData(email);
   };
 
@@ -82,15 +84,15 @@ export const useShagData = () => {
     } as Job;
     
     if (j.id) {
-      await dbService.updateJob(j.id, jToSave);
+      await missionService.update(j.id, jToSave);
     } else {
-      await dbService.saveJob(jToSave); 
+      await missionService.save(jToSave); 
     }
     await syncUserData(session.email);
   };
 
   const deleteJob = async (id: string, email: string) => {
-    await dbService.deleteJob(id);
+    await missionService.delete(id);
     await syncUserData(email);
   };
 

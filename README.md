@@ -1,7 +1,9 @@
 
-# ШАГ — Backend (Google Apps Script v23.0)
+# ШАГ — Backend (Google Apps Script v25.0)
 
 Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение с доступом "Anyone".
+
+**URL приложения:** `https://script.google.com/macros/s/AKfycbz9Wop9I4Ka1XCf6XVeL1b0E2b_I5xpuK7jPEqRU1aYO6NYCHYMex22lvOwiKgI_-QR/exec`
 
 ```javascript
 /**
@@ -32,6 +34,12 @@ function doGet(e) {
       String(u.password).trim() === String(e.parameter.password).trim()
     );
     return user ? createResponse({ result: 'success', user: user }) : createResponse({ result: 'error', message: 'Ошибка входа' });
+  }
+
+  if (action === 'get_messages') {
+    var messages = getRowsAsObjects(ss.getSheetByName('Messages'));
+    var filtered = messages.filter(m => String(m.bookingId) === String(e.parameter.bookingId));
+    return createResponse({ result: 'success', messages: filtered });
   }
 }
 
@@ -67,6 +75,12 @@ function doPost(e) {
     return createResponse({ result: 'success' });
   }
 
+  if (action === 'delete_service') {
+    deleteRow(ss.getSheetByName('Services'), 'id', data.id);
+    SpreadsheetApp.flush();
+    return createResponse({ result: 'success' });
+  }
+
   // --- МИССИИ (ПОДРАБОТКА) ---
   if (action === 'save_job') {
     var sheet = getOrCreateSheet(ss, 'Jobs', ["id", "mentorId", "mentorName", "title", "description", "reward", "category", "telegram", "deadline", "status", "createdAt"]);
@@ -87,6 +101,27 @@ function doPost(e) {
     return createResponse({ result: 'success' });
   }
 
+  // --- БРОНИРОВАНИЯ ---
+  if (action === 'update_booking') {
+    updateRow(ss.getSheetByName('Bookings'), 'id', data.id, data.updates);
+    SpreadsheetApp.flush();
+    return createResponse({ result: 'success' });
+  }
+
+  if (action === 'cancel_booking') {
+    updateRow(ss.getSheetByName('Bookings'), 'id', data.id, { status: 'cancelled', reason: data.reason });
+    SpreadsheetApp.flush();
+    return createResponse({ result: 'success' });
+  }
+
+  // --- СООБЩЕНИЯ ---
+  if (action === 'send_message') {
+    var sheet = getOrCreateSheet(ss, 'Messages', ["id", "bookingId", "senderEmail", "senderName", "text", "timestamp"]);
+    appendData(sheet, data);
+    SpreadsheetApp.flush();
+    return createResponse({ result: 'success' });
+  }
+
   // --- ПРОФИЛЬ ---
   if (action === 'update_profile') {
     updateRow(ss.getSheetByName('Users'), 'email', data.email, data.updates);
@@ -95,7 +130,7 @@ function doPost(e) {
   }
 
   if (action === 'register') {
-    var sheet = getOrCreateSheet(ss, 'Users', ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp"]);
+    var sheet = getOrCreateSheet(ss, 'Users', ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance"]);
     appendData(sheet, data);
     SpreadsheetApp.flush();
     return createResponse({ result: 'success' });
@@ -177,7 +212,6 @@ function getOrCreateSheet(ss, name, headers) {
     sheet = ss.insertSheet(name);
     sheet.appendRow(headers);
   } else {
-    // Check for missing headers and sync them if they are missing
     var currentData = sheet.getDataRange().getValues();
     var currentHeaders = currentData[0];
     var missingHeaders = headers.filter(function(h) { return currentHeaders.indexOf(h) === -1; });
