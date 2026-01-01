@@ -1,7 +1,7 @@
 
-# ШАГ — Backend (Google Apps Script v17.0)
+# ШАГ — Backend (Google Apps Script v20.0)
 
-Этот код обеспечивает логику "Meet for Charity": менторы проводят встречи бесплатно, а оплата талантов идет на развитие миссии платформы.
+Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение.
 
 ```javascript
 /**
@@ -132,7 +132,9 @@ function getRowsAsObjects(sheet) {
 
 function appendData(sheet, data) {
   var headers = sheet.getDataRange().getValues()[0];
-  var row = headers.map(function(h) { return data[h] !== undefined ? data[h] : ""; });
+  var row = headers.map(function(h) { 
+    return (data[h] !== undefined && data[h] !== null) ? data[h] : ""; 
+  });
   sheet.appendRow(row);
 }
 
@@ -143,10 +145,12 @@ function updateRow(sheet, key, value, updates) {
   var colIndex = headers.indexOf(key);
   if (colIndex === -1) return;
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colIndex]) === String(value)) {
+    if (String(data[i][colIndex]).trim() === String(value).trim()) {
       for (var k in updates) {
         var updateCol = headers.indexOf(k);
-        if (updateCol > -1) sheet.getRange(i + 1, updateCol + 1).setValue(updates[k]);
+        if (updateCol > -1) {
+          sheet.getRange(i + 1, updateCol + 1).setValue(updates[k]);
+        }
       }
       break;
     }
@@ -160,7 +164,7 @@ function deleteRow(sheet, key, value) {
   var colIndex = headers.indexOf(key);
   if (colIndex === -1) return;
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colIndex]) === String(value)) {
+    if (String(data[i][colIndex]).trim() === String(value).trim()) {
       sheet.deleteRow(i + 1);
       break;
     }

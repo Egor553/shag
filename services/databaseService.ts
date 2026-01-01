@@ -1,7 +1,7 @@
 
 import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzGvbkgGUUDev56sbtQJU8W6ciMJLiyemVQNLKA3tD-I2jxjCkHV7klugCS_AIF2Wpc/exec';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzFJUTMIqOLYJpBAqEx5wgMDNHmJL-7PNJLtMOMbkCLZkAXcPVMWMoBr9rePcRHhoNJ/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -51,11 +51,55 @@ export const dbService = {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      return await response.json();
+      const data = await response.json();
+      if (data.result !== 'success') {
+        console.error('Server side error:', data.message);
+      }
+      return data;
     } catch (e) {
-      console.error("API Error", e);
+      console.error("API Network Error", e);
       return { result: 'error', message: 'Ошибка сети' };
     }
+  },
+
+  async updateProfile(email: string, updates: Partial<UserSession>) {
+    return this.postAction({ action: 'update_profile', email, updates });
+  },
+
+  async saveService(service: Service) {
+    return this.postAction({ action: 'save_service', ...service });
+  },
+
+  async updateService(id: string, updates: Partial<Service>) {
+    return this.postAction({ action: 'update_service', id, updates });
+  },
+
+  async deleteService(id: string) {
+    return this.postAction({ action: 'delete_service', id });
+  },
+
+  async saveJob(job: Job) {
+    return this.postAction({ action: 'save_job', ...job });
+  },
+
+  async updateJob(id: string, updates: Partial<Job>) {
+    return this.postAction({ action: 'update_job', id, updates });
+  },
+
+  async deleteJob(id: string) {
+    return this.postAction({ action: 'delete_job', id });
+  },
+
+  async createBooking(booking: any) {
+    return this.postAction({ action: 'booking', ...booking });
+  },
+
+  async updateBookingStatus(id: string, status: string) {
+    return this.postAction({
+      action: 'update_booking',
+      id: id,
+      updates: { status }
+    });
   },
 
   async cancelBooking(bookingId: string, reason?: string) {
@@ -72,48 +116,6 @@ export const dbService = {
       id: bookingId,
       updates: { date: newDate, time: newTime, status: 'confirmed' }
     });
-  },
-
-  async updateBookingStatus(id: string, status: string) {
-    return this.postAction({
-      action: 'update_booking',
-      id: id,
-      updates: { status }
-    });
-  },
-
-  async updateProfile(email: string, updates: Partial<UserSession>) {
-    return this.postAction({ action: 'update_profile', email, updates });
-  },
-
-  async saveService(service: Service) {
-    // Исправлено: не вызываем updateService внутри saveService, так как ID генерируется на фронте заранее
-    // Теперь App.tsx сам решает, вызвать saveService или updateService
-    return this.postAction({ action: 'save_service', ...service });
-  },
-
-  async createBooking(booking: any) {
-    return this.postAction({ action: 'booking', ...booking });
-  },
-
-  async saveJob(job: Job) {
-    return this.postAction({ action: 'save_job', ...job });
-  },
-
-  async updateJob(id: string, updates: Partial<Job>) {
-    return this.postAction({ action: 'update_job', id, updates });
-  },
-
-  async deleteJob(id: string) {
-    return this.postAction({ action: 'delete_job', id });
-  },
-
-  async updateService(id: string, updates: Partial<Service>) {
-    return this.postAction({ action: 'update_service', id, updates });
-  },
-
-  async deleteService(id: string) {
-    return this.postAction({ action: 'delete_service', id });
   },
 
   async clearAll(type: 'services' | 'jobs' | 'bookings') {

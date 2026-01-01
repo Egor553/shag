@@ -76,7 +76,7 @@ const App: React.FC = () => {
           setSession(updatedSession);
         }
       }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Sync error:", e); }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -132,9 +132,11 @@ const App: React.FC = () => {
         transactions={transactions}
         onLogout={() => { setSession(null); localStorage.removeItem('shag_session'); }}
         onUpdateMentorProfile={setMentorProfile}
-        onSaveProfile={async () => { await dbService.updateProfile(session.email, session); syncUserData(session.email); }}
+        onSaveProfile={async () => { 
+          await dbService.updateProfile(session.email, session); 
+          await syncUserData(session.email); 
+        }}
         onSaveService={async (s) => { 
-          // Генерируем ID только если его нет
           const serviceId = s.id || Math.random().toString(36).substr(2, 9);
           const sToSave = { 
             ...s, 
@@ -144,27 +146,20 @@ const App: React.FC = () => {
           } as Service;
           
           if (s.id) {
-            // Редактирование существующего
-            setServices(prev => prev.map(item => item.id === s.id ? sToSave : item));
-            // Fix: Pass sToSave directly as Partial<Service>
             await dbService.updateService(s.id, sToSave);
           } else {
-            // Создание нового
-            setServices(prev => [...prev, sToSave]);
             await dbService.saveService(sToSave);
           }
-          // Небольшая задержка перед синхронизацией для гарантии записи в Google Sheets
-          setTimeout(() => syncUserData(session.email), 800);
+          // Ожидаем завершения синхронизации перед возвратом
+          await syncUserData(session.email);
         }}
         onUpdateService={async (id, u) => { 
-          setServices(prev => prev.map(s => s.id === id ? { ...s, ...u } : s));
           await dbService.updateService(id, u); 
-          setTimeout(() => syncUserData(session.email), 800);
+          await syncUserData(session.email);
         }}
         onDeleteService={async (id) => { 
-          setServices(prev => prev.filter(s => s.id !== id));
           await dbService.deleteService(id); 
-          syncUserData(session.email);
+          await syncUserData(session.email);
         }}
         onUpdateAvatar={async (u) => { await dbService.updateAvatar(session.email, u); setSession({...session, paymentUrl: u}); }}
         onSessionUpdate={setSession}
@@ -180,19 +175,15 @@ const App: React.FC = () => {
           } as Job;
           
           if (j.id) {
-            setJobs(prev => prev.map(item => item.id === j.id ? jToSave : item));
-            // Fix: Pass jToSave directly as Partial<Job>
             await dbService.updateJob(j.id, jToSave);
           } else {
-            setJobs(prev => [...prev, jToSave]);
             await dbService.saveJob(jToSave); 
           }
-          setTimeout(() => syncUserData(session.email), 800);
+          await syncUserData(session.email);
         }}
         onDeleteJob={async (id) => { 
-          setJobs(prev => prev.filter(j => j.id !== id));
           await dbService.deleteJob(id); 
-          syncUserData(session.email);
+          await syncUserData(session.email);
         }}
       />
     );
