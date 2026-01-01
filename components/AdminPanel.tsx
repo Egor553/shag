@@ -61,33 +61,45 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   };
 
   const handleDelete = async (type: string, id: string) => {
-    if (!confirm(`Вы уверены, что хотите полностью удалить этот ${type}? Данные будут стерты из базы навсегда.`)) return;
+    if (!confirm(`ВНИМАНИЕ: Удалить ${type} навсегда? Данные будут стерты из базы данных.`)) return;
+    
+    // Оптимистичное удаление из UI
+    const prevData = { ...data };
+    if (type === 'service') setData({ ...data, services: data.services.filter((s: any) => s.id !== id) });
+    if (type === 'job') setData({ ...data, jobs: data.jobs.filter((j: any) => j.id !== id) });
+
     try {
-      if (type === 'service') await dbService.deleteService(id);
-      if (type === 'job') await dbService.deleteJob(id);
-      if (type === 'booking') await dbService.updateBookingStatus(id, 'cancelled');
-      await fetchAdminData();
+      let res;
+      if (type === 'service') res = await dbService.deleteService(id);
+      else if (type === 'job') res = await dbService.deleteJob(id);
+      else if (type === 'booking') res = await dbService.updateBookingStatus(id, 'cancelled');
+
+      if (res?.result !== 'success') {
+        alert("Ошибка удаления на сервере. Синхронизируем...");
+        setData(prevData);
+      }
     } catch (e) {
-      alert("Ошибка при удалении");
+      alert("Ошибка связи с сервером");
+      setData(prevData);
     }
   };
 
   const handleClearAll = async (type: 'services' | 'jobs' | 'bookings') => {
-    const label = type === 'services' ? 'все услуги' : (type === 'jobs' ? 'все миссии' : 'все записи');
-    if (!confirm(`ВНИМАНИЕ: Вы собираетесь УДАЛИТЬ ${label.toUpperCase()}. Это действие нельзя отменить. Продолжить?`)) return;
-    if (!confirm(`ПОДТВЕРДИТЕ ЕЩЕ РАЗ: Вы уверены, что хотите ОЧИСТИТЬ БАЗУ данных по ${label}?`)) return;
+    const label = type === 'services' ? 'ШАГи' : (type === 'jobs' ? 'Миссии' : 'Записи');
+    if (!confirm(`ВЫ СОБИРАЕТЕСЬ УДАЛИТЬ ВСЕ ${label.toUpperCase()} ИЗ БАЗЫ! Это действие нельзя отменить.`)) return;
+    if (!confirm(`ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ: Точно очистить всё?`)) return;
 
     setIsBulkLoading(true);
     try {
       const res = await dbService.clearAll(type);
       if (res.result === 'success') {
-        alert("База успешно очищена");
+        alert(`Все ${label} успешно удалены из базы данных`);
         await fetchAdminData();
       } else {
-        alert("Ошибка сервера при очистке");
+        alert("Ошибка сервера при массовом удалении");
       }
     } catch (e) {
-      alert("Ошибка связи с сервером");
+      alert("Ошибка сети");
     } finally {
       setIsBulkLoading(false);
     }
@@ -101,21 +113,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
     switch(activeView) {
       case 'users': 
-        return data.dynamicMentors?.filter((u: any) => 
+        return (data.dynamicMentors || []).filter((u: any) => 
           safeString(u.name).includes(term) || safeString(u.email).includes(term)
-        ) || [];
+        );
       case 'services': 
-        return data.services?.filter((s: any) => 
+        return (data.services || []).filter((s: any) => 
           safeString(s.title).includes(term) || safeString(s.mentorName).includes(term)
-        ) || [];
+        );
       case 'jobs': 
-        return data.jobs?.filter((j: any) => 
+        return (data.jobs || []).filter((j: any) => 
           safeString(j.title).includes(term) || safeString(j.mentorName).includes(term)
-        ) || [];
+        );
       case 'bookings': 
-        return data.bookings?.filter((b: any) => 
+        return (data.bookings || []).filter((b: any) => 
           safeString(b.userName).includes(term) || safeString(b.serviceTitle).includes(term)
-        ) || [];
+        );
       default: return [];
     }
   };
@@ -124,7 +136,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     <div className="h-full min-h-[400px] flex items-center justify-center bg-[#0a0a0b]">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-indigo-400 font-black uppercase tracking-widest text-[10px]">Вход в систему управления...</p>
+        <p className="text-indigo-400 font-black uppercase tracking-widest text-[10px]">Вход в Root-панель...</p>
       </div>
     </div>
   );
@@ -135,7 +147,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
       <aside className="w-full lg:w-64 bg-[#111114] border-r border-white/5 flex flex-col p-6 space-y-2">
         <div className="flex items-center gap-3 mb-10 px-2">
            <ShieldCheck className="w-6 h-6 text-indigo-500" />
-           <span className="font-black text-sm tracking-tight uppercase">Альбина / ROOT</span>
+           <span className="font-black text-sm tracking-tight uppercase">Root / Альбина</span>
         </div>
         {[
           { id: 'stats', label: 'Обзор', icon: TrendingUp },
@@ -158,7 +170,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
            {isBulkLoading && (
              <div className="p-4 bg-indigo-600/10 border border-indigo-600/20 rounded-2xl flex items-center gap-3">
                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
-               <span className="text-[8px] font-black uppercase text-indigo-500">Синхронизация...</span>
+               <span className="text-[8px] font-black uppercase text-indigo-500">Очистка базы...</span>
              </div>
            )}
            <button onClick={onLogout} className="w-full flex items-center gap-3 p-4 text-red-500 text-xs font-bold hover:bg-red-500/10 rounded-2xl transition-all">
@@ -172,9 +184,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div className="space-y-1">
              <h1 className="text-4xl font-black font-syne uppercase tracking-tighter">
-               {activeView === 'stats' ? 'ПУЛЬС ПЛАТФОРМЫ' : (activeView === 'users' ? 'УЧАСТНИКИ' : (activeView === 'services' ? 'ШАГИ' : (activeView === 'jobs' ? 'МИССИИ' : 'ЖУРНАЛ')))}
+               {activeView === 'stats' ? 'ПУЛЬС БАЗЫ' : (activeView === 'users' ? 'УЧАСТНИКИ' : (activeView === 'services' ? 'ШАГИ (Услуги)' : (activeView === 'jobs' ? 'МИССИИ (Работа)' : 'ЖУРНАЛ')))}
              </h1>
-             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Панель управления Альбины</p>
+             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Управление данными платформы</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
@@ -182,9 +194,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                <button 
                  disabled={isBulkLoading}
                  onClick={() => handleClearAll(activeView as any)}
-                 className="px-6 py-3 bg-red-600/10 border border-red-600/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-red-600 hover:text-white transition-all"
+                 className="px-6 py-3 bg-red-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-red-700 transition-all shadow-lg shadow-red-900/20"
                >
-                 <AlertTriangle className="w-4 h-4" /> Очистить всё
+                 <AlertTriangle className="w-4 h-4" /> Очистить всё в базе
                </button>
              )}
              <div className="relative flex-1 md:flex-none md:w-64">
@@ -208,8 +220,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
              
              <div className="sm:col-span-2 lg:col-span-4 bg-white/5 border border-white/10 p-10 rounded-[40px] mt-8 flex items-center justify-between">
                 <div className="space-y-4">
-                   <h3 className="text-2xl font-black font-syne uppercase">Синхронизация данных</h3>
-                   <p className="text-slate-500 text-sm font-medium">Обновите данные из Google Таблицы, если они были изменены вручную.</p>
+                   <h3 className="text-2xl font-black font-syne uppercase">Синхронизация Google Таблиц</h3>
+                   <p className="text-slate-500 text-sm font-medium">Обновите локальные данные, если вносили правки напрямую в таблицу.</p>
                 </div>
                 <button 
                   onClick={fetchAdminData}
@@ -250,11 +262,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                               </span>
                            </td>
                            <td className="p-6 text-right">
-                              <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                 <button onClick={() => setEditingItem({ type: activeView.slice(0, -1), data: {...item} })} className="p-3 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                              <div className="flex justify-end gap-3 transition-opacity">
+                                 <button onClick={() => setEditingItem({ type: activeView.slice(0, -1), data: {...item} })} className="p-3 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                                     <Edit3 className="w-4 h-4" />
                                  </button>
-                                 <button onClick={() => handleDelete(activeView.slice(0, -1), item.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all">
+                                 <button onClick={() => handleDelete(activeView.slice(0, -1), item.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm">
                                     <Trash2 className="w-4 h-4" />
                                  </button>
                               </div>
@@ -284,10 +296,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               
               <div className="space-y-10">
                  <div className="space-y-2">
-                    <h2 className="text-3xl font-black font-syne uppercase">Редактирование</h2>
+                    <h2 className="text-3xl font-black font-syne uppercase">Правка объекта</h2>
                     <div className="flex items-center gap-2">
                        <span className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest">{editingItem.type}</span>
-                       <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">Master Edit Mode</span>
+                       <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">Global Master Override</span>
                     </div>
                  </div>
 
@@ -349,7 +361,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                       className="flex-[2] bg-indigo-600 text-white py-6 rounded-[24px] font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/20 active:scale-95 transition-all"
                     >
                       {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
-                      Применить изменения
+                      Сохранить изменения
                     </button>
                  </div>
               </div>
