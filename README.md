@@ -1,7 +1,7 @@
 
-# ШАГ — Backend (Google Apps Script v20.0)
+# ШАГ — Backend (Google Apps Script v21.0)
 
-Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение.
+Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение с доступом "Anyone".
 
 ```javascript
 /**
@@ -28,8 +28,8 @@ function doGet(e) {
   if (action === 'login') {
     var users = getRowsAsObjects(ss.getSheetByName('Users'));
     var user = users.find(u => 
-      String(u.email).toLowerCase() === String(e.parameter.email).toLowerCase() && 
-      String(u.password) === String(e.parameter.password)
+      String(u.email).toLowerCase().trim() === String(e.parameter.email).toLowerCase().trim() && 
+      String(u.password).trim() === String(e.parameter.password).trim()
     );
     return user ? createResponse({ result: 'success', user: user }) : createResponse({ result: 'error', message: 'Ошибка входа' });
   }
@@ -144,8 +144,11 @@ function updateRow(sheet, key, value, updates) {
   var headers = data[0];
   var colIndex = headers.indexOf(key);
   if (colIndex === -1) return;
+  
+  var targetValue = String(value).toLowerCase().trim();
+  
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colIndex]).trim() === String(value).trim()) {
+    if (String(data[i][colIndex]).toLowerCase().trim() === targetValue) {
       for (var k in updates) {
         var updateCol = headers.indexOf(k);
         if (updateCol > -1) {
@@ -163,8 +166,11 @@ function deleteRow(sheet, key, value) {
   var headers = data[0];
   var colIndex = headers.indexOf(key);
   if (colIndex === -1) return;
+  
+  var targetValue = String(value).toLowerCase().trim();
+  
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colIndex]).trim() === String(value).trim()) {
+    if (String(data[i][colIndex]).toLowerCase().trim() === targetValue) {
       sheet.deleteRow(i + 1);
       break;
     }

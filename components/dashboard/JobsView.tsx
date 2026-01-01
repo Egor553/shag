@@ -118,15 +118,34 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
             <div key={job.id} onClick={() => setSelectedJob(job)} className={`bg-[#0a0a0b] border p-8 rounded-[40px] flex flex-col h-full group transition-all duration-500 cursor-pointer ${isMyJob ? 'border-indigo-500/40' : 'border-white/5 hover:border-violet-500/50'}`}>
               <div className="flex justify-between mb-8">
                 <div className="px-4 py-2 bg-violet-500/10 text-violet-500 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit">{job.category}</div>
-                {isMyJob && (
-                  <button onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
-                )}
+                <div className="flex gap-2">
+                  {isMyJob && (
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20"><Trash2 className="w-4 h-4" /></button>
+                  )}
+                  {job.telegram && (
+                    <div className="p-3 bg-white/5 rounded-xl text-slate-400 group-hover:text-violet-400 transition-colors">
+                      <Send className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
               </div>
               <h3 className="text-2xl font-black text-white leading-tight uppercase font-syne mb-4">{job.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 mb-10 italic">«{job.description}»</p>
+              <p className="text-slate-400 text-sm leading-relaxed line-clamp-3 mb-6 italic">«{job.description}»</p>
+              
+              {/* Telegram Handle Visibility */}
+              {job.telegram && (
+                <div className="mb-6 flex items-center gap-2 text-[10px] font-black text-violet-400 uppercase tracking-widest">
+                  <Zap className="w-3 h-3 fill-current" />
+                  <span>TG: {job.telegram}</span>
+                </div>
+              )}
+
               <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
-                 <p className="text-[10px] font-black text-slate-300 uppercase">{job.mentorName}</p>
-                 <ArrowRight className="w-4 h-4 text-violet-400" />
+                 <p className="text-[10px] font-black text-slate-300 uppercase truncate max-w-[150px]">{job.mentorName}</p>
+                 <div className="flex items-center gap-2 text-violet-400">
+                    <span className="text-xs font-black uppercase">{job.reward}</span>
+                    <ArrowRight className="w-4 h-4" />
+                 </div>
               </div>
             </div>
           );
@@ -138,16 +157,25 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
           <div className="bg-[#0a0a0b] w-full max-w-xl rounded-[48px] border border-white/10 shadow-3xl p-10 relative">
             <button onClick={() => setSelectedJob(null)} className="absolute top-8 right-8 p-3 text-slate-500 hover:text-white"><X className="w-8 h-8"/></button>
             <div className="space-y-10">
-               <h2 className="text-4xl font-black text-white uppercase font-syne leading-none">{selectedJob.title}</h2>
+               <div className="space-y-2">
+                 <div className="px-4 py-2 bg-violet-500/10 text-violet-500 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit mb-4">{selectedJob.category}</div>
+                 <h2 className="text-4xl font-black text-white uppercase font-syne leading-none">{selectedJob.title}</h2>
+               </div>
                <div className="p-8 bg-white/[0.03] rounded-[32px] border border-white/5">
                   <p className="text-slate-300 font-medium leading-relaxed italic">«{selectedJob.description}»</p>
                </div>
                <div className="grid grid-cols-2 gap-6">
-                  <div className="p-6 bg-white/[0.02] rounded-3xl"><span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Награда</span><p className="text-xl font-black text-white">{selectedJob.reward}</p></div>
-                  <div className="p-6 bg-white/[0.02] rounded-3xl"><span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Telegram</span><p className="text-xl font-black text-violet-400">{selectedJob.telegram || 'не указан'}</p></div>
+                  <div className="p-6 bg-white/[0.02] rounded-3xl">
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Награда</span>
+                    <p className="text-xl font-black text-white">{selectedJob.reward || 'Не указана'}</p>
+                  </div>
+                  <div className="p-6 bg-white/[0.02] rounded-3xl">
+                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Telegram</span>
+                    <p className="text-xl font-black text-violet-400">{selectedJob.telegram || 'Не указан'}</p>
+                  </div>
                </div>
                {selectedJob.telegram && (
-                 <button onClick={() => window.open(`https://t.me/${selectedJob.telegram.replace('@', '')}`, '_blank')} className="w-full bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] flex items-center justify-center gap-3">
+                 <button onClick={() => window.open(`https://t.me/${selectedJob.telegram.replace('@', '')}`, '_blank')} className="w-full bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] flex items-center justify-center gap-3 shadow-2xl shadow-violet-600/20 hover:scale-105 active:scale-95 transition-all">
                    <Send className="w-5 h-5" /> Написать в Telegram
                  </button>
                )}

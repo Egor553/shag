@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserRole, UserSession, Mentor, Service, Job, Booking, Transaction } from './types';
+import { UserRole, UserSession, Service, Job } from './types';
 import { dbService } from './services/databaseService';
-import { MENTORS } from './constants';
+import { useShagData } from './hooks/useShagData';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { RegistrationFlow } from './components/RegistrationFlow';
-import { Loader2, ArrowRight, Star, Zap, AlertTriangle } from 'lucide-react';
+import { Loader2, Star, Zap, AlertTriangle } from 'lucide-react';
 
 export const ShagLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <div className={`relative flex items-center justify-center ${className}`}>
@@ -33,12 +33,12 @@ const App: React.FC = () => {
   });
   const [isAppLoading, setIsAppLoading] = useState(true);
 
-  const [allMentors, setAllMentors] = useState<Mentor[]>(MENTORS);
-  const [services, setServices] = useState<Service[]>([]);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [mentorProfile, setMentorProfile] = useState<Mentor | null>(null);
+  // Используем наш новый хук для всех операций с БД
+  const { 
+    allMentors, services, jobs, bookings, transactions, mentorProfile,
+    syncUserData, saveService, deleteService, saveJob, deleteJob, updateProfile,
+    setMentorProfile
+  } = useShagData();
 
   useEffect(() => {
     const initApp = async () => {
@@ -46,38 +46,12 @@ const App: React.FC = () => {
       if (saved) {
         const parsed = JSON.parse(saved);
         setSession(parsed);
-        await syncUserData(parsed.email);
+        await syncUserData(parsed.email, parsed, setSession);
       }
       setIsAppLoading(false);
     };
     initApp();
-  }, []);
-
-  const syncUserData = async (email: string) => {
-    try {
-      const data = await dbService.syncData(email);
-      setAllMentors(data.dynamicMentors || MENTORS);
-      
-      const enrichedServices = (data.services || []).map((s: Service) => ({
-        ...s,
-        currentParticipants: (data.bookings || []).filter((b: Booking) => b.serviceId === s.id && b.status === 'confirmed').length
-      }));
-
-      setServices(enrichedServices);
-      setBookings(data.bookings || []);
-      setJobs(data.jobs || []);
-      setTransactions(data.transactions || []);
-      
-      const currentMentor = data.dynamicMentors?.find((m: any) => String(m.ownerEmail || m.email).toLowerCase() === String(email).toLowerCase());
-      if (currentMentor) {
-        setMentorProfile(currentMentor);
-        if (session) {
-          const updatedSession = { ...session, balance: Number(currentMentor.balance) || 0 };
-          setSession(updatedSession);
-        }
-      }
-    } catch (e) { console.error("Sync error:", e); }
-  };
+  }, [syncUserData]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +62,7 @@ const App: React.FC = () => {
         const adminSess = { id: 'admin-001', email: 'admin', name: 'Administrator', role: UserRole.ADMIN, isLoggedIn: true } as UserSession;
         setSession(adminSess);
         localStorage.setItem('shag_session', JSON.stringify(adminSess));
-        await syncUserData('admin');
+        await syncUserData('admin', adminSess, setSession);
         setAuthMode(null);
         return;
       }
@@ -96,9 +70,13 @@ const App: React.FC = () => {
       const sess = { ...userData, isLoggedIn: true } as UserSession;
       setSession(sess);
       localStorage.setItem('shag_session', JSON.stringify(sess));
-      await syncUserData(loginEmail);
+      await syncUserData(loginEmail, sess, setSession);
       setAuthMode(null);
-    } catch (e: any) { setErrorMsg(e.message || 'Ошибка входа'); } finally { setIsAuthLoading(false); }
+    } catch (e: any) { 
+      setErrorMsg(e.message || 'Ошибка входа'); 
+    } finally { 
+      setIsAuthLoading(false); 
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -112,13 +90,23 @@ const App: React.FC = () => {
         const sess = { ...newUser, isLoggedIn: true } as UserSession;
         setSession(sess);
         localStorage.setItem('shag_session', JSON.stringify(sess));
-        await syncUserData(newUser.email);
+        await syncUserData(newUser.email, sess, setSession);
         setAuthMode(null);
-      } else { setErrorMsg(res.message); }
-    } catch (e) { setErrorMsg('Ошибка регистрации'); } finally { setIsAuthLoading(false); }
+      } else { 
+        setErrorMsg(res.message); 
+      }
+    } catch (e) { 
+      setErrorMsg('Ошибка регистрации'); 
+    } finally { 
+      setIsAuthLoading(false); 
+    }
   };
 
-  if (isAppLoading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center"><Loader2 className="animate-spin text-indigo-600 w-12 h-12" /></div>;
+  if (isAppLoading) return (
+    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-600 w-12 h-12" />
+    </div>
+  );
 
   if (session?.isLoggedIn) {
     return (
@@ -132,59 +120,19 @@ const App: React.FC = () => {
         transactions={transactions}
         onLogout={() => { setSession(null); localStorage.removeItem('shag_session'); }}
         onUpdateMentorProfile={setMentorProfile}
-        onSaveProfile={async () => { 
-          await dbService.updateProfile(session.email, session); 
-          await syncUserData(session.email); 
+        onSaveProfile={() => updateProfile(session.email, session)}
+        onSaveService={(s) => saveService(s, session)}
+        onUpdateService={(id, u) => saveService({ ...u, id }, session)}
+        onDeleteService={(id) => deleteService(id, session.email)}
+        onUpdateAvatar={async (u) => { 
+          await dbService.updateAvatar(session.email, u); 
+          setSession({...session, paymentUrl: u}); 
         }}
-        onSaveService={async (s) => { 
-          const serviceId = s.id || Math.random().toString(36).substr(2, 9);
-          const sToSave = { 
-            ...s, 
-            id: serviceId, 
-            mentorId: session.id || session.email, 
-            mentorName: session.name 
-          } as Service;
-          
-          if (s.id) {
-            await dbService.updateService(s.id, sToSave);
-          } else {
-            await dbService.saveService(sToSave);
-          }
-          // Ожидаем завершения синхронизации перед возвратом
-          await syncUserData(session.email);
-        }}
-        onUpdateService={async (id, u) => { 
-          await dbService.updateService(id, u); 
-          await syncUserData(session.email);
-        }}
-        onDeleteService={async (id) => { 
-          await dbService.deleteService(id); 
-          await syncUserData(session.email);
-        }}
-        onUpdateAvatar={async (u) => { await dbService.updateAvatar(session.email, u); setSession({...session, paymentUrl: u}); }}
         onSessionUpdate={setSession}
-        onRefresh={() => syncUserData(session.email)}
+        onRefresh={() => syncUserData(session.email, session, setSession)}
         isSavingProfile={false}
-        onSaveJob={async (j) => { 
-          const jobId = j.id || Math.random().toString(36).substr(2, 9);
-          const jToSave = { 
-            ...j, 
-            id: jobId,
-            mentorId: session.id || session.email,
-            mentorName: session.name
-          } as Job;
-          
-          if (j.id) {
-            await dbService.updateJob(j.id, jToSave);
-          } else {
-            await dbService.saveJob(jToSave); 
-          }
-          await syncUserData(session.email);
-        }}
-        onDeleteJob={async (id) => { 
-          await dbService.deleteJob(id); 
-          await syncUserData(session.email);
-        }}
+        onSaveJob={(j) => saveJob(j, session)}
+        onDeleteJob={(id) => deleteJob(id, session.email)}
       />
     );
   }
@@ -196,16 +144,31 @@ const App: React.FC = () => {
           <div className="text-center space-y-4">
             <h2 className="text-3xl font-black text-white uppercase font-syne tracking-tighter">Вход</h2>
           </div>
-          {errorMsg && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center"><AlertTriangle className="w-4 h-4 shrink-0"/>{errorMsg}</div>}
+          {errorMsg && (
+            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center">
+              <AlertTriangle className="w-4 h-4 shrink-0"/>{errorMsg}
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-6">
             <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 uppercase font-bold" />
             <input required type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="ПАРОЛЬ" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold" />
-            <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">{isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}</button>
+            <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">
+              {isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}
+            </button>
           </form>
           <button onClick={() => setAuthMode(null)} className="w-full text-slate-500 hover:text-white text-[10px] uppercase font-bold tracking-widest transition-colors">Назад</button>
         </div>
       ) : authMode === 'register' ? (
-        <RegistrationFlow tempRole={tempRole} regStep={regStep} setRegStep={setRegStep} regData={regData} setRegData={setRegData} isAuthLoading={isAuthLoading} onCancel={() => setAuthMode(null)} onSubmit={handleRegister} />
+        <RegistrationFlow 
+          tempRole={tempRole} 
+          regStep={regStep} 
+          setRegStep={setRegStep} 
+          regData={regData} 
+          setRegData={setRegData} 
+          isAuthLoading={isAuthLoading} 
+          onCancel={() => setAuthMode(null)} 
+          onSubmit={handleRegister} 
+        />
       ) : (
         <div className="text-center space-y-20 animate-in fade-in zoom-in duration-1000">
            <h1 className="text-7xl md:text-[8rem] font-black text-white tracking-tighter uppercase font-syne leading-none">СДЕЛАЙ СВОЙ<br/><span className="text-indigo-600">ШАГ</span></h1>

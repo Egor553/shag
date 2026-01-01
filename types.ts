@@ -70,6 +70,8 @@ export interface UserSession {
   values?: string[];
   createdAt?: string;
   ownerEmail?: string;
+  // Добавляем поле баланса, так как оно используется в хуках и при регистрации
+  balance?: number;
 }
 
 export interface Booking {

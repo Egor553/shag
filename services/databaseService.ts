@@ -1,6 +1,7 @@
 
 import { UserSession, Mentor, Service, Booking, ChatMessage, Review, Transaction, Job } from '../types';
 
+// Актуальный URL вебхука Google Apps Script
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzFJUTMIqOLYJpBAqEx5wgMDNHmJL-7PNJLtMOMbkCLZkAXcPVMWMoBr9rePcRHhoNJ/exec';
 
 export const dbService = {
@@ -53,11 +54,11 @@ export const dbService = {
       });
       const data = await response.json();
       if (data.result !== 'success') {
-        console.error('Server side error:', data.message);
+        console.error('Database Error:', data.message);
       }
       return data;
     } catch (e) {
-      console.error("API Network Error", e);
+      console.error("Network Error", e);
       return { result: 'error', message: 'Ошибка сети' };
     }
   },
