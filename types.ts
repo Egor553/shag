@@ -18,7 +18,8 @@ export enum AppTab {
   MEETINGS = 'meetings',
   MISSION = 'mission',
   PROFILE = 'profile',
-  SERVICES = 'services'
+  SERVICES = 'services',
+  ADMIN = 'admin'
 }
 
 export interface Review {
@@ -119,6 +120,7 @@ export interface Job {
   id: string;
   mentorId: string;
   mentorName: string;
+  telegram?: string; // Юзернейм для связи
   title: string;
   description: string;
   reward: string; 

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Job, UserRole, UserSession } from '../../types';
 import { 
   Rocket, Briefcase, Plus, X, Save, Trash2, 
-  ArrowRight, Zap, Target, DollarSign, Clock, Loader2, CheckCircle2
+  ArrowRight, Zap, Target, DollarSign, Clock, Loader2, CheckCircle2, Send, Info
 } from 'lucide-react';
 
 interface JobsViewProps {
@@ -15,6 +15,7 @@ interface JobsViewProps {
 
 export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, onDeleteJob }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
   const [formData, setFormData] = useState<Partial<Job>>({
@@ -22,13 +23,17 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
     description: '',
     reward: '',
     category: 'Маркетинг',
+    telegram: '',
     deadline: ''
   });
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
 
   const handleSave = async () => {
-    if (!formData.title || !formData.description || isSubmitting) return;
+    if (!formData.title || !formData.description || !formData.telegram || isSubmitting) {
+      alert("Пожалуйста, заполните заголовок, описание и Telegram для связи");
+      return;
+    }
     
     setIsSubmitting(true);
     try {
@@ -40,20 +45,13 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
         status: 'active'
       });
       setIsFormOpen(false);
-      setFormData({ title: '', description: '', reward: '', category: 'Маркетинг', deadline: '' });
+      setFormData({ title: '', description: '', reward: '', category: 'Маркетинг', telegram: '', deadline: '' });
     } catch (e) {
       console.error("Failed to save job", e);
       alert("Ошибка при создании миссии");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleApply = (jobId: string) => {
-    if (appliedJobs.includes(jobId)) return;
-    // В реальном приложении здесь был бы вызов API
-    setAppliedJobs([...appliedJobs, jobId]);
-    alert("Ваш отклик отправлен ментору! Он свяжется с вами в чате.");
   };
 
   return (
@@ -71,7 +69,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
           </h1>
         </div>
 
-        {/* Создавать могут только менторы */}
         {isEnt && !isFormOpen && (
           <button 
             onClick={() => setIsFormOpen(true)}
@@ -82,7 +79,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
         )}
       </div>
 
-      {/* Builder Form (Only for Mentors) */}
+      {/* Builder Form */}
       {isFormOpen && (
         <div className="bg-[#0a0a0b] p-8 md:p-16 rounded-[48px] border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 relative">
           <button onClick={() => setIsFormOpen(false)} className="absolute top-10 right-10 p-2 text-slate-500 hover:text-white"><X className="w-6 h-6"/></button>
@@ -95,9 +92,22 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                     disabled={isSubmitting}
                     value={formData.title} 
                     onChange={e => setFormData({...formData, title: e.target.value})} 
-                    placeholder="СДЕЛАТЬ АНАЛИЗ КОНКУРЕНТОВ В ПРЕЗЕНТАЦИИ" 
+                    placeholder="СДЕЛАТЬ АНАЛИЗ КОНКУРЕНТОВ..." 
                     className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl text-white outline-none focus:border-violet-500 font-bold disabled:opacity-50" 
                   />
+               </div>
+               <div className="space-y-3">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Ваш Telegram (для связи)</label>
+                  <div className="relative">
+                    <Send className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <input 
+                      disabled={isSubmitting}
+                      value={formData.telegram} 
+                      onChange={e => setFormData({...formData, telegram: e.target.value})} 
+                      placeholder="@username" 
+                      className="w-full bg-white/5 border border-white/10 pl-14 pr-6 py-6 rounded-2xl text-white outline-none focus:border-violet-500 font-bold disabled:opacity-50" 
+                    />
+                  </div>
                </div>
                <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Описание миссии</label>
@@ -105,7 +115,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                     disabled={isSubmitting}
                     value={formData.description} 
                     onChange={e => setFormData({...formData, description: e.target.value})} 
-                    placeholder="ЧЕТКОЕ ТЗ: НУЖНО СОБРАТЬ 10 ПРИМЕРОВ САЙТОВ В НИШЕ..." 
+                    placeholder="ЧЕТКОЕ ТЗ..." 
                     className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl text-white outline-none focus:border-violet-500 font-medium h-48 resize-none disabled:opacity-50" 
                   />
                </div>
@@ -170,18 +180,17 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
              <Rocket className="w-20 h-20 text-white/5" />
              <div className="space-y-2">
                 <h3 className="text-2xl font-black text-white uppercase font-syne">Миссий пока нет</h3>
-                <p className="text-slate-500 text-sm max-w-xs mx-auto">Предприниматели и Эксперты скоро опубликуют задачи для Модных талантов.</p>
+                <p className="text-slate-500 text-sm max-w-xs mx-auto">Предприниматели и Эксперты скоро опубликуют задачи.</p>
              </div>
           </div>
         ) : (
           jobs.map((job, idx) => {
             const isMyJob = String(job.mentorId) === String(session.id) || String(job.mentorId).toLowerCase() === String(session.email).toLowerCase();
-            const hasApplied = appliedJobs.includes(job.id);
-
             return (
               <div 
                 key={job.id} 
-                className={`bg-[#0a0a0b] border p-8 rounded-[40px] flex flex-col h-full group transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 ${isMyJob ? 'border-indigo-500/40 shadow-[0_0_30px_rgba(79,70,229,0.05)]' : 'border-white/5 hover:border-violet-500/50'}`}
+                onClick={() => setSelectedJob(job)}
+                className={`bg-[#0a0a0b] border p-8 rounded-[40px] flex flex-col h-full group transition-all duration-500 cursor-pointer animate-in fade-in slide-in-from-bottom-4 ${isMyJob ? 'border-indigo-500/40 shadow-[0_0_30px_rgba(79,70,229,0.05)]' : 'border-white/5 hover:border-violet-500/50'}`}
                 style={{ animationDelay: `${idx * 100}ms` }}
               >
                 <div className="flex items-start justify-between mb-8">
@@ -189,12 +198,9 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                     <div className="px-4 py-2 bg-violet-500/10 text-violet-500 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit">
                       {job.category}
                     </div>
-                    {isMyJob && (
-                      <span className="text-[7px] font-black text-indigo-400 uppercase tracking-widest px-1">Ваша миссия</span>
-                    )}
                   </div>
                   {isEnt && isMyJob && (
-                    <button onClick={() => onDeleteJob(job.id)} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all">
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id); }} className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
@@ -209,50 +215,68 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                   </p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="p-5 bg-white/[0.03] rounded-3xl border border-white/5 space-y-3">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      <span>Вознаграждение</span>
-                      <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
-                    </div>
-                    <p className="text-lg font-black text-white">{job.reward}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-violet-600/20 rounded-xl flex items-center justify-center text-violet-500">
-                        <Briefcase className="w-5 h-5" />
+                <div className="pt-6 border-t border-white/5 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-violet-600/20 rounded-lg flex items-center justify-center text-violet-500">
+                        <Briefcase className="w-4 h-4" />
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-[7px] font-black text-slate-600 uppercase tracking-widest leading-none mb-1">Заказчик</p>
-                        <p className="text-xs font-bold text-slate-300 truncate">{job.mentorName}</p>
-                      </div>
-                    </div>
-                    
-                    {isEnt ? (
-                       <div className="px-5 py-2 rounded-full border border-white/10 text-[8px] font-black text-slate-500 uppercase tracking-widest">
-                         {isMyJob ? 'В поиске' : 'Просмотр'}
-                       </div>
-                    ) : (
-                      <button 
-                        onClick={() => handleApply(job.id)}
-                        disabled={hasApplied}
-                        className={`flex items-center gap-3 px-6 py-4 rounded-2xl font-black uppercase text-[9px] tracking-widest transition-all ${hasApplied ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 cursor-default' : 'bg-white text-black hover:scale-105 active:scale-95'}`}
-                      >
-                        {hasApplied ? (
-                          <>Отправлено <CheckCircle2 className="w-3 h-3" /></>
-                        ) : (
-                          <>Взять миссию <ArrowRight className="w-3 h-3" /></>
-                        )}
-                      </button>
-                    )}
-                  </div>
+                      <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{job.mentorName}</p>
+                   </div>
+                   <div className="flex items-center gap-2 text-violet-400">
+                      <span className="text-[10px] font-black uppercase tracking-widest">Детали</span>
+                      <ArrowRight className="w-4 h-4" />
+                   </div>
                 </div>
               </div>
             );
           })
         )}
       </div>
+
+      {/* Job Details Modal */}
+      {selectedJob && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="bg-[#0a0a0b] w-full max-w-xl rounded-[48px] border border-white/10 shadow-3xl overflow-hidden relative">
+            <button onClick={() => setSelectedJob(null)} className="absolute top-8 right-8 p-3 text-slate-500 hover:text-white transition-all"><X className="w-8 h-8"/></button>
+            <div className="p-10 md:p-14 space-y-10">
+               <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-violet-500">
+                    <Target className="w-6 h-6" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">Миссия проекта</span>
+                  </div>
+                  <h2 className="text-4xl font-black text-white uppercase font-syne leading-none tracking-tighter">{selectedJob.title}</h2>
+               </div>
+
+               <div className="p-8 bg-white/[0.03] rounded-[32px] border border-white/5 space-y-4">
+                  <p className="text-slate-300 font-medium leading-relaxed italic">«{selectedJob.description}»</p>
+               </div>
+
+               <div className="grid grid-cols-2 gap-6">
+                  <div className="p-6 bg-white/[0.02] rounded-3xl space-y-1">
+                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Награда</span>
+                     <p className="text-xl font-black text-white font-syne">{selectedJob.reward}</p>
+                  </div>
+                  <div className="p-6 bg-white/[0.02] rounded-3xl space-y-1">
+                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Категория</span>
+                     <p className="text-xl font-black text-white font-syne">{selectedJob.category}</p>
+                  </div>
+               </div>
+
+               <div className="space-y-6 pt-6 border-t border-white/10">
+                  <div className="flex flex-col items-center gap-4 text-center">
+                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Связаться с предпринимателем:</p>
+                     <div className="flex items-center gap-3 bg-violet-600/10 px-8 py-5 rounded-2xl border border-violet-500/20 w-full group hover:bg-violet-600 transition-all cursor-pointer" 
+                          onClick={() => window.open(`https://t.me/${selectedJob.telegram?.replace('@', '')}`, '_blank')}>
+                        <Send className="w-5 h-5 text-violet-400 group-hover:text-white" />
+                        <span className="text-lg font-black text-white tracking-widest uppercase">{selectedJob.telegram}</span>
+                     </div>
+                  </div>
+                  <button onClick={() => setSelectedJob(null)} className="w-full py-6 text-slate-500 font-black uppercase text-[10px] tracking-widest">Закрыть</button>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

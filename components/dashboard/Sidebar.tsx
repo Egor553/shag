@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   Users, Calendar as CalendarIcon, LayoutGrid, 
-  UserCircle, LogOut, ChevronLeft, ChevronRight, Briefcase, Info, Star, Heart
+  UserCircle, LogOut, ChevronLeft, ChevronRight, Briefcase, Info, Star, Heart, ShieldCheck
 } from 'lucide-react';
 import { AppTab, UserRole, UserSession } from '../../types';
 
@@ -24,7 +24,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout 
 }) => {
   const isEnt = session?.role === UserRole.ENTREPRENEUR;
-  const accentColor = isEnt ? 'indigo' : 'violet';
+  const isAdmin = session?.role === UserRole.ADMIN || session?.email === 'admin';
+  const accentColor = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
   const logoUrl = "https://s5.iimage.su/s/01/uK0lK8nxZppHltfQVmPpMgi2r1MXOiTdLgwF9qev.png";
 
   const menuItems = [
@@ -33,6 +34,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(isEnt ? [{ id: AppTab.SERVICES, label: 'Мои ШАГи', icon: LayoutGrid }] : []),
     { id: AppTab.MEETINGS, label: 'Мои События', icon: CalendarIcon },
     { id: AppTab.MISSION, label: 'Наша Миссия', icon: Info },
+    ...(isAdmin ? [{ id: AppTab.ADMIN, label: 'Админ-панель', icon: ShieldCheck }] : []),
   ];
 
   return (

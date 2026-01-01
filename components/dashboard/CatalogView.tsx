@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { ArrowRight, Filter, LayoutGrid, Sparkles, UserX, Zap, Star } from 'lucide-react';
 import { Mentor, Service } from '../../types';
 import { ServiceCard } from '../ServiceCard';
-import { AISearchModal } from '../AISearchModal';
 
 interface CatalogViewProps {
   services: Service[];
@@ -14,7 +13,6 @@ interface CatalogViewProps {
 
 export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onServiceClick, onSelectMentorFromSearch }) => {
   const [activeCategory, setActiveCategory] = useState('Все');
-  const [isAISearchOpen, setIsAISearchOpen] = useState(false);
 
   // Фильтрация только по категории, чтобы все видели все услуги
   const filteredServices = services.filter(s => {
@@ -68,40 +66,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
               <p className="text-slate-500 text-sm max-w-xs mx-auto font-medium">В этой категории еще нет опубликованных ШАГов.</p>
            </div>
         </div>
-      )}
-
-      {/* AI Search CTA Block */}
-      <div className="p-10 md:p-24 rounded-[64px] bg-gradient-to-br from-indigo-950/40 to-black border border-white/5 relative overflow-hidden group shadow-3xl mt-12">
-        <div className="absolute top-0 right-0 p-16 opacity-5 group-hover:scale-110 transition-transform duration-1000">
-           <Zap className="w-64 h-64" />
-        </div>
-        <div className="relative z-10 space-y-10 flex flex-col items-center lg:items-start text-center lg:text-left">
-           <div className="space-y-4">
-             <div className="flex items-center justify-center lg:justify-start gap-3 text-indigo-400 mb-2">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-                <span className="text-[11px] font-black uppercase tracking-[0.5em]">AI Assistant Matching</span>
-             </div>
-             <h2 className="text-4xl md:text-7xl font-black text-white uppercase font-syne leading-none tracking-tighter">НАЙТИ ПАРТНЕРА<br/>ПО ЭНЕРГИИ</h2>
-             <p className="text-slate-400 text-lg max-w-lg font-medium italic opacity-80">Опиши свою задачу, и искусственный интеллект подберет ментора с максимально подходящим опытом.</p>
-           </div>
-           <button 
-             onClick={() => setIsAISearchOpen(true)} 
-             className="px-12 py-7 bg-indigo-600 text-white rounded-[28px] font-black uppercase text-xs tracking-widest flex items-center gap-4 transition-all hover:scale-105 hover:bg-indigo-500 shadow-2xl shadow-indigo-600/30 active:scale-95"
-           >
-             Запустить AI Поиск <ArrowRight className="w-5 h-5" />
-           </button>
-        </div>
-      </div>
-
-      {isAISearchOpen && (
-        <AISearchModal 
-          mentors={mentors} 
-          onClose={() => setIsAISearchOpen(false)} 
-          onSelectMentor={(m) => { 
-            setIsAISearchOpen(false); 
-            if (onSelectMentorFromSearch) onSelectMentorFromSearch(m); 
-          }} 
-        />
       )}
     </div>
   );

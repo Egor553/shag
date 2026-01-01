@@ -9,8 +9,9 @@ import { EntrepreneurProfile } from '../profiles/EntrepreneurProfile';
 import { YouthProfile } from '../profiles/YouthProfile';
 import { ServiceBuilder } from '../ServiceBuilder';
 import { BookingModal } from '../BookingModal';
+import { AdminPanel } from '../AdminPanel';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, Info, Heart, Zap, TrendingUp, Sparkles } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, Info, Heart, Zap, TrendingUp, Sparkles, ShieldCheck } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
 import { ShagLogo } from '../../App';
 
@@ -82,20 +83,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     }
   };
 
-  const handleSelectMentorFromSearch = (mentor: Mentor) => {
-    const mentorService = services.find(s => 
-      String(s.mentorId) === String(mentor.id) || 
-      String(s.mentorId).toLowerCase() === String(mentor.ownerEmail || mentor.email).toLowerCase()
-    );
-    if (mentorService) {
-      handleServiceClick(mentorService);
-    } else {
-      setActiveMentor(mentor);
-      setPendingPaymentBooking(null);
-      setShowBooking(true);
-    }
-  };
-
   const handlePayFromList = (booking: Booking) => {
     const mentor = allMentors.find(m => 
       String(m.id) === String(booking.mentorId) || 
@@ -121,7 +108,8 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   };
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
-  const accentColor = isEnt ? 'indigo' : 'violet';
+  const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin@shag.app';
+  const accentColor = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
 
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
@@ -180,7 +168,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
           <div className="animate-in fade-in duration-500">
             {activeTab === AppTab.CATALOG && (
-              <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} onSelectMentorFromSearch={handleSelectMentorFromSearch} />
+              <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />
             )}
 
             {activeTab === AppTab.JOBS && (
@@ -199,6 +187,12 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
             {activeTab === AppTab.MISSION && (
               <MissionView />
+            )}
+
+            {activeTab === AppTab.ADMIN && isAdmin && (
+              <div className="bg-[#0a0a0b] rounded-[48px] border border-white/5 overflow-hidden min-h-[80vh]">
+                <AdminPanel onLogout={onLogout} />
+              </div>
             )}
 
             {activeTab === AppTab.PROFILE && (

@@ -84,6 +84,22 @@ const App: React.FC = () => {
     setIsAuthLoading(true);
     setErrorMsg(null);
     try {
+      // Специальная проверка для админа
+      if (loginEmail === 'admin' && loginPassword === 'admin123') {
+        const adminSess = { 
+          id: 'admin-001', 
+          email: 'admin', 
+          name: 'Administrator', 
+          role: UserRole.ADMIN, 
+          isLoggedIn: true 
+        } as UserSession;
+        setSession(adminSess);
+        localStorage.setItem('shag_session', JSON.stringify(adminSess));
+        await syncUserData('admin');
+        setAuthMode(null);
+        return;
+      }
+
       const userData = await dbService.login({ email: loginEmail, password: loginPassword });
       const sess = { ...userData, isLoggedIn: true } as UserSession;
       setSession(sess);
@@ -139,7 +155,16 @@ const App: React.FC = () => {
         onLogout={() => { setSession(null); localStorage.removeItem('shag_session'); }}
         onUpdateMentorProfile={setMentorProfile}
         onSaveProfile={async () => { await dbService.updateProfile(session.email, session); syncUserData(session.email); }}
-        onSaveService={async (s) => { await dbService.saveService(s as Service); syncUserData(session.email); }}
+        onSaveService={async (s) => { 
+          // Фикс: Принудительно добавляем автора при сохранении услуги
+          const serviceToSave = {
+            ...s,
+            mentorId: session.id || session.email,
+            mentorName: session.name
+          } as Service;
+          await dbService.saveService(serviceToSave); 
+          syncUserData(session.email); 
+        }}
         onUpdateService={async (id, u) => { await dbService.updateService(id, u); syncUserData(session.email); }}
         onDeleteService={async (id) => { await dbService.deleteService(id); syncUserData(session.email); }}
         onUpdateAvatar={async (u) => { await dbService.updateAvatar(session.email, u); setSession({...session, paymentUrl: u}); }}
@@ -152,7 +177,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Auth Layout remains same...
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6">
       {authMode === 'login' ? (
@@ -162,7 +186,7 @@ const App: React.FC = () => {
           </div>
           {errorMsg && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center"><AlertTriangle className="w-4 h-4 shrink-0"/>{errorMsg}</div>}
           <form onSubmit={handleLogin} className="space-y-6">
-            <input required type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 uppercase font-bold" />
+            <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 uppercase font-bold" />
             <input required type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="ПАРОЛЬ" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold" />
             <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">{isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}</button>
           </form>
