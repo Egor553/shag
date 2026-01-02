@@ -4,22 +4,25 @@ import { UserSession, Service, Job, Booking, Transaction } from '../types';
 
 export const adminService = {
   /**
-   * Получает абсолютно все данные из таблиц для админ-панели
+   * Получает абсолютно все данные из всех листов для админ-панели
    */
   async getFullRegistry() {
     try {
-      // Запрашиваем без email, чтобы скрипт вернул полные списки
+      // Передаем admin_access=true, чтобы скрипт вернул полные данные
       const url = `${WEBHOOK_URL}?action=sync&admin_access=true`;
+      console.log('Fetching admin data from:', url);
       const response = await fetch(url);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       
+      console.log('Admin data received:', data);
+
       return {
         users: data.dynamicMentors || [],
         services: data.services || [],
         bookings: data.bookings || [],
         jobs: data.jobs || [],
-        transactions: data.transactions || [] // В админке транзакции могут быть нужны все
+        transactions: data.transactions || []
       };
     } catch (e) {
       console.error('Admin Sync Error:', e);
@@ -28,39 +31,39 @@ export const adminService = {
   },
 
   /**
-   * Модерация пользователя
+   * Одобрение пользователя (перенос из PendingUsers в Users)
    */
-  async setUserStatus(email: string, status: 'active' | 'rejected') {
+  async approveUser(email: string) {
     try {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'update_profile',
-          email: email,
-          updates: { status: status }
+          action: 'approve_user',
+          email: email
         })
       });
       return await response.json();
     } catch (e) {
-      console.error('Moderation Error:', e);
+      console.error('Approve Error:', e);
       throw e;
     }
   },
 
   /**
-   * Глобальное удаление (очистка таблиц)
+   * Отказ пользователю
    */
-  async wipeData(type: 'services' | 'jobs' | 'bookings') {
+  async rejectUser(email: string) {
     try {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         body: JSON.stringify({
-          action: 'clear_all',
-          type: type
+          action: 'reject_user',
+          email: email
         })
       });
       return await response.json();
     } catch (e) {
+      console.error('Reject Error:', e);
       throw e;
     }
   }

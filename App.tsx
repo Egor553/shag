@@ -81,8 +81,16 @@ const App: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (regStep < 3) { setRegStep(regStep + 1); return; }
+    
+    // Переход по шагам анкеты
+    if (regStep < 3) { 
+      setRegStep(regStep + 1); 
+      return; 
+    }
+
     setIsAuthLoading(true);
+    setErrorMsg(null);
+    
     const initialStatus = tempRole === UserRole.ENTREPRENEUR ? 'pending' : 'active';
     const newUser = { 
       id: Math.random().toString(36).substr(2, 9), 
@@ -93,6 +101,7 @@ const App: React.FC = () => {
       status: initialStatus,
       createdAt: new Date().toISOString()
     };
+
     try {
       const res = await dbService.register(newUser);
       if (res.result === 'success') {
@@ -102,10 +111,12 @@ const App: React.FC = () => {
         await syncUserData(newUser.email, sess, setSession);
         setAuthMode(null);
       } else { 
-        setErrorMsg(res.message); 
+        // Если email занят или другая ошибка от API
+        setErrorMsg(res.message || 'Ошибка регистрации'); 
+        setRegStep(1); // Возвращаем на первый шаг, где поле Email
       }
     } catch (e) { 
-      setErrorMsg('Ошибка регистрации'); 
+      setErrorMsg('Ошибка соединения с сервером'); 
     } finally { 
       setIsAuthLoading(false); 
     }
@@ -130,7 +141,6 @@ const App: React.FC = () => {
     </div>
   );
 
-  // Экран ожидания модерации
   if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && session.status === 'pending') {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
@@ -157,7 +167,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Экран отклоненной заявки
   if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && (session.status === 'rejected')) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
@@ -168,7 +177,7 @@ const App: React.FC = () => {
            <div className="space-y-4">
               <h2 className="text-4xl font-black text-white uppercase font-syne tracking-tighter leading-none">ЗАЯВКА<br/><span className="text-red-500">ОТКЛОНЕНА</span></h2>
               <p className="text-slate-400 font-medium leading-relaxed">
-                К сожалению, на данный момент ваш профиль не прошел модерацию. Попробуйте обновить данные или связаться с поддержкой по вопросам соответствия критериям платформы.
+                К сожалению, на данный момент ваш профиль не прошел модерацию.
               </p>
            </div>
            <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto transition-colors">
@@ -217,31 +226,37 @@ const App: React.FC = () => {
               <h2 className="text-3xl font-black text-white uppercase font-syne tracking-tighter">Вход</h2>
             </div>
             {errorMsg && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center">
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center animate-shake">
                 <AlertTriangle className="w-4 h-4 shrink-0"/>{errorMsg}
               </div>
             )}
             <form onSubmit={handleLogin} className="space-y-6">
               <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 uppercase font-bold" />
               <input required type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="ПАРОЛЬ" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold" />
-              <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">
+              <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest transition-all active:scale-95">
                 {isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}
               </button>
             </form>
-
-            <button onClick={() => setAuthMode(null)} className="w-full text-slate-500 hover:text-white text-[10px] uppercase font-bold tracking-widest transition-colors">Назад</button>
+            <button onClick={() => { setAuthMode(null); setErrorMsg(null); }} className="w-full text-slate-500 hover:text-white text-[10px] uppercase font-bold tracking-widest transition-colors">Назад</button>
           </div>
         ) : authMode === 'register' ? (
-          <RegistrationFlow 
-            tempRole={tempRole} 
-            regStep={regStep} 
-            setRegStep={setRegStep} 
-            regData={regData} 
-            setRegData={setRegData} 
-            isAuthLoading={isAuthLoading} 
-            onCancel={() => setAuthMode(null)} 
-            onSubmit={handleRegister} 
-          />
+          <div className="w-full flex flex-col items-center">
+             {errorMsg && (
+                <div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-[32px] flex gap-4 text-sm font-black uppercase tracking-widest items-center max-w-lg w-full animate-bounce shadow-2xl">
+                  <AlertTriangle className="w-6 h-6 shrink-0"/>{errorMsg}
+                </div>
+              )}
+             <RegistrationFlow 
+                tempRole={tempRole} 
+                regStep={regStep} 
+                setRegStep={setRegStep} 
+                regData={regData} 
+                setRegData={setRegData} 
+                isAuthLoading={isAuthLoading} 
+                onCancel={() => { setAuthMode(null); setErrorMsg(null); }} 
+                onSubmit={handleRegister} 
+              />
+          </div>
         ) : (
           <div className="text-center space-y-20 animate-in fade-in zoom-in duration-1000">
              <h1 className="text-7xl md:text-[8rem] font-black text-white tracking-tighter uppercase font-syne leading-none">СДЕЛАЙ СВОЙ<br/><span className="text-indigo-600">ШАГ</span></h1>

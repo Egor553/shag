@@ -1,31 +1,35 @@
 
-# ШАГ — Backend (Google Apps Script v31.0 - MODERATION READY)
+# ШАГ — Backend (Google Apps Script v33.0 - MODERATION ENGINE)
 
-Этот скрипт — ядро платформы. Он управляет всеми базами данных. 
-Инструкция:
-1. Создайте Google Таблицу.
-2. В меню выберите: Extensions -> Apps Script.
-3. Вставьте код ниже.
-4. Нажмите "Deploy" -> "New Deployment" -> "Web App".
-5. Установите доступ: "Who has access: Anyone".
-6. Скопируйте полученный URL в `services/databaseService.ts`.
+Замените ваш текущий код в Apps Script на этот. Он поддерживает раздельные листы для модерации и участников, а также перенос строк.
+
+**Важно:** Убедитесь, что у вас созданы листы с именами: `Users`, `PendingUsers`, `Services`, `Bookings`, `Jobs`, `Messages`, `Transactions`.
 
 ```javascript
 /**
- * MISSION CORE ENGINE v31.0
- * Поддержка: Менторы, Таланты, Админы + Модерация
+ * MISSION CORE ENGINE v33.0 - PRODUCTION READY
  */
+
+const HEADERS = ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance", "status", "lastWeeklyUpdate", "businessClubs", "lifestyle"];
 
 function doGet(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var action = e.parameter.action;
   
-  // Синхронизация данных
   if (action === 'sync') {
     var email = e.parameter.email;
+    var adminMode = e.parameter.admin_access === 'true';
+    
+    // Получаем данные из обоих листов пользователей
+    var activeUsers = getRowsAsObjects(ss.getSheetByName('Users'));
+    var pendingUsers = getRowsAsObjects(ss.getSheetByName('PendingUsers'));
+    
+    // Для админа отдаем всё, для обычного пользователя только активных
+    var allUsers = adminMode ? activeUsers.concat(pendingUsers) : activeUsers;
+
     return createResponse({
       result: 'success',
-      dynamicMentors: getRowsAsObjects(ss.getSheetByName('Users')),
+      dynamicMentors: allUsers,
       services: getRowsAsObjects(ss.getSheetByName('Services')),
       bookings: getRowsAsObjects(ss.getSheetByName('Bookings')),
       jobs: getRowsAsObjects(ss.getSheetByName('Jobs')),
@@ -33,21 +37,17 @@ function doGet(e) {
     });
   }
   
-  // Авторизация
   if (action === 'login') {
-    var users = getRowsAsObjects(ss.getSheetByName('Users'));
+    var users = getRowsAsObjects(ss.getSheetByName('Users')).concat(getRowsAsObjects(ss.getSheetByName('PendingUsers')));
     var user = users.find(u => 
       String(u.email).toLowerCase().trim() === String(e.parameter.email).toLowerCase().trim() && 
       String(u.password).trim() === String(e.parameter.password).trim()
     );
-    return user ? createResponse({ result: 'success', user: user }) : createResponse({ result: 'error', message: 'Неверные данные' });
+    return user ? createResponse({ result: 'success', user: user }) : createResponse({ result: 'error', message: 'Неверные данные или пользователь еще не одобрен' });
   }
 
-  // Сообщения чата
   if (action === 'get_messages') {
-    var messages = getRowsAsObjects(ss.getSheetByName('Messages'));
-    var filtered = messages.filter(m => String(m.bookingId) === String(e.parameter.bookingId));
-    return createResponse({ result: 'success', messages: filtered });
+    return createResponse({ result: 'success', messages: getRowsAsObjects(ss.getSheetByName('Messages')).filter(m => String(m.bookingId) === String(e.parameter.bookingId)) });
   }
 }
 
@@ -56,107 +56,60 @@ function doPost(e) {
   var data = JSON.parse(e.postData.contents);
   var action = data.action;
 
-  // --- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ---
+  // --- РЕГИСТРАЦИЯ С ПРОВЕРКОЙ EMAIL ПО ВСЕМ ЛИСТАМ ---
   if (action === 'register') {
-    // Добавлена колонка status в заголовки
-    var sheet = getOrCreateSheet(ss, 'Users', ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance", "status", "lastWeeklyUpdate", "businessClubs", "lifestyle"]);
-    appendData(sheet, data);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'update_profile') {
-    updateRow(ss.getSheetByName('Users'), 'email', data.email, data.updates);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'delete_user') {
-    deleteRow(ss.getSheetByName('Users'), 'email', data.email);
-    return createResponse({ result: 'success' });
-  }
-
-  // --- ШАГи (УСЛУГИ) ---
-  if (action === 'save_service') {
-    var sheet = getOrCreateSheet(ss, 'Services', ["id", "mentorId", "mentorName", "title", "description", "price", "groupPrice", "maxParticipants", "format", "duration", "category", "slots", "imageUrl", "videoUrl"]);
-    appendData(sheet, data);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'update_service') {
-    updateRow(ss.getSheetByName('Services'), 'id', data.id, data.updates);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'delete_service') {
-    deleteRow(ss.getSheetByName('Services'), 'id', data.id);
-    return createResponse({ result: 'success' });
-  }
-
-  // --- ВАКАНСИИ / ПОДРАБОТКА ---
-  if (action === 'save_job') {
-    var sheet = getOrCreateSheet(ss, 'Jobs', ["id", "mentorId", "mentorName", "title", "description", "reward", "category", "telegram", "deadline", "status", "createdAt"]);
-    appendData(sheet, data);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'update_job') {
-    updateRow(ss.getSheetByName('Jobs'), 'id', data.id, data.updates);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'delete_job') {
-    deleteRow(ss.getSheetByName('Jobs'), 'id', data.id);
-    return createResponse({ result: 'success' });
-  }
-
-  // --- ВСТРЕЧИ (БРОНИРОВАНИЯ) ---
-  if (action === 'save_booking') {
-    var sheet = getOrCreateSheet(ss, 'Bookings', ["id", "mentorId", "mentorName", "userEmail", "userName", "format", "date", "time", "status", "goal", "exchange", "price", "serviceId", "serviceTitle"]);
-    appendData(sheet, data);
-    // Логируем как транзакцию
-    var txSheet = getOrCreateSheet(ss, 'Transactions', ["id", "userId", "amount", "type", "description", "status", "date"]);
-    appendData(txSheet, {
-      id: "TX-" + data.id,
-      userId: data.mentorId,
-      amount: data.price,
-      type: 'credit',
-      description: "ШАГ: " + data.serviceTitle,
-      status: 'completed',
-      date: new Date().toISOString()
-    });
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'update_booking') {
-    updateRow(ss.getSheetByName('Bookings'), 'id', data.id, data.updates);
-    return createResponse({ result: 'success' });
-  }
-
-  if (action === 'delete_booking') {
-    deleteRow(ss.getSheetByName('Bookings'), 'id', data.id);
-    return createResponse({ result: 'success' });
-  }
-
-  // --- ЧАТ ---
-  if (action === 'send_message') {
-    var sheet = getOrCreateSheet(ss, 'Messages', ["id", "bookingId", "senderEmail", "senderName", "text", "timestamp"]);
-    appendData(sheet, data);
-    return createResponse({ result: 'success' });
-  }
-
-  // --- АДМИН ПАНЕЛЬ (ОЧИСТКА) ---
-  if (action === 'clear_all') {
-    var sheetNames = { services: 'Services', jobs: 'Jobs', bookings: 'Bookings' };
-    var targetSheet = ss.getSheetByName(sheetNames[data.type]);
-    if (targetSheet && targetSheet.getLastRow() > 1) {
-      targetSheet.deleteRows(2, targetSheet.getLastRow() - 1);
+    var allUsers = getRowsAsObjects(ss.getSheetByName('Users')).concat(getRowsAsObjects(ss.getSheetByName('PendingUsers')));
+    var exists = allUsers.some(u => String(u.email).toLowerCase().trim() === String(data.email).toLowerCase().trim());
+    
+    if (exists) {
+      return createResponse({ result: 'error', message: 'Этот email уже занят' });
     }
+
+    // Предприниматели в модерацию, таланты сразу в активные
+    var targetSheetName = data.role === 'entrepreneur' ? 'PendingUsers' : 'Users';
+    var sheet = getOrCreateSheet(ss, targetSheetName, HEADERS);
+    appendData(sheet, data);
     return createResponse({ result: 'success' });
   }
 
-  return createResponse({ result: 'error', message: 'Action not found' });
+  // --- ОДОБРЕНИЕ (ПЕРЕНОС ИЗ МОДЕРАЦИИ В УЧАСТНИКИ) ---
+  if (action === 'approve_user') {
+    var pendingSheet = ss.getSheetByName('PendingUsers');
+    var usersSheet = getOrCreateSheet(ss, 'Users', HEADERS);
+    var userData = findAndRemoveRow(pendingSheet, 'email', data.email);
+    
+    if (userData) {
+      userData.status = 'active'; // Обновляем статус
+      appendData(usersSheet, userData);
+      return createResponse({ result: 'success', message: 'Пользователь одобрен и перенесен' });
+    }
+    return createResponse({ result: 'error', message: 'Пользователь не найден в листе модерации' });
+  }
+
+  if (action === 'reject_user') {
+    updateRow(ss.getSheetByName('PendingUsers'), 'email', data.email, { status: 'rejected' });
+    return createResponse({ result: 'success', message: 'Заявка отклонена' });
+  }
+
+  // --- ОБЩИЕ ДЕЙСТВИЯ ---
+  if (action === 'update_profile') {
+    var s1 = ss.getSheetByName('Users');
+    var s2 = ss.getSheetByName('PendingUsers');
+    updateRow(s1, 'email', data.email, data.updates);
+    updateRow(s2, 'email', data.email, data.updates);
+    return createResponse({ result: 'success' });
+  }
+
+  if (action === 'save_service') { appendData(getOrCreateSheet(ss, 'Services', ["id", "mentorId", "mentorName", "title", "description", "price", "groupPrice", "maxParticipants", "format", "duration", "category", "slots", "imageUrl", "videoUrl"]), data); return createResponse({ result: 'success' }); }
+  if (action === 'save_job') { appendData(getOrCreateSheet(ss, 'Jobs', ["id", "mentorId", "mentorName", "title", "description", "reward", "category", "telegram", "deadline", "status", "createdAt"]), data); return createResponse({ result: 'success' }); }
+  if (action === 'save_booking') { appendData(getOrCreateSheet(ss, 'Bookings', ["id", "mentorId", "mentorName", "userEmail", "userName", "format", "date", "time", "status", "goal", "exchange", "price", "serviceId", "serviceTitle"]), data); return createResponse({ result: 'success' }); }
+  if (action === 'update_booking') { updateRow(ss.getSheetByName('Bookings'), 'id', data.id, data.updates); return createResponse({ result: 'success' }); }
+  if (action === 'delete_user') { deleteRow(ss.getSheetByName('Users'), 'email', data.email); deleteRow(ss.getSheetByName('PendingUsers'), 'email', data.email); return createResponse({ result: 'success' }); }
+
+  return createResponse({ result: 'error', message: 'Action not found: ' + action });
 }
 
-// УТИЛИТЫ
+// УТИЛИТАРНЫЕ ФУНКЦИИ
 
 function createResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
@@ -164,7 +117,8 @@ function createResponse(obj) {
 
 function getRowsAsObjects(sheet) {
   if (!sheet) return [];
-  var data = sheet.getDataRange().getValues();
+  var range = sheet.getDataRange();
+  var data = range.getValues();
   if (data.length < 2) return [];
   var headers = data[0];
   var rows = [];
@@ -192,9 +146,8 @@ function updateRow(sheet, key, value, updates) {
   var headers = data[0];
   var colIdx = headers.indexOf(key);
   if (colIdx === -1) return;
-  var searchVal = String(value).toLowerCase().trim();
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][colIdx]).toLowerCase().trim() === searchVal) {
+    if (String(data[i][colIdx]).toLowerCase().trim() === String(value).toLowerCase().trim()) {
       for (var k in updates) {
         var uIdx = headers.indexOf(k);
         if (uIdx > -1) sheet.getRange(i + 1, uIdx + 1).setValue(updates[k]);
@@ -202,22 +155,35 @@ function updateRow(sheet, key, value, updates) {
       break;
     }
   }
-  SpreadsheetApp.flush();
+}
+
+function findAndRemoveRow(sheet, key, value) {
+  if (!sheet) return null;
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var colIdx = headers.indexOf(key);
+  if (colIdx === -1) return null;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][colIdx]).toLowerCase().trim() === String(value).toLowerCase().trim()) {
+      var obj = {};
+      for (var j = 0; j < headers.length; j++) obj[headers[j]] = data[i][j];
+      sheet.deleteRow(i + 1);
+      return obj;
+    }
+  }
+  return null;
 }
 
 function deleteRow(sheet, key, value) {
   if (!sheet) return;
   var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  var colIdx = headers.indexOf(key);
+  var colIdx = data[0].indexOf(key);
   if (colIdx === -1) return;
-  var searchVal = String(value).toLowerCase().trim();
   for (var i = data.length - 1; i >= 1; i--) {
-    if (String(data[i][colIdx]).toLowerCase().trim() === searchVal) {
+    if (String(data[i][colIdx]).toLowerCase().trim() === String(value).toLowerCase().trim()) {
       sheet.deleteRow(i + 1);
     }
   }
-  SpreadsheetApp.flush();
 }
 
 function getOrCreateSheet(ss, name, headers) {

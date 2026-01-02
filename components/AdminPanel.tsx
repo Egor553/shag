@@ -14,8 +14,6 @@ import { UserRole, UserSession, Mentor, Service, Job, Booking, Transaction } fro
 interface AdminPanelProps {
   onLogout: () => void;
   session: UserSession;
-  // Мы будем использовать локальное состояние для данных админки, 
-  // чтобы не зависеть от фильтрованных данных из MainDashboard
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => {
@@ -31,7 +29,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [inspectingUser, setInspectingUser] = useState<UserSession | null>(null);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadAdminData();
@@ -43,7 +40,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
       const data = await adminService.getFullRegistry();
       setRegistry(data);
     } catch (e) {
-      alert("Ошибка загрузки данных админ-панели");
+      console.error("Admin Load Error:", e);
+      alert("Ошибка загрузки данных админ-панели. Проверьте консоль.");
     } finally {
       setLoading(false);
     }
@@ -51,10 +49,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 
   const handleModeration = async (user: UserSession, status: 'active' | 'rejected') => {
     try {
-      await adminService.setUserStatus(user.email, status);
-      await loadAdminData(); // Перезагружаем всё
-    } catch (e) {
-      alert("Не удалось обновить статус");
+      if (status === 'active') {
+        const res = await adminService.approveUser(user.email);
+        if (res.result !== 'success') throw new Error(res.message);
+      } else {
+        const res = await adminService.rejectUser(user.email);
+        if (res.result !== 'success') throw new Error(res.message);
+      }
+      await loadAdminData(); // Перезагружаем реестр
+    } catch (e: any) {
+      alert("Не удалось обновить статус: " + e.message);
     }
   };
 
@@ -72,7 +76,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
       case 'jobs': 
         return registry.jobs.filter(j => j.title.toLowerCase().includes(term) || j.mentorName.toLowerCase().includes(term));
       case 'bookings': 
-        return registry.bookings.filter(b => b.userName?.toLowerCase().includes(term) || b.serviceTitle?.toLowerCase().includes(term));
+        return registry.bookings.filter(b => (b.userName?.toLowerCase().includes(term) || b.serviceTitle?.toLowerCase().includes(term) || b.mentorName?.toLowerCase().includes(term)));
       default: return [];
     }
   };
@@ -83,7 +87,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
         <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
         <ShieldCheck className="absolute inset-0 m-auto w-5 h-5 text-indigo-500" />
       </div>
-      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 animate-pulse">Синхронизация реестра...</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 animate-pulse">Синхронизация глобального реестра...</p>
     </div>
   );
 
@@ -91,7 +95,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 
   return (
     <div className="flex flex-col lg:flex-row min-h-[80vh] bg-[#050505] rounded-[48px] overflow-hidden border border-white/5 shadow-3xl">
-      {/* Sidebar Admin */}
       <aside className="w-full lg:w-64 bg-[#0a0a0b] border-r border-white/5 p-6 flex flex-col gap-2">
         <div className="flex items-center gap-3 mb-8 px-2">
            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -122,7 +125,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
         </nav>
       </aside>
 
-      {/* Main Admin Content */}
       <main className="flex-1 p-8 lg:p-12 overflow-y-auto no-scrollbar">
         <div className="max-w-5xl mx-auto space-y-10">
           <header className="flex items-center justify-between">
@@ -130,7 +132,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
               {activeView === 'stats' && 'Общая статистика'}
               {activeView === 'moderation' && 'Заявки на вход'}
               {activeView === 'users' && 'База участников'}
-              {activeView === 'services' && 'Все услуги'}
+              {activeView === 'services' && 'Все услуги (ШАГи)'}
               {activeView === 'jobs' && 'Все вакансии'}
               {activeView === 'bookings' && 'Все записи'}
             </h2>
@@ -146,7 +148,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
               <AdminStatCard label="Проведено встреч" value={registry.bookings.length} icon={Calendar} />
               <AdminStatCard label="Всего вакансий" value={registry.jobs.length} icon={Briefcase} />
               <AdminStatCard label="На модерации" value={pendingCount} icon={Clock} highlight={pendingCount > 0} />
-              <AdminStatCard label="Оборот платформы" value={registry.transactions.reduce((a,b)=>a+(b.amount||0), 0) + ' ₽'} icon={TrendingUp} />
             </div>
           )}
 
@@ -195,7 +196,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                           </span>
                         </td>
                         <td className="p-5 text-right">
-                           <button className="p-2 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => setInspectingUser(item)} className="p-2 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                               <Eye size={14} className="text-slate-400" />
                            </button>
                         </td>
@@ -204,7 +205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                   </tbody>
                 </table>
                 {getFilteredData().length === 0 && (
-                  <div className="p-20 text-center opacity-20 uppercase font-black text-[10px] tracking-[0.5em]">Нет данных</div>
+                   <div className="p-20 text-center opacity-20 uppercase font-black text-[10px] tracking-[0.5em]">Данные отсутствуют</div>
                 )}
               </div>
             </div>
@@ -212,7 +213,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
         </div>
       </main>
 
-      {/* Инспекция пользователя */}
       {inspectingUser && (
         <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-6">
            <div className="w-full max-w-4xl bg-[#050505] rounded-[48px] border border-white/10 p-10 relative max-h-[90vh] overflow-y-auto no-scrollbar">

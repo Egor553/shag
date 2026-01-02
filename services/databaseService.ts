@@ -1,8 +1,8 @@
 
 import { UserSession, Booking } from '../types';
 
-// Ссылка на ваш Google Apps Script. 
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyVhNOnuzkZHRYTa-jrFerkI04s8jxyEZoMVXgjgJ9QIjkJhIQeobRxiugfEUMg-Hhx/exec';
+// НОВЫЙ URL, предоставленный пользователем
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzjvtOLPo7uvnn2tNwjMT5yv1PmRCpagrhUtuB3r5RbaRew5LHEX4cOt99VvMxghBfz/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -33,7 +33,7 @@ export const dbService = {
         throw new Error(data.message || 'Неверный логин или пароль');
       }
     } catch (e: any) {
-      throw new Error('Ошибка входа. Проверьте соединение с бэкендом.');
+      throw new Error(e.message || 'Ошибка входа. Проверьте соединение с бэкендом.');
     }
   },
 
