@@ -20,15 +20,15 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="w-full bg-[#050505] border-t border-white/5 pt-16 pb-24 md:pb-12 px-6">
+    <footer className="w-full bg-[#050505] border-t border-white/5 pt-16 pb-32 md:pb-12 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-        {/* Brand & Legal */}
-        <div className="space-y-6">
-          <div className="flex flex-col">
-            <span className="text-2xl font-black tracking-tight text-white font-syne uppercase">ШАГ</span>
+        {/* Brand & Legal - Centered on mobile */}
+        <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
+          <div className="flex flex-col items-center md:items-start">
+            <span className="text-3xl font-black tracking-tight text-white font-syne uppercase">ШАГ</span>
             <span className="text-[9px] font-bold text-indigo-600 tracking-[0.2em] uppercase -mt-1">платформа энергообмена</span>
           </div>
-          <div className="space-y-3">
+          <div className="flex flex-col items-center md:items-start space-y-3">
             <button 
               onClick={() => openLegal('agreement')}
               className="flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest"
@@ -44,39 +44,39 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Contacts */}
-        <div className="space-y-6">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Контакты</h4>
-          <div className="space-y-4">
-            <a href="tel:+79296754641" className="flex items-center gap-3 text-white hover:text-indigo-400 transition-all group">
-              <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Phone size={14} className="text-slate-500" />
+        {/* Contacts - Centered on mobile */}
+        <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Связаться с нами</h4>
+          <div className="space-y-6 md:space-y-4 flex flex-col items-center md:items-start">
+            <a href="tel:+79296754641" className="flex items-center gap-4 text-white hover:text-indigo-400 transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Phone size={16} className="text-slate-500" />
               </div>
-              <span className="text-sm font-bold">+7 (929) 675-46-41</span>
+              <span className="text-base font-bold">+7 (929) 675-46-41</span>
             </a>
-            <a href="mailto:Vanstep@inbox.ru" className="flex items-center gap-3 text-white hover:text-indigo-400 transition-all group">
-              <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Mail size={14} className="text-slate-500" />
+            <a href="mailto:Vanstep@inbox.ru" className="flex items-center gap-4 text-white hover:text-indigo-400 transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Mail size={16} className="text-slate-500" />
               </div>
-              <span className="text-sm font-bold">Vanstep@inbox.ru</span>
+              <span className="text-base font-bold">Vanstep@inbox.ru</span>
             </a>
-            <div className="flex items-center gap-3 text-white group">
-              <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
-                <MapPin size={14} className="text-slate-500" />
+            <div className="flex items-center gap-4 text-white">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <MapPin size={16} className="text-slate-500" />
               </div>
-              <span className="text-sm font-bold text-slate-300">г. Москва</span>
+              <span className="text-base font-bold text-slate-300">г. Москва</span>
             </div>
           </div>
         </div>
 
-        {/* Requisites */}
-        <div className="space-y-6">
+        {/* Requisites - Centered on mobile */}
+        <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Реквизиты</h4>
-          <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-2">
+          <div className="w-full p-8 bg-white/[0.02] border border-white/5 rounded-[40px] space-y-3 flex flex-col items-center md:items-start">
             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Самозанятый</p>
-            <p className="text-sm font-bold text-white uppercase font-syne">Степанов Иван Артемович</p>
+            <p className="text-lg font-black text-white uppercase font-syne leading-tight">Степанов Иван Артемович</p>
             <p className="text-[11px] font-medium text-slate-500">ИНН: 771551514336</p>
-            <div className="pt-4">
+            <div className="pt-4 mt-4 border-t border-white/5 w-full">
                <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none block">ШАГ © 2026. Все права защищены.</span>
             </div>
           </div>
@@ -90,8 +90,8 @@ export const Footer: React.FC = () => {
             <button onClick={() => setModalContent(null)} className="absolute top-8 right-8 p-3 text-slate-500 hover:text-white transition-all">
               <X size={24} />
             </button>
-            <h3 className="text-3xl font-black text-white uppercase font-syne mb-8 tracking-tighter leading-none">{modalContent.title}</h3>
-            <div className="max-h-[60vh] overflow-y-auto pr-4 no-scrollbar">
+            <h3 className="text-3xl font-black text-white uppercase font-syne mb-8 tracking-tighter">{modalContent.title}</h3>
+            <div className="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
               <p className="text-slate-400 text-base leading-relaxed whitespace-pre-line font-medium italic">
                 {modalContent.text}
               </p>

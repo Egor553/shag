@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Layers, Calendar, TrendingUp, Search, 
   Edit3, X, ShieldCheck, Briefcase, 
-  Loader2, RefreshCw, Eye, Check, XCircle, Clock, Trash2
+  Loader2, RefreshCw, Eye, Check, XCircle, Clock, Trash2, ChevronRight, Heart
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
 import { EntrepreneurProfile } from './profiles/EntrepreneurProfile';
@@ -41,7 +41,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
       setRegistry(data);
     } catch (e) {
       console.error("Admin Load Error:", e);
-      alert("Ошибка загрузки данных админ-панели. Проверьте консоль.");
+      alert("Ошибка загрузки данных админ-панели.");
     } finally {
       setLoading(false);
     }
@@ -56,7 +56,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
         const res = await adminService.rejectUser(user.email);
         if (res.result !== 'success') throw new Error(res.message);
       }
-      await loadAdminData(); // Перезагружаем реестр
+      await loadAdminData(); 
     } catch (e: any) {
       alert("Не удалось обновить статус: " + e.message);
     }
@@ -87,66 +87,65 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
         <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
         <ShieldCheck className="absolute inset-0 m-auto w-5 h-5 text-indigo-500" />
       </div>
-      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 animate-pulse">Синхронизация глобального реестра...</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 animate-pulse text-center">Синхронизация глобального реестра...</p>
     </div>
   );
 
   const pendingCount = registry?.users.filter(u => u.status === 'pending').length || 0;
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-[80vh] bg-[#050505] rounded-[48px] overflow-hidden border border-white/5 shadow-3xl">
-      <aside className="w-full lg:w-64 bg-[#0a0a0b] border-r border-white/5 p-6 flex flex-col gap-2">
-        <div className="flex items-center gap-3 mb-8 px-2">
-           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+    <div className="flex flex-col lg:flex-row min-h-[80vh] bg-[#050505] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/5 shadow-3xl mb-24 md:mb-0">
+      <aside className="w-full lg:w-64 bg-[#0a0a0b] border-b lg:border-r lg:border-b-0 border-white/5 p-4 md:p-6 flex flex-col gap-2">
+        <div className="flex items-center gap-3 mb-4 md:mb-8 px-2 shrink-0">
+           <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <ShieldCheck size={18} className="text-white" />
            </div>
            <span className="font-black text-[10px] uppercase tracking-widest text-white">ROOT PANEL</span>
         </div>
 
-        <nav className="space-y-1 flex-1">
+        <nav className="flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 lg:space-y-1">
           {[
             { id: 'stats', label: 'Обзор', icon: TrendingUp },
-            { id: 'moderation', label: 'Модерация', icon: Clock, badge: pendingCount },
-            { id: 'users', label: 'Участники', icon: Users },
+            { id: 'moderation', label: 'Заявки', icon: Clock, badge: pendingCount },
+            { id: 'users', label: 'База', icon: Users },
             { id: 'services', label: 'ШАГи', icon: Layers },
-            { id: 'jobs', label: 'Вакансии', icon: Briefcase },
+            { id: 'jobs', label: 'Работа', icon: Briefcase },
             { id: 'bookings', label: 'Встречи', icon: Calendar },
           ].map(item => (
             <button
               key={item.id}
               onClick={() => { setActiveView(item.id as any); setSearchTerm(''); }}
-              className={`w-full flex items-center gap-3 p-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${activeView === item.id ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+              className={`flex items-center gap-3 p-3 md:p-4 rounded-xl md:rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all shrink-0 ${activeView === item.id ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
             >
               <item.icon size={14} />
-              {item.label}
+              <span className="inline lg:inline">{item.label}</span>
               {item.badge ? <span className="ml-auto bg-amber-500 text-black px-1.5 py-0.5 rounded text-[7px]">{item.badge}</span> : null}
             </button>
           ))}
         </nav>
       </aside>
 
-      <main className="flex-1 p-8 lg:p-12 overflow-y-auto no-scrollbar">
-        <div className="max-w-5xl mx-auto space-y-10">
+      <main className="flex-1 p-4 md:p-12 overflow-y-auto no-scrollbar">
+        <div className="max-w-5xl mx-auto space-y-6 md:space-y-10">
           <header className="flex items-center justify-between">
-            <h2 className="text-3xl font-black font-syne uppercase tracking-tighter text-white">
-              {activeView === 'stats' && 'Общая статистика'}
-              {activeView === 'moderation' && 'Заявки на вход'}
-              {activeView === 'users' && 'База участников'}
-              {activeView === 'services' && 'Все услуги (ШАГи)'}
-              {activeView === 'jobs' && 'Все вакансии'}
-              {activeView === 'bookings' && 'Все записи'}
+            <h2 className="text-xl md:text-3xl font-black font-syne uppercase tracking-tighter text-white">
+              {activeView === 'stats' && 'Аналитика'}
+              {activeView === 'moderation' && 'Модерация'}
+              {activeView === 'users' && 'Участники'}
+              {activeView === 'services' && 'Все ШАГи'}
+              {activeView === 'jobs' && 'Вакансии'}
+              {activeView === 'bookings' && 'Записи'}
             </h2>
-            <button onClick={loadAdminData} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-slate-400 hover:text-white">
+            <button onClick={loadAdminData} className="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-all text-slate-400">
               <RefreshCw size={18} />
             </button>
           </header>
 
           {activeView === 'stats' && registry && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <AdminStatCard label="Всего пользователей" value={registry.users.length} icon={Users} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+              <AdminStatCard label="Пользователей" value={registry.users.length} icon={Users} />
               <AdminStatCard label="Активных ШАГов" value={registry.services.length} icon={Layers} />
               <AdminStatCard label="Проведено встреч" value={registry.bookings.length} icon={Calendar} />
-              <AdminStatCard label="Всего вакансий" value={registry.jobs.length} icon={Briefcase} />
               <AdminStatCard label="На модерации" value={pendingCount} icon={Clock} highlight={pendingCount > 0} />
             </div>
           )}
@@ -167,45 +166,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                 <input 
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Быстрый поиск по базе..."
-                  className="w-full bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-2xl text-white text-xs outline-none focus:border-indigo-500"
+                  placeholder="Поиск по реестру..."
+                  className="w-full bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-2xl text-white text-xs outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="bg-[#0a0a0b] border border-white/5 rounded-[32px] overflow-hidden">
-                <table className="w-full text-left text-[10px] font-bold uppercase tracking-widest">
-                  <thead className="bg-white/5 border-b border-white/5 text-slate-500">
-                    <tr>
-                      <th className="p-5">Наименование / Имя</th>
-                      <th className="p-5">Тип / Роль</th>
-                      <th className="p-5">Статус</th>
-                      <th className="p-5 text-right">Действие</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {getFilteredData().map((item: any) => (
-                      <tr key={item.id || item.email} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="p-5 text-white">
-                          <p className="font-black truncate max-w-[200px]">{item.title || item.name || item.userName}</p>
-                          <p className="text-[8px] text-slate-500 opacity-60 lowercase">{item.email || item.mentorName || item.category}</p>
-                        </td>
-                        <td className="p-5 text-slate-400">{item.role || item.format || item.category || '—'}</td>
-                        <td className="p-5">
-                          <span className={`px-2 py-1 rounded-md text-[8px] ${item.status === 'active' || item.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-white/5 text-slate-500'}`}>
-                            {item.status || 'Active'}
-                          </span>
-                        </td>
-                        <td className="p-5 text-right">
-                           <button onClick={() => setInspectingUser(item)} className="p-2 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Eye size={14} className="text-slate-400" />
-                           </button>
-                        </td>
+              <div className="bg-[#0a0a0b] border border-white/5 rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto no-scrollbar">
+                  <table className="w-full text-left text-[10px] font-bold uppercase tracking-widest min-w-[600px]">
+                    <thead className="bg-white/5 border-b border-white/5 text-slate-500">
+                      <tr>
+                        <th className="p-5">Наименование</th>
+                        <th className="p-5">Тип / Роль</th>
+                        <th className="p-5">Статус</th>
+                        <th className="p-5 text-right">Действие</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {getFilteredData().map((item: any) => (
+                        <tr key={item.id || item.email} className="hover:bg-white/[0.02] transition-colors group">
+                          <td className="p-5 text-white">
+                            <p className="font-black truncate max-w-[200px]">{item.title || item.name || item.userName}</p>
+                            <p className="text-[8px] text-slate-500 opacity-60 lowercase truncate max-w-[200px]">{item.email || item.mentorName || item.category}</p>
+                          </td>
+                          <td className="p-5 text-slate-400">{item.role || item.format || item.category || '—'}</td>
+                          <td className="p-5">
+                            <span className={`px-2 py-1 rounded-md text-[8px] ${item.status === 'active' || item.status === 'confirmed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-white/5 text-slate-500'}`}>
+                              {item.status || 'Active'}
+                            </span>
+                          </td>
+                          <td className="p-5 text-right">
+                             <button onClick={() => setInspectingUser(item)} className="p-2 bg-white/5 rounded-lg text-slate-400 hover:text-white">
+                                <Eye size={16} />
+                             </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {getFilteredData().length === 0 && (
-                   <div className="p-20 text-center opacity-20 uppercase font-black text-[10px] tracking-[0.5em]">Данные отсутствуют</div>
+                   <div className="p-16 text-center opacity-20 uppercase font-black text-[10px] tracking-[0.5em]">Данные отсутствуют</div>
                 )}
               </div>
             </div>
@@ -214,9 +215,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
       </main>
 
       {inspectingUser && (
-        <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-6">
-           <div className="w-full max-w-4xl bg-[#050505] rounded-[48px] border border-white/10 p-10 relative max-h-[90vh] overflow-y-auto no-scrollbar">
-              <button onClick={() => setInspectingUser(null)} className="absolute top-8 right-8 text-slate-500 hover:text-white"><X size={32}/></button>
+        <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4">
+           <div className="w-full max-w-4xl bg-[#050505] rounded-[40px] md:rounded-[48px] border border-white/10 p-6 md:p-10 relative max-h-[90vh] overflow-y-auto no-scrollbar">
+              <button onClick={() => setInspectingUser(null)} className="absolute top-6 right-6 text-slate-500 hover:text-white"><X size={24}/></button>
               {inspectingUser.role === UserRole.ENTREPRENEUR ? (
                 <EntrepreneurProfile 
                   session={inspectingUser} 
@@ -250,13 +251,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 };
 
 const AdminStatCard = ({ label, value, icon: Icon, highlight }: any) => (
-  <div className={`p-8 bg-[#0a0a0b] border rounded-[32px] space-y-4 ${highlight ? 'border-amber-500/30' : 'border-white/5'}`}>
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${highlight ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-600/10 text-indigo-500'}`}>
-      <Icon size={24} />
+  <div className={`p-6 md:p-8 bg-[#0a0a0b] border rounded-3xl space-y-4 ${highlight ? 'border-amber-500/30' : 'border-white/5'}`}>
+    <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center ${highlight ? 'bg-amber-500/10 text-amber-500' : 'bg-emerald-600/10 text-emerald-500'}`}>
+      <Icon size={20} />
     </div>
     <div className="space-y-1">
-      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
-      <p className="text-3xl font-black text-white font-syne tracking-tighter">{value}</p>
+      <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
+      <p className="text-2xl md:text-3xl font-black text-white font-syne tracking-tighter">{value}</p>
     </div>
   </div>
 );

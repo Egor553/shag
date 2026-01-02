@@ -69,7 +69,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
   };
 
   return (
-    <div className="space-y-12 md:space-y-24 animate-in fade-in duration-1000">
+    <div className="space-y-12 md:space-y-24 animate-in fade-in duration-1000 pb-24 md:pb-0">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div className="space-y-4">
           <div className="flex items-center gap-4">
@@ -77,8 +77,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
             <span className="text-violet-500 font-bold text-[9px] uppercase tracking-[0.4em]">Work & Projects</span>
           </div>
           <h1 className="text-[12vw] sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.9] uppercase font-syne">
-            ВАКАНСИИ<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ПОДРАБОТКА</span>
+            ПОДРАБОТКА<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ВАКАНСИИ</span>
           </h1>
         </div>
         {isEnt && !isFormOpen && (
@@ -90,7 +90,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
 
       {isFormOpen && (
         <div className="bg-[#0a0a0b] p-8 md:p-16 rounded-[48px] border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 relative">
-          <button onClick={() => setIsFormOpen(false)} className="absolute top-10 right-10 p-2 text-slate-500 hover:text-white"><X className="w-6 h-6"/></button>
+          <button onClick={() => setIsFormOpen(false)} className="absolute top-10 right-10 p-2 text-slate-500 hover:text-white transition-colors z-10"><X className="w-6 h-6"/></button>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-8">
                <div className="space-y-3">
@@ -128,7 +128,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
         {jobs.map((job) => {
           const isMyJob = String(job.mentorId) === String(session.id) || String(job.mentorId).toLowerCase() === String(session.email).toLowerCase();
           const jobTelegram = job.telegram ? String(job.telegram).trim() : '';
@@ -177,24 +177,24 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
 
       {selectedJob && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl">
-          <div className="bg-[#0a0a0b] w-full max-w-xl rounded-[48px] border border-white/10 shadow-3xl p-10 relative overflow-y-auto max-h-[90vh] no-scrollbar">
-            <button onClick={() => setSelectedJob(null)} className="absolute top-8 right-8 p-3 text-slate-500 hover:text-white"><X className="w-8 h-8"/></button>
-            <div className="space-y-10">
+          <div className="bg-[#0a0a0b] w-full max-w-xl rounded-[48px] border border-white/10 shadow-3xl p-8 md:p-10 relative overflow-y-auto max-h-[90vh] no-scrollbar">
+            <button onClick={() => setSelectedJob(null)} className="absolute top-6 right-6 p-3 text-slate-500 hover:text-white transition-colors"><X className="w-6 h-6"/></button>
+            <div className="space-y-8 md:space-y-10 pt-6">
                <div className="space-y-2">
                  <div className="px-4 py-2 bg-violet-500/10 text-violet-500 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit mb-4">{selectedJob.category}</div>
-                 <h2 className="text-4xl font-black text-white uppercase font-syne leading-none">{selectedJob.title}</h2>
+                 <h2 className="text-3xl md:text-4xl font-black text-white uppercase font-syne leading-none">{selectedJob.title}</h2>
                </div>
-               <div className="p-8 bg-white/[0.03] rounded-[32px] border border-white/5">
-                  <p className="text-slate-300 font-medium leading-relaxed italic">«{selectedJob.description}»</p>
+               <div className="p-6 md:p-8 bg-white/[0.03] rounded-[32px] border border-white/5">
+                  <p className="text-slate-300 text-sm md:text-base font-medium leading-relaxed italic">«{selectedJob.description}»</p>
                </div>
-               <div className="grid grid-cols-2 gap-6">
-                  <div className="p-6 bg-white/[0.02] rounded-3xl">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="p-5 md:p-6 bg-white/[0.02] rounded-3xl">
                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Награда</span>
                     <p className="text-xl font-black text-white">{selectedJob.reward || 'Не указана'}</p>
                   </div>
-                  <div className="p-6 bg-white/[0.02] rounded-3xl">
+                  <div className="p-5 md:p-6 bg-white/[0.02] rounded-3xl">
                     <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Telegram</span>
-                    <p className="text-xl font-black text-violet-400">{selectedJob.telegram || 'Не указан'}</p>
+                    <p className="text-xl font-black text-violet-400 truncate">{selectedJob.telegram || 'Не указан'}</p>
                   </div>
                </div>
                {selectedJob.telegram && (
@@ -203,7 +203,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                     const cleanUsername = String(selectedJob.telegram).replace('@', '').trim();
                     window.open(`https://t.me/${cleanUsername}`, '_blank');
                   }} 
-                  className="w-full bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] flex items-center justify-center gap-3 shadow-2xl shadow-violet-600/20 hover:scale-105 active:scale-95 transition-all"
+                  className="w-full bg-violet-600 text-white py-6 rounded-2xl font-black uppercase text-[10px] flex items-center justify-center gap-3 shadow-2xl shadow-violet-600/20 active:scale-95 transition-all"
                  >
                    <Send className="w-5 h-5" /> Написать в Telegram
                  </button>

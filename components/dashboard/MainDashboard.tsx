@@ -12,7 +12,7 @@ import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
 import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, Info } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, Info, ShieldCheck, Heart } from 'lucide-react';
 import { ShagLogo } from '../../App';
 import { dbService } from '../../services/databaseService';
 import { Footer } from '../Footer';
@@ -111,39 +111,37 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
-  
-  const accentColorClass = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
   const textAccentClass = isEnt ? 'text-indigo-400' : (isAdmin ? 'text-emerald-400' : 'text-violet-400');
   const bgAccentSoftClass = isEnt ? 'bg-indigo-900/10' : (isAdmin ? 'bg-emerald-900/10' : 'bg-violet-900/10');
-  const borderAccentSoftClass = isEnt ? 'border-indigo-500/10' : (isAdmin ? 'border-emerald-500/10' : 'border-violet-500/10');
+
+  // Unified Mobile Navigation - EXACT ORDER REQUESTED:
+  // 1. ШАГи (CATALOG)
+  // 2. Мои ШАГи (SERVICES - if Mentor)
+  // 3. Подработка (JOBS)
+  // 4. Наша Миссия (MISSION)
+  // 5. События (MEETINGS)
+  // 6. Профиль (PROFILE)
+  const mobileNavItems = [
+    { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
+    ...(isEnt ? [{ id: AppTab.SERVICES, icon: LayoutGrid, label: 'Мои ШАГи' }] : []),
+    { id: AppTab.JOBS, icon: Briefcase, label: 'Подработка' },
+    { id: AppTab.MISSION, icon: Heart, label: 'Миссия' },
+    { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
+    { id: AppTab.PROFILE, icon: UserCircle, label: 'Профиль' },
+    ...(isAdmin ? [{ id: AppTab.ADMIN, icon: ShieldCheck, label: 'Админ' }] : [])
+  ];
 
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
 
-  const mobileNavItems = [
-    { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
-    { id: AppTab.JOBS, icon: Briefcase, label: 'Миссии' },
-    { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
-    { id: AppTab.MISSION, icon: Info, label: 'Миссия' },
-    { id: AppTab.PROFILE, icon: UserCircle, label: 'ЛК' }
-  ];
-
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-['Inter'] selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col font-['Inter']">
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={`absolute -top-[20%] -left-[10%] w-[60%] h-[60%] ${bgAccentSoftClass} blur-[180px] rounded-full animate-pulse`} />
-        <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-white/5 blur-[150px] rounded-full" />
       </div>
       
       <div className="flex flex-1">
-        <Sidebar 
-          activeTab={activeTab} 
-          setActiveTab={(tab) => { setActiveTab(tab); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          isSidebarOpen={isSidebarOpen} 
-          setIsSidebarOpen={setIsSidebarOpen}
-          session={session} 
-          onLogout={onLogout}
-        />
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} onLogout={onLogout} />
 
         <main className={`flex-1 transition-all duration-500 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen">
@@ -152,7 +150,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               <div className="mb-8 md:mb-20">
                  <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 backdrop-blur-xl">
                     <div className="flex items-center gap-5">
-                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/10 shrink-0">
+                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/10">
                           <TrendingUp size={18} />
                        </div>
                        <div className="space-y-0.5">
@@ -179,17 +177,20 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
-              {/* Fix: AdminPanel only accepts onLogout and session props as per its definition in AdminPanelProps */}
               {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">
-                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.02] p-8 md:p-14 rounded-[40px] md:rounded-[48px] border border-white/5 relative overflow-hidden group shadow-xl">
+                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.04] p-8 md:p-14 rounded-[40px] md:rounded-[48px] border border-white/10 relative overflow-hidden group shadow-2xl">
                      <div className="space-y-4 md:space-y-6 relative z-10 text-center md:text-left">
                        <span className={`px-4 py-1.5 ${isEnt ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/10' : 'bg-violet-500/10 text-violet-500 border-violet-500/10'} rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest border`}>Management Studio</span>
                        <h2 className="text-4xl md:text-7xl font-black uppercase font-syne tracking-tighter leading-none">ВИТРИНА<br/>ШАГОВ</h2>
                      </div>
-                     <div className="relative z-10 opacity-10 md:opacity-20 group-hover:opacity-40 transition-opacity duration-700 mt-6 md:mt-0"><ShagLogo className="w-20 h-20 md:w-40 md:h-40" /></div>
+                     <div className="relative z-10 opacity-100 flex items-center justify-center mt-6 md:mt-0">
+                        {/* Extra glow for the Vitrina logo to ensure it's not "dimmed" */}
+                        <div className="absolute inset-0 bg-indigo-600 blur-[80px] opacity-20" />
+                        <ShagLogo className="w-24 h-24 md:w-56 md:h-56 relative z-20" />
+                     </div>
                   </div>
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
@@ -203,14 +204,18 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         </main>
       </div>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/95 backdrop-blur-2xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-2 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/98 backdrop-blur-3xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-1 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
-            <button key={item.id} onClick={() => { setActiveTab(item.id as any); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all py-2 relative ${isActive ? textAccentClass : 'text-slate-500'}`}>
-              <item.icon size={20} className={`${isActive ? 'scale-110' : 'opacity-60'} transition-transform`} />
-              <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
-              {isActive && <div className={`w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-400' : 'bg-violet-400'} absolute bottom-1`} />}
+            <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`flex flex-col items-center justify-center gap-1 flex-1 transition-all py-2 relative ${isActive ? textAccentClass : 'text-slate-500'}`}>
+              <item.icon size={18} className={`${isActive ? 'scale-110' : 'opacity-60'} transition-transform`} />
+              <span className={`text-[7px] font-black uppercase tracking-tighter text-center leading-none ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+                {item.label}
+              </span>
+              {isActive && (
+                <div className={`absolute -bottom-1 w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-500' : 'bg-violet-500'} shadow-[0_0_10px_rgba(79,70,229,0.8)]`} />
+              )}
             </button>
           );
         })}

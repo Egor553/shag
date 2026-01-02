@@ -56,37 +56,35 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
       alert("Пожалуйста, заполните основные поля");
       return;
     }
-    
     if (editingId && onUpdate) {
       onUpdate(editingId, formData);
     } else {
       onSave(formData);
     }
-    
     setIsFormOpen(false);
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-20 md:pb-0">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
         <div className="space-y-1 text-center sm:text-left">
           <h3 className="text-2xl md:text-3xl font-black text-white uppercase font-syne tracking-tighter">ВИТРИНА ШАГОВ</h3>
-          <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest">Масштабируйте ваш опыт</p>
+          <p className="text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest italic">Масштабируйте ваш опыт и делитесь ценностью</p>
         </div>
         {!isFormOpen && (
           <button 
             onClick={() => handleOpenForm()}
-            className="w-full sm:w-auto bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl shadow-indigo-600/20 active:scale-95"
+            className="w-full sm:w-auto bg-indigo-600 text-white p-5 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl active:scale-95"
           >
-            <Plus className="w-4 h-4" /> Добавить услугу
+            <Plus className="w-4 h-4" /> Добавить ШАГ
           </button>
         )}
       </div>
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-[120] md:relative md:inset-auto bg-[#050505] md:bg-[#0a0a0b] p-6 md:p-12 rounded-none md:rounded-[40px] border-none md:border border-white/10 shadow-3xl animate-in zoom-in-95 duration-500 overflow-y-auto no-scrollbar">
-          <div className="max-w-7xl mx-auto space-y-10">
-            <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6">
+        <div className="fixed inset-0 z-[120] bg-[#050505] md:relative md:inset-auto md:bg-[#0a0a0b] p-6 md:p-12 rounded-none md:rounded-[40px] border-none md:border border-white/10 shadow-3xl overflow-y-auto no-scrollbar">
+          <div className="max-w-7xl mx-auto space-y-10 pb-32 md:pb-0">
+            <div className="flex items-center justify-between border-b border-white/10 pb-6 mb-6 sticky top-0 bg-[#050505] md:bg-transparent z-10 pt-4 md:pt-0">
               <h3 className="text-xl font-black text-white uppercase font-syne">
                 {editingId ? 'Редактирование' : 'Новая услуга'}
               </h3>
@@ -95,131 +93,61 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
               </button>
             </div>
 
-            {editingId && (
-              <div className="bg-amber-500/10 border border-amber-500/20 p-4 md:p-6 rounded-[24px] flex items-center gap-4 text-amber-500">
-                <AlertCircle className="w-6 h-6 shrink-0" />
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black uppercase tracking-widest">Редактирование</p>
-                   <p className="text-[9px] font-bold opacity-80 uppercase tracking-widest leading-relaxed">
-                     Расписание сохранено. Слоты привязаны к ID услуги.
-                   </p>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 md:gap-12 pb-24 md:pb-0">
-              {/* Базовые данные */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 md:gap-12">
               <div className="space-y-8">
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Название ШАГа</label>
-                  <input 
-                    value={formData.title}
-                    onChange={e => setFormData({...formData, title: e.target.value})}
-                    placeholder="Бизнес-разбор или Групповой мастер-майнд"
-                    className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all font-bold"
-                  />
+                  <input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Например: Бизнес-разбор 1 на 1" className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all font-bold text-sm" />
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3 relative">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Тип встречи</label>
-                    <div className="relative">
-                      <select 
-                        value={formData.format}
-                        onChange={e => setFormData({...formData, format: e.target.value as MeetingFormat})}
-                        className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 font-bold appearance-none cursor-pointer pr-12"
-                      >
-                        {Object.values(MeetingFormat).map(f => (
-                          <option key={f} value={f} className="bg-[#0a0a0b] text-white">{f}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                    </div>
+                    <select value={formData.format} onChange={e => setFormData({...formData, format: e.target.value as MeetingFormat})} className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 font-bold appearance-none cursor-pointer pr-12 text-sm">
+                      {Object.values(MeetingFormat).map(f => (<option key={f} value={f} className="bg-[#0a0a0b] text-white">{f}</option>))}
+                    </select>
                   </div>
-                  
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Длительность</label>
-                    <input 
-                      value={formData.duration}
-                      onChange={e => setFormData({...formData, duration: e.target.value})}
-                      placeholder="60 мин"
-                      className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 font-bold text-center"
-                    />
+                    <input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="60 мин" className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 font-bold text-center text-sm" />
                   </div>
                 </div>
-
-                {/* Настройка Группы */}
                 <div className="bg-indigo-600/5 p-6 md:p-8 rounded-[32px] border border-indigo-500/10 space-y-6">
                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-3">
                          <UsersIcon className="text-indigo-500 w-5 h-5" />
-                         <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Группа</h4>
-                      </div>
-                      <div className="flex items-center gap-2">
-                         <span className="text-[8px] font-black text-slate-500 uppercase">Макс. чел:</span>
-                         <input 
-                           type="number"
-                           value={formData.maxParticipants}
-                           onChange={e => setFormData({...formData, maxParticipants: Number(e.target.value)})}
-                           className="w-16 bg-white/10 border border-white/10 p-2 rounded-lg text-white font-black text-center outline-none"
-                         />
+                         <h4 className="text-[10px] font-black uppercase tracking-widest text-white">Групповой формат</h4>
                       </div>
                    </div>
-                   
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                          <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest px-1">Цена Соло</label>
-                         <input 
-                           type="number"
-                           value={formData.price}
-                           onChange={e => setFormData({...formData, price: Number(e.target.value)})}
-                           className="w-full bg-black/40 border border-white/5 p-4 rounded-xl text-white font-bold"
-                         />
+                         <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full bg-black/40 border border-white/5 p-4 rounded-xl text-white font-bold text-sm" />
                       </div>
                       <div className="space-y-2">
                          <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest px-1">Цена Группа</label>
-                         <input 
-                           type="number"
-                           value={formData.groupPrice}
-                           onChange={e => setFormData({...formData, groupPrice: Number(e.target.value)})}
-                           placeholder="0"
-                           className="w-full bg-black/40 border border-white/5 p-4 rounded-xl text-white font-bold"
-                         />
+                         <input type="number" value={formData.groupPrice} onChange={e => setFormData({...formData, groupPrice: Number(e.target.value)})} className="w-full bg-black/40 border border-white/5 p-4 rounded-xl text-white font-bold text-sm" />
                       </div>
                    </div>
                 </div>
-
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Ценность участника</label>
-                  <textarea 
-                    value={formData.description}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="Опишите ценность вашего ШАГа..."
-                    className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all font-medium h-32 resize-none"
-                  />
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Описание ценности</label>
+                  <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Опишите ценность вашего ШАГа..." className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-indigo-500 transition-all font-medium h-32 md:h-48 resize-none text-sm" />
                 </div>
               </div>
-
-              {/* Расписание */}
               <div className="space-y-6 flex flex-col h-full">
                 <div className="flex items-center gap-3 px-2">
                   <CalendarIcon className="w-4 h-4 text-indigo-500" />
                   <label className="text-[10px] font-black text-white uppercase tracking-widest">Окна для записи</label>
                 </div>
                 <div className="flex-1">
-                  <SlotCalendar 
-                    selectedSlots={JSON.parse(formData.slots || '{}')} 
-                    onChange={s => setFormData({...formData, slots: JSON.stringify(s)})}
-                    accentColor="indigo"
-                  />
+                  <SlotCalendar selectedSlots={JSON.parse(formData.slots || '{}')} onChange={s => setFormData({...formData, slots: JSON.stringify(s)})} accentColor="indigo" />
                 </div>
               </div>
             </div>
 
-            {/* Мобильная панель кнопок (закрепленная внизу на моб) */}
-            <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#050505] border-t border-white/10 md:relative md:bg-transparent md:border-none md:p-0 flex flex-col md:flex-row gap-4 pt-10 z-[130]">
+            <div className="flex flex-col md:flex-row gap-4 pt-10">
               <button onClick={() => setIsFormOpen(false)} className="order-2 md:order-1 flex-1 py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-500 hover:bg-white/5 transition-all">Отмена</button>
-              <button onClick={handleSave} className="order-1 md:order-2 flex-[2] bg-white text-black py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3 active:scale-95">
+              <button onClick={handleSave} className="order-1 md:order-2 flex-[2] bg-white text-black py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl flex items-center justify-center gap-3">
                 <Save className="w-5 h-5" /> {editingId ? 'Сохранить изменения' : 'Создать ШАГ'}
               </button>
             </div>
@@ -227,54 +155,49 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
         </div>
       )}
 
-      {/* Список услуг */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
         {services.length === 0 && !isFormOpen && (
-          <div className="md:col-span-2 py-20 md:py-32 bg-white/[0.02] border border-dashed border-white/10 rounded-[40px] md:rounded-[48px] flex flex-col items-center justify-center text-center space-y-6 px-6">
-            <Layers className="w-16 h-16 md:w-20 md:h-20 text-white/10" />
+          <div className="md:col-span-2 py-20 bg-white/[0.04] border border-dashed border-white/20 rounded-[48px] flex flex-col items-center justify-center text-center space-y-6 px-6">
+            <Layers className="w-16 h-16 text-white/10" />
             <div className="space-y-2">
-              <p className="text-white font-black text-xl md:text-2xl uppercase font-syne">Ваша витрина пока пуста</p>
-              <p className="text-slate-500 text-xs max-w-xs mx-auto">Создайте вашу первую услугу, чтобы начать принимать запросы.</p>
+              <p className="text-white font-black text-xl md:text-2xl uppercase font-syne">Ваша витрина пуста</p>
+              <p className="text-slate-500 text-[10px] md:text-xs">Добавьте услуги, чтобы таланты могли записаться к вам.</p>
             </div>
-            <button onClick={() => handleOpenForm()} className="text-indigo-500 font-black uppercase text-[10px] tracking-[0.4em] hover:text-indigo-400 transition-colors">Добавить первый ШАГ</button>
+            <button onClick={() => handleOpenForm()} className="text-indigo-500 font-black uppercase text-[10px] tracking-[0.4em]">Добавить ШАГ</button>
           </div>
         )}
         
         {services.map(service => (
-          <div key={service.id} className="bg-[#0a0a0b] rounded-[40px] border border-white/5 overflow-hidden group hover:border-white/10 transition-all flex flex-col shadow-2xl">
-            <div className="p-6 md:p-8 space-y-6 flex-1 flex flex-col">
+          <div key={service.id} className="bg-white/[0.06] rounded-[40px] border border-white/10 overflow-hidden group hover:border-indigo-500/50 transition-all flex flex-col shadow-xl">
+            <div className="p-8 space-y-6 flex-1 flex flex-col">
               <div className="flex items-start justify-between">
                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-indigo-400">
                        <Zap className="w-3 h-3 fill-current" />
                        <span className="text-[8px] font-black uppercase tracking-widest">{service.category || 'Бизнес'}</span>
                     </div>
-                    <h4 className="text-xl md:text-2xl font-black text-white leading-tight uppercase font-syne">{service.title}</h4>
+                    <h4 className="text-lg md:text-2xl font-black text-white leading-tight uppercase font-syne truncate">{service.title}</h4>
                  </div>
                  <div className="flex gap-2">
                     <button onClick={() => handleOpenForm(service)} className="p-3 bg-white/5 rounded-xl text-white hover:bg-white/10 transition-all"><Edit3 className="w-4 h-4"/></button>
                     <button onClick={() => onDelete(service.id)} className="p-3 bg-red-500/10 rounded-xl text-red-500 hover:bg-red-500/20 transition-all"><Trash2 className="w-4 h-4"/></button>
                  </div>
               </div>
-
-              <p className="text-slate-500 text-xs font-medium leading-relaxed line-clamp-3 italic">«{service.description}»</p>
-
-              <div className="flex items-center justify-between pt-6 border-t border-white/5 mt-auto">
-                <div className="flex gap-4 md:gap-6">
+              <p className="text-slate-400 text-sm italic">«{service.description}»</p>
+              <div className="flex items-center justify-between pt-5 border-t border-white/10 mt-auto">
+                <div className="flex gap-4">
                   <div className="space-y-0.5">
-                    <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Соло</span>
-                    <p className="text-lg md:text-xl font-black text-white">{service.price} ₽</p>
+                    <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Соло</span>
+                    <p className="text-xl font-black text-white">{service.price} ₽</p>
                   </div>
                   {service.groupPrice ? (
                     <div className="space-y-0.5">
-                      <span className="text-[7px] font-black text-slate-600 uppercase tracking-widest">Группа</span>
-                      <p className="text-lg md:text-xl font-black text-emerald-500">{service.groupPrice} ₽</p>
+                      <span className="text-[7px] font-black text-slate-500 uppercase tracking-widest">Группа</span>
+                      <p className="text-xl font-black text-emerald-500">{service.groupPrice} ₽</p>
                     </div>
                   ) : null}
                 </div>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <span className="text-[10px] font-black uppercase">{service.duration}</span>
-                </div>
+                <span className="text-[9px] font-black uppercase text-slate-500">{service.duration}</span>
               </div>
             </div>
           </div>
