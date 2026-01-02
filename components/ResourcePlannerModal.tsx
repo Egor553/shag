@@ -1,23 +1,20 @@
 
 import React, { useState } from 'react';
 import { UserSession, Mentor } from '../types';
-import { Sparkles, Clock, Calendar as CalendarIcon, Check } from 'lucide-react';
+import { Sparkles, Clock, Calendar as CalendarIcon, Check, Loader2 } from 'lucide-react';
 import { SlotCalendar } from './SlotCalendar';
-import { dbService } from '../services/databaseService';
 
 interface ResourcePlannerModalProps {
   session: UserSession;
   mentorProfile: Mentor | null;
-  onUpdateMentorProfile: (profile: Mentor) => void;
-  onSessionUpdate: (session: UserSession) => void;
+  onSaveProfile: (updates: Partial<UserSession>) => void;
   onClose: () => void;
 }
 
 export const ResourcePlannerModal: React.FC<ResourcePlannerModalProps> = ({
   session,
   mentorProfile,
-  onUpdateMentorProfile,
-  onSessionUpdate,
+  onSaveProfile,
   onClose
 }) => {
   const [timeLimit, setTimeLimit] = useState(session.timeLimit || '');
@@ -28,27 +25,19 @@ export const ResourcePlannerModal: React.FC<ResourcePlannerModalProps> = ({
     setIsSaving(true);
     const today = new Date().toISOString();
     
+    // Подготавливаем объект обновлений
     const updates = {
       timeLimit,
-      slots,
+      slots: typeof slots === 'string' ? slots : JSON.stringify(slots),
       lastWeeklyUpdate: today
     };
 
-    // 1. Обновляем локальный профиль ментора
-    if (mentorProfile) {
-      onUpdateMentorProfile({ ...mentorProfile, ...updates });
-    }
-
-    // 2. Обновляем сессию
-    const newSession = { ...session, ...updates };
-    onSessionUpdate(newSession);
-
-    // 3. Сохраняем в БД
     try {
-      await dbService.updateProfile(session.email, updates);
+      // Вызываем переданную функцию сохранения, которая обновит и БД, и локальный стейт
+      await onSaveProfile(updates);
       onClose();
     } catch (e) {
-      alert("Ошибка сохранения ресурсов");
+      alert("Ошибка сохранения ресурсов. Проверьте соединение с интернетом.");
     } finally {
       setIsSaving(false);
     }
@@ -101,7 +90,7 @@ export const ResourcePlannerModal: React.FC<ResourcePlannerModalProps> = ({
                 <CalendarIcon className="w-4 h-4 text-indigo-500" /> Выберите актуальные даты
               </label>
               <SlotCalendar 
-                selectedSlots={JSON.parse(slots || '{}')} 
+                selectedSlots={typeof slots === 'string' ? JSON.parse(slots || '{}') : slots} 
                 onChange={s => setSlots(JSON.stringify(s))} 
                 accentColor="indigo" 
               />
@@ -114,7 +103,7 @@ export const ResourcePlannerModal: React.FC<ResourcePlannerModalProps> = ({
               disabled={isSaving}
               className="w-full py-8 bg-white text-black rounded-[32px] font-black uppercase text-xs tracking-[0.4em] shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4 group disabled:opacity-50"
             >
-              {isSaving ? "Сохранение..." : "Подтвердить план на неделю"} 
+              {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Подтвердить план на неделю"} 
               {!isSaving && <Check className="w-5 h-5 group-hover:scale-125 transition-transform" />}
             </button>
           </div>

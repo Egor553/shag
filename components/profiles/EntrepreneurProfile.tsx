@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { UserSession, Mentor, Transaction } from '../../types';
+import { UserSession, Mentor, Transaction, Booking, Service, Job } from '../../types';
 import { 
   Briefcase, Calendar as CalendarIcon, Save, Loader2, 
   User, MapPin, Building, LogOut, Camera, 
-  Link as LinkIcon, Star, PieChart, Heart, Zap, CheckCircle
+  Link as LinkIcon, Star, PieChart, Heart, Zap, CheckCircle, Target, Users
 } from 'lucide-react';
 import { SlotCalendar } from '../SlotCalendar';
 
@@ -18,6 +18,9 @@ interface EntrepreneurProfileProps {
   onUpdateAvatar: (url: string) => void;
   onSessionUpdate: (session: UserSession) => void;
   transactions?: Transaction[];
+  bookings?: Booking[];
+  services?: Service[];
+  jobs?: Job[];
 }
 
 export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
@@ -29,7 +32,10 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
   onLogout,
   onUpdateAvatar,
   onSessionUpdate,
-  transactions = []
+  transactions = [],
+  bookings = [],
+  services = [],
+  jobs = []
 }) => {
   const [showPhotoInput, setShowPhotoInput] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState(session?.paymentUrl || '');
@@ -44,9 +50,12 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
     setShowPhotoInput(false);
   };
 
+  const myBookings = bookings.filter(b => b.mentorId === session.id || b.mentorId === session.email);
+  const activeBookings = myBookings.filter(b => b.status === 'confirmed' && new Date(b.date) >= new Date());
+  const myServices = services.filter(s => s.mentorId === session.id || s.mentorId === session.email);
+  const myJobs = jobs.filter(j => j.mentorId === session.id || j.mentorId === session.email);
   const totalImpact = transactions.reduce((acc, tx) => acc + (tx.amount || 0), 0);
 
-  // Расчет актуальности расписания
   const isScheduleFresh = () => {
     if (!session.lastWeeklyUpdate) return false;
     const last = new Date(session.lastWeeklyUpdate);
@@ -57,7 +66,6 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
-      {/* Sub Navigation */}
       <div className="flex flex-wrap items-center gap-2 bg-white/5 p-2 rounded-[32px] w-fit border border-white/10">
         <button 
           onClick={() => setActiveSubTab('profile')}
@@ -132,6 +140,13 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
                 </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <QuickStat label="Активные ШАГи" value={myServices.length} icon={Zap} />
+              <QuickStat label="Миссии" value={myJobs.length} icon={Target} />
+              <QuickStat label="Записи" value={activeBookings.length} icon={Users} />
+            </div>
+
             <div className="flex justify-end">
                <button onClick={onSaveProfile} disabled={isSavingProfile} className="bg-white text-black px-12 py-6 rounded-[24px] font-black uppercase text-xs tracking-widest hover:scale-105 transition-all flex items-center gap-3">
                   {isSavingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
@@ -183,41 +198,23 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
                  <p className="text-slate-500 text-sm font-medium leading-relaxed">Ваше время — это самый ценный ресурс, который вы вкладываете в будущее.</p>
               </div>
            </div>
-
-           <div className="bg-[#0a0a0b] border border-white/5 rounded-[48px] p-10 space-y-10">
-              <h3 className="text-xl font-black text-white uppercase font-syne">История ваших ШАГов</h3>
-              <div className="space-y-4">
-                 {transactions.length === 0 ? (
-                    <div className="py-20 text-center space-y-4 opacity-30">
-                       <CalendarIcon className="w-12 h-12 mx-auto" />
-                       <p className="text-[10px] font-black uppercase tracking-widest">Встреч пока не было</p>
-                    </div>
-                 ) : (
-                    transactions.map(tx => (
-                       <div key={tx.id} className="flex items-center justify-between p-6 bg-white/[0.02] border border-white/5 rounded-3xl">
-                          <div className="flex items-center gap-6">
-                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                                <Zap className="w-5 h-5" />
-                             </div>
-                             <div>
-                                <p className="text-white font-bold">{tx.description}</p>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{new Date(tx.date).toLocaleDateString()}</p>
-                             </div>
-                          </div>
-                          <div className="text-right">
-                             <p className="text-lg font-black text-white">{tx.amount} ₽</p>
-                             <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Передано платформе</span>
-                          </div>
-                       </div>
-                    ))
-                 )}
-              </div>
-           </div>
         </div>
       )}
     </div>
   );
 };
+
+const QuickStat = ({ label, value, icon: Icon }: any) => (
+  <div className="bg-[#0a0a0b] p-6 rounded-[32px] border border-white/5 flex items-center gap-5">
+    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-500">
+      <Icon size={20} />
+    </div>
+    <div>
+      <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{label}</p>
+      <p className="text-2xl font-black text-white font-syne">{value}</p>
+    </div>
+  </div>
+);
 
 const ProfileField = ({ label, icon: Icon, value, onChange }: any) => (
   <div className="space-y-3">

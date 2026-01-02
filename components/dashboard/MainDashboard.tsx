@@ -27,7 +27,7 @@ interface MainDashboardProps {
   transactions?: Transaction[];
   onLogout: () => void;
   onUpdateMentorProfile: (profile: Mentor) => void;
-  onSaveProfile: () => void;
+  onSaveProfile: (updates?: Partial<UserSession>) => void;
   onSaveService: (s: Partial<Service>) => Promise<void>;
   onUpdateService: (id: string, updates: Partial<Service>) => Promise<void>;
   onDeleteService: (id: string) => Promise<void>;
@@ -112,7 +112,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
   
-  // Tailwind fixes for dynamic colors
   const accentColorClass = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
   const textAccentClass = isEnt ? 'text-indigo-400' : (isAdmin ? 'text-emerald-400' : 'text-violet-400');
   const bgAccentSoftClass = isEnt ? 'bg-indigo-900/10' : (isAdmin ? 'bg-emerald-900/10' : 'bg-violet-900/10');
@@ -180,8 +179,8 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
-              {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} />}
-              {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} />)}
+              {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} allMentors={allMentors} services={services} jobs={jobs} bookings={bookings} transactions={transactions} onUpdateMentorProfile={onUpdateMentorProfile} onSaveProfile={onSaveProfile} onSaveService={onSaveService} onUpdateService={onUpdateService} onDeleteService={onDeleteService} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onRefresh={onRefresh} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
+              {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">
                   <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.02] p-8 md:p-14 rounded-[40px] md:rounded-[48px] border border-white/5 relative overflow-hidden group shadow-xl">
@@ -196,7 +195,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               )}
             </div>
             
-            {/* Footer inside the scrolling content area */}
             <div className="mt-20">
               <Footer />
             </div>
@@ -217,7 +215,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         })}
       </nav>
 
-      {showPlanner && isEnt && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onUpdateMentorProfile={onUpdateMentorProfile} onSessionUpdate={onSessionUpdate} onClose={() => setShowPlanner(false)} />}
+      {showPlanner && isEnt && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onSaveProfile={onSaveProfile} onClose={() => setShowPlanner(false)} />}
       {showBooking && activeMentor && <BookingModal mentor={activeMentor} service={selectedService || undefined} bookings={localBookings} session={session} existingBooking={pendingPaymentBooking || undefined} onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} onComplete={() => { if (onRefresh) onRefresh(); setShowBooking(false); }} />}
     </div>
   );

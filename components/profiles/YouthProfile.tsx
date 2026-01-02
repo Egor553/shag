@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { UserSession } from '../../types';
+import { UserSession, Booking } from '../../types';
 import { 
   Sparkles, User, Calendar, MapPin, Phone, Mail, 
-  Camera, Link as LinkIcon, LogOut, Zap, Save, Loader2
+  Camera, Link as LinkIcon, LogOut, Zap, Save, Loader2, Clock
 } from 'lucide-react';
 
 interface YouthProfileProps {
@@ -14,6 +14,7 @@ interface YouthProfileProps {
   onSessionUpdate: (session: UserSession) => void;
   onSaveProfile: () => void;
   isSavingProfile: boolean;
+  bookings?: Booking[];
 }
 
 export const YouthProfile: React.FC<YouthProfileProps> = ({ 
@@ -23,7 +24,8 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
   onUpdateAvatar,
   onSessionUpdate,
   onSaveProfile,
-  isSavingProfile
+  isSavingProfile,
+  bookings = []
 }) => {
   const [showPhotoInput, setShowPhotoInput] = useState(false);
   const [tempPhotoUrl, setTempPhotoUrl] = useState(session?.paymentUrl || '');
@@ -37,9 +39,12 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
     setShowPhotoInput(false);
   };
 
+  const myBookings = bookings.filter(b => b.userEmail === session.email);
+  const activeBookingsCount = myBookings.filter(b => b.status === 'confirmed' && new Date(b.date) >= new Date()).length;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-      <div className="lg:col-span-2">
+      <div className="lg:col-span-2 space-y-8">
         <div className="bg-[#0a0a0b] p-8 md:p-14 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-center gap-10 mb-14 pb-12 border-b border-white/5">
             <div className="relative group shrink-0">
@@ -95,8 +100,18 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
         </div>
       </div>
 
-      <div className="space-y-10">
-        <div className="bg-violet-600 p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-full group">
+      <div className="space-y-6">
+        <div className="bg-[#0a0a0b] p-8 rounded-[40px] border border-white/5 flex items-center gap-5">
+           <div className="w-12 h-12 bg-violet-600/10 rounded-2xl flex items-center justify-center text-violet-400">
+              <Clock size={24} />
+           </div>
+           <div>
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Будущие ШАГи</p>
+              <p className="text-3xl font-black text-white font-syne">{activeBookingsCount}</p>
+           </div>
+        </div>
+
+        <div className="bg-violet-600 p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
           <Sparkles className="absolute top-0 right-0 p-8 opacity-10 w-40 h-40 group-hover:scale-110 transition-transform" />
           <h4 className="text-3xl font-black font-syne">Твой успех</h4>
           <p className="font-medium text-violet-100 text-lg">Забирай миссии, учись у лучших и становись частью сильного сообщества!</p>

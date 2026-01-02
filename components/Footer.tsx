@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
             <p className="text-sm font-bold text-white uppercase font-syne">Степанов Иван Артемович</p>
             <p className="text-[11px] font-medium text-slate-500">ИНН: 771551514336</p>
             <div className="pt-4">
-               <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none block">ШАГ © 2024. Все права защищены.</span>
+               <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest leading-none block">ШАГ © 2026. Все права защищены.</span>
             </div>
           </div>
         </div>

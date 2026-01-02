@@ -3,15 +3,38 @@ import React, { useState, useEffect } from 'react';
 import { 
   Users, Layers, Calendar, TrendingUp, Search, 
   Trash2, Edit3, X, Save, ShieldCheck, Briefcase, 
-  Loader2, AlertTriangle, RefreshCw, CreditCard, Copy, CheckCircle, Key, Lock, LogOut, Menu, Trash
+  Loader2, AlertTriangle, RefreshCw, CreditCard, Copy, CheckCircle, Key, Lock, LogOut, Menu, Trash, Eye
 } from 'lucide-react';
 import { dbService, WEBHOOK_URL } from '../services/databaseService';
+import { EntrepreneurProfile } from './profiles/EntrepreneurProfile';
+import { YouthProfile } from './profiles/YouthProfile';
+import { UserRole, UserSession, Mentor, Service, Job, Booking, Transaction } from '../types';
 
 interface AdminPanelProps {
   onLogout: () => void;
+  session: UserSession;
+  allMentors: Mentor[];
+  services: Service[];
+  jobs: Job[];
+  bookings: Booking[];
+  transactions: Transaction[];
+  onUpdateMentorProfile: (profile: Mentor) => void;
+  onSaveProfile: (updates?: Partial<UserSession>) => void;
+  onSaveService: (s: Partial<Service>) => Promise<void>;
+  onUpdateService: (id: string, updates: Partial<Service>) => Promise<void>;
+  onDeleteService: (id: string) => Promise<void>;
+  onUpdateAvatar: (url: string) => Promise<void>;
+  onSessionUpdate: (session: UserSession) => void;
+  onRefresh?: () => void;
+  onSaveJob: (j: Partial<Job>) => Promise<void>;
+  onDeleteJob: (id: string) => Promise<void>;
 }
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ 
+  onLogout, session, allMentors, services, jobs, bookings, transactions,
+  onUpdateMentorProfile, onSaveProfile, onSaveService, onUpdateService,
+  onDeleteService, onUpdateAvatar, onSessionUpdate, onRefresh, onSaveJob, onDeleteJob
+}) => {
   const [activeView, setActiveView] = useState<'stats' | 'users' | 'services' | 'jobs' | 'bookings' | 'payments'>('stats');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -19,10 +42,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   const [copied, setCopied] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  
-  // Тестовые ключи ЮKassa
-  const [yooClientId, setYooClientId] = useState('7FFA0AFF2179B320174CD0076329D5379F14ABE9A40BB331A386C72776D64E65');
-  const [yooClientSecret, setYooClientSecret] = useState('C4EEDEF4C4E25089102DC4D13FE3868A54159EC4236DBA4D149E8B05A446AE6F8737B3E3815A5B4693C59157460AF9347D713BDD18682F25D7F0EE38FEBCD7F6');
+  const [inspectingUser, setInspectingUser] = useState<UserSession | null>(null);
   
   const [editingItem, setEditingItem] = useState<{ type: string; data: any } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -71,36 +91,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     }
   };
 
-  // Улучшенная функция удаления
   const handleDelete = async (type: string, id: string, email?: string) => {
     const displayType = type === 'user' ? 'пользователя' : (type === 'service' ? 'услугу' : (type === 'job' ? 'миссию' : 'встречу'));
     if (!confirm(`Вы уверены, что хотите безвозвратно удалить ${displayType}?`)) return;
     
-    // Для пользователя ID — это email, для остальных — их собственный ID
     const targetId = type === 'user' ? (email || id) : id;
     setIsDeleting(targetId);
 
     try {
       let res;
       if (type === 'user') {
-        // Вызов специфического экшена для удаления пользователя
         res = await dbService.postAction({ action: 'delete_user', email: targetId });
       } else if (type === 'service') {
         res = await dbService.deleteService(targetId);
       } else if (type === 'job') {
         res = await dbService.deleteJob(targetId);
       } else if (type === 'booking') {
-        // Если в скрипте нет delete_booking, используем общий postAction
-        res = await dbService.postAction({ action: 'delete_booking', id: targetId });
+        res = await dbService.deleteBooking(targetId);
       }
 
       if (res && res.result === 'success') {
         await fetchAdminData();
       } else {
-        alert("Удаление не удалось. Убедитесь, что в вашем Google Script (backend) добавлены функции delete_user и delete_booking.");
+        alert("Удаление не удалось.");
       }
     } catch (e) {
-      console.error(e);
       alert("Ошибка сети при удалении");
     } finally {
       setIsDeleting(null);
@@ -145,6 +160,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
   const showClearAllButton = ['services', 'jobs', 'bookings'].includes(activeView);
 
+  if (inspectingUser) {
+    const userRole = inspectingUser.role;
+    const isInspectedMentor = userRole === UserRole.ENTREPRENEUR;
+    const userMentorProfile = allMentors.find(m => m.email === inspectingUser.email) || null;
+    const userServices = services.filter(s => String(s.mentorId) === String(inspectingUser.id) || s.mentorId === inspectingUser.email);
+    const userJobs = jobs.filter(j => String(j.mentorId) === String(inspectingUser.id) || j.mentorId === inspectingUser.email);
+    const userBookings = bookings.filter(b => b.mentorId === inspectingUser.id || b.mentorId === inspectingUser.email || b.userEmail === inspectingUser.email);
+    const userTransactions = transactions.filter(t => t.userId === inspectingUser.id || t.userId === inspectingUser.email);
+
+    return (
+      <div className="fixed inset-0 z-[150] bg-[#050505] overflow-y-auto no-scrollbar pb-20">
+        <div className="sticky top-0 bg-indigo-600 p-4 flex items-center justify-between z-50 shadow-2xl">
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1 bg-white/20 rounded-lg text-white text-[10px] font-black uppercase">Root View</div>
+            <p className="text-white font-bold text-sm">Просмотр профиля: {inspectingUser.name}</p>
+          </div>
+          <button onClick={() => setInspectingUser(null)} className="px-6 py-2 bg-white text-indigo-600 rounded-xl font-black uppercase text-xs">Выйти из режима просмотра</button>
+        </div>
+
+        <div className="max-w-7xl mx-auto p-6 lg:p-12">
+          {isInspectedMentor ? (
+            <EntrepreneurProfile 
+              session={inspectingUser} 
+              mentorProfile={userMentorProfile as Mentor} 
+              isSavingProfile={false} 
+              onSaveProfile={() => {}} 
+              onUpdateMentorProfile={() => {}} 
+              onLogout={() => {}} 
+              onUpdateAvatar={() => {}} 
+              onSessionUpdate={() => {}} 
+              transactions={userTransactions}
+              bookings={userBookings}
+              services={userServices}
+              jobs={userJobs}
+            />
+          ) : (
+            <YouthProfile 
+              session={inspectingUser} 
+              onCatalogClick={() => {}} 
+              onLogout={() => {}} 
+              onUpdateAvatar={() => {}} 
+              onSessionUpdate={() => {}} 
+              onSaveProfile={() => {}} 
+              isSavingProfile={false}
+              bookings={userBookings}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (loading) return (
     <div className="h-full min-h-screen flex items-center justify-center bg-[#050505] p-6 text-center">
       <div className="flex flex-col items-center gap-6">
@@ -159,7 +226,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#050505] text-white">
-      {/* Mobile Menu Button */}
       <div className="lg:hidden flex items-center justify-between p-6 bg-[#0a0a0b] border-b border-white/5 sticky top-0 z-[110]">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -172,7 +238,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </button>
       </div>
 
-      {/* Sidebar */}
       <aside className={`
         fixed lg:relative inset-0 z-[100] lg:z-10
         w-full lg:w-72 bg-[#0a0a0b] border-r border-white/5 flex flex-col p-8 space-y-2 shrink-0
@@ -185,7 +250,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
            </div>
            <div>
               <span className="font-black text-xs tracking-tight uppercase block leading-none">ШАГ ROOT</span>
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">v2.7 Fixed Deletion</span>
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">v3.0 Profiler</span>
            </div>
         </div>
         
@@ -219,7 +284,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-6 lg:p-12 overflow-y-auto bg-[#050505] pb-24 lg:pb-12">
         <div className="max-w-6xl mx-auto space-y-8 lg:space-y-12">
           
@@ -251,33 +315,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                <StatBox label="Миссий" value={data?.jobs?.length} color="pink" />
                <StatBox label="Встреч" value={data?.bookings?.length} color="emerald" />
             </div>
-          )}
-
-          {activeView === 'payments' && (
-             <div className="bg-indigo-600/5 border-2 border-indigo-500/10 p-6 lg:p-12 rounded-[40px] space-y-8">
-               <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center">
-                     <CreditCard className="w-6 h-6 lg:w-8 lg:h-8" />
-                  </div>
-                  <div>
-                     <h3 className="text-xl lg:text-3xl font-black font-syne uppercase">ЮKassa API</h3>
-                     <p className="text-indigo-400 text-[9px] font-black uppercase tracking-widest mt-1">Прямые платежи в вашу кассу</p>
-                  </div>
-               </div>
-               
-               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-4">
-                  <p className="text-xs text-slate-400 font-medium">Для того чтобы оплаты работали, вставьте эти ключи в личном кабинете ЮKassa:</p>
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Webhook URL (Notification URI)</label>
-                    <div className="flex gap-2">
-                       <input readOnly value={WEBHOOK_URL} className="flex-1 bg-black/40 p-4 rounded-xl font-mono text-[10px] text-indigo-400 border border-white/5" />
-                       <button onClick={() => copyToClipboard(WEBHOOK_URL)} className="px-6 bg-white text-black rounded-xl font-black text-[10px] uppercase">
-                         {copied ? 'OK' : 'Копировать'}
-                       </button>
-                    </div>
-                  </div>
-               </div>
-             </div>
           )}
 
           {activeView !== 'stats' && activeView !== 'payments' && (
@@ -323,6 +360,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                                </td>
                                <td className="p-6 text-right">
                                   <div className="flex justify-end gap-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                     {type === 'user' && (
+                                       <button onClick={() => setInspectingUser(item)} className="p-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all flex items-center gap-2">
+                                          <Eye className="w-4 h-4" /> <span className="text-[8px] font-black uppercase">Профиль</span>
+                                       </button>
+                                     )}
                                      <button onClick={() => setEditingItem({ type, data: {...item} })} className="p-3 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
                                         <Edit3 className="w-4 h-4" />
                                      </button>
@@ -346,7 +388,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         </div>
       </main>
 
-      {/* Editor Modal */}
       {editingItem && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
           <div className="w-full max-w-lg bg-[#0a0a0b] border border-white/10 p-8 rounded-[40px] space-y-8 shadow-3xl">
@@ -364,6 +405,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold outline-none focus:border-indigo-600" 
                    />
                 </div>
+                {editingItem.type === 'booking' && (
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Статус</label>
+                    <select 
+                      value={editingItem.data.status}
+                      onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, status: e.target.value}})}
+                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold outline-none"
+                    >
+                      <option value="pending">Ожидает</option>
+                      <option value="confirmed">Подтверждено</option>
+                      <option value="cancelled">Отменено</option>
+                      <option value="completed">Завершено</option>
+                    </select>
+                  </div>
+                )}
              </div>
 
              <div className="flex gap-4">

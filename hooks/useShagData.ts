@@ -40,7 +40,7 @@ export const useShagData = () => {
       if (currentMentor) {
         setMentorProfile(currentMentor);
         if (session && updateSession) {
-          updateSession({ ...session, balance: Number(currentMentor.balance) || 0 });
+          updateSession({ ...session, ...currentMentor, balance: Number(currentMentor.balance) || 0 });
         }
       }
     } catch (e) {
@@ -96,8 +96,8 @@ export const useShagData = () => {
     await syncUserData(email);
   };
 
-  const updateProfile = async (email: string, session: UserSession) => {
-    await dbService.updateProfile(email, session);
+  const updateProfile = async (email: string, updates: Partial<UserSession>) => {
+    await dbService.updateProfile(email, updates);
     await syncUserData(email);
   };
 

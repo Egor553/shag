@@ -34,7 +34,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
           </h1>
         </div>
 
-        {/* Improved Categories Filter - Horizontal scroll on mobile */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
            {categories.map(cat => (
              <button 

@@ -121,7 +121,7 @@ const App: React.FC = () => {
         transactions={transactions}
         onLogout={() => { setSession(null); localStorage.removeItem('shag_session'); }}
         onUpdateMentorProfile={setMentorProfile}
-        onSaveProfile={() => updateProfile(session.email, session)}
+        onSaveProfile={(updates) => updateProfile(session.email, updates || session)}
         onSaveService={(s) => saveService(s, session)}
         onUpdateService={(id, u) => saveService({ ...u, id }, session)}
         onDeleteService={(id) => deleteService(id, session.email)}

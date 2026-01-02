@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Booking, UserSession, UserRole } from '../../types';
 import { 
   Calendar as CalendarIcon, Clock, User, 
-  Zap, ArrowRightLeft, Target, Heart, RefreshCcw, XCircle, CreditCard
+  Zap, ArrowRightLeft, Target, Heart, RefreshCcw, XCircle, CreditCard, Trash2
 } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
 
@@ -22,28 +22,56 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
   onReschedule,
   onRefresh 
 }) => {
-  const [isCancelling, setIsCancelling] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const isEnt = session.role === UserRole.ENTREPRENEUR;
+  const isAdmin = session.role === UserRole.ADMIN;
   
   const myBookings = [...bookings].filter(b => 
+    isAdmin ? true :
     isEnt ? (String(b.mentorId) === String(session.id) || String(b.mentorId).toLowerCase() === String(session.email).toLowerCase())
           : (String(b.userEmail).toLowerCase() === String(session.email).toLowerCase())
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleCancel = async (booking: Booking) => {
-    if (isEnt) return; // Предприниматель не может отменять
+    if (isEnt && !isAdmin) return; 
 
     const personName = booking.mentorName || 'наставника';
     if (!confirm(`Вы уверены, что хотите отменить запись к ${personName}?`)) return;
     
-    setIsCancelling(booking.id);
+    setIsProcessing(booking.id);
     try {
-      const res = await dbService.cancelBooking(booking.id, 'Отменено талантом');
-      if (res.result === 'success' && onRefresh) onRefresh();
+      const res = await dbService.cancelBooking(booking.id, isAdmin ? 'Отменено администратором' : 'Отменено талантом');
+      if (res.result === 'success') {
+        if (isAdmin) {
+          // Отправка уведомления таланту
+          await dbService.sendMessage({
+            id: Math.random().toString(36).substr(2, 9),
+            bookingId: booking.id,
+            senderEmail: 'system',
+            senderName: 'ШАГ Система',
+            text: '❌ Ваша запись была отменена администратором платформы.',
+            timestamp: new Date().toISOString()
+          });
+        }
+        if (onRefresh) onRefresh();
+      }
     } catch (e) {
       alert('Ошибка связи с сервером');
     } finally {
-      setIsCancelling(null);
+      setIsProcessing(null);
+    }
+  };
+
+  const handleDelete = async (booking: Booking) => {
+    if (!confirm('Вы уверены, что хотите безвозвратно удалить эту запись из истории?')) return;
+    setIsProcessing(booking.id);
+    try {
+      const res = await dbService.deleteBooking(booking.id);
+      if (res.result === 'success' && onRefresh) onRefresh();
+    } catch (e) {
+      alert('Ошибка при удалении');
+    } finally {
+      setIsProcessing(null);
     }
   };
 
@@ -52,9 +80,10 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
       const d = new Date(dateStr);
       return {
         day: d.getDate(),
-        month: d.toLocaleDateString('ru-RU', { month: 'short' }).replace('.', '').toUpperCase()
+        month: d.toLocaleDateString('ru-RU', { month: 'short' }).replace('.', '').toUpperCase(),
+        fullDate: d
       };
-    } catch { return { day: '?', month: '???' }; }
+    } catch { return { day: '?', month: '???', fullDate: new Date() }; }
   };
 
   if (myBookings.length === 0) {
@@ -65,6 +94,8 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
       </div>
     );
   }
+
+  const now = new Date();
 
   return (
     <div className="space-y-12 pb-20">
@@ -85,7 +116,8 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
 
       <div className="grid grid-cols-1 gap-6">
         {myBookings.map((booking) => {
-          const { day, month } = formatDate(booking.date);
+          const { day, month, fullDate } = formatDate(booking.date);
+          const isPast = fullDate < now;
           const isCancelled = booking.status === 'cancelled';
           const isConfirmed = booking.status === 'confirmed';
 
@@ -96,7 +128,6 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
             >
               <div className="p-6 md:p-10 flex flex-col lg:flex-row gap-8 items-start">
                 
-                {/* Date Block */}
                 <div className="flex flex-row lg:flex-col items-center justify-center gap-4 p-6 bg-white/[0.03] rounded-[28px] border border-white/5 w-full lg:w-32 shrink-0">
                   <div className="text-center">
                     <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest block">{month}</span>
@@ -108,15 +139,19 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 space-y-6 w-full">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className={`px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${isConfirmed ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
-                      {isConfirmed ? 'Подтверждено' : 'Ожидает оплаты'}
+                      {isConfirmed ? 'Подтверждено' : (isCancelled ? 'Отменено' : 'Ожидает оплаты')}
                     </span>
                     <span className="px-4 py-1 bg-white/5 rounded-full text-[8px] font-black uppercase text-slate-500 tracking-widest">
                       {booking.format}
                     </span>
+                    {isPast && (
+                      <span className="px-4 py-1 bg-white/10 rounded-full text-[8px] font-black uppercase text-slate-400 tracking-widest">
+                        В прошлом
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -130,7 +165,7 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                       </div>
                     </div>
 
-                    {isEnt && booking.goal && (
+                    {(isEnt || isAdmin) && booking.goal && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-6 bg-indigo-500/5 rounded-3xl border border-white/5 space-y-3">
                            <div className="flex items-center gap-2 text-indigo-400">
@@ -155,32 +190,56 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex flex-col gap-3 w-full lg:w-48 shrink-0 justify-center">
-                  {isEnt && isConfirmed && (
+                  {(isConfirmed || isAdmin) && !isPast && !isCancelled && (
                     <button 
                       onClick={() => onReschedule && onReschedule(booking)}
                       className="w-full py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 transition-all border border-white/10 active:scale-95"
                     >
-                      <ArrowRightLeft size={16} /> Перенести встречу
+                      <ArrowRightLeft size={16} /> {isAdmin ? 'Перенести' : 'Перенести встречу'}
                     </button>
                   )}
                   
-                  {!isEnt && !isCancelled && (
-                    <>
-                      {booking.status === 'pending' && (
-                        <button onClick={() => onPay(booking)} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl flex items-center justify-center gap-3">
-                          <CreditCard size={16} /> Оплатить ШАГ
-                        </button>
-                      )}
-                      <button 
-                        disabled={!!isCancelling}
-                        onClick={() => handleCancel(booking)} 
-                        className="w-full py-5 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-red-500/20 transition-all border border-red-500/10"
-                      >
-                        {isCancelling === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <XCircle size={16} />} Отменить
-                      </button>
-                    </>
+                  {isConfirmed && !isPast && !isEnt && !isCancelled && (
+                    <p className="text-[8px] font-bold text-amber-500/60 uppercase text-center px-4 tracking-widest">
+                      Активные подтвержденные записи нельзя отменять самостоятельно
+                    </p>
+                  )}
+
+                  {!isConfirmed && !isPast && !isCancelled && !isEnt && (
+                    <button 
+                      disabled={!!isProcessing}
+                      onClick={() => handleCancel(booking)} 
+                      className="w-full py-5 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-red-500/20 transition-all border border-red-500/10"
+                    >
+                      {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <XCircle size={16} />} Отменить
+                    </button>
+                  )}
+
+                  {isAdmin && !isCancelled && (
+                    <button 
+                      disabled={!!isProcessing}
+                      onClick={() => handleCancel(booking)} 
+                      className="w-full py-5 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 shadow-lg"
+                    >
+                      {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <XCircle size={16} />} ROOT ОТМЕНА
+                    </button>
+                  )}
+
+                  {(isPast || isCancelled) && (
+                    <button 
+                      disabled={!!isProcessing}
+                      onClick={() => handleDelete(booking)}
+                      className="w-full py-5 bg-white/5 text-slate-400 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-red-500/10 hover:text-red-500 transition-all"
+                    >
+                      {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Trash2 size={16} />} Удалить из истории
+                    </button>
+                  )}
+                  
+                  {!isEnt && booking.status === 'pending' && !isPast && !isCancelled && (
+                    <button onClick={() => onPay(booking)} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl flex items-center justify-center gap-3">
+                      <CreditCard size={16} /> Оплатить ШАГ
+                    </button>
                   )}
                 </div>
 
