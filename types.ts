@@ -47,6 +47,7 @@ export interface UserSession {
   email: string;
   isLoggedIn: boolean;
   id: string;
+  status?: 'active' | 'pending' | 'rejected'; // Статус модерации
   isVerified?: boolean;
   phone?: string;
   city?: string;
@@ -68,11 +69,13 @@ export interface UserSession {
   expectations?: string;
   mutualHelp?: string;
   values?: string[];
+  businessClubs?: string; // Новое поле
+  lifestyle?: string; // Новое поле (спорт, семья)
   createdAt?: string;
   ownerEmail?: string;
   balance?: number;
   lastMonthlyUpdate?: string; 
-  lastWeeklyUpdate?: string; // ISO String даты последнего обновления ресурсов
+  lastWeeklyUpdate?: string; 
 }
 
 export interface Booking {
@@ -99,7 +102,7 @@ export interface Mentor extends UserSession {
   achievements?: string[];
   singlePrice: number;
   groupPrice: number;
-  avatarUrl: string; // fallback
+  avatarUrl: string; 
 }
 
 export interface Service {

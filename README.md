@@ -1,5 +1,5 @@
 
-# ШАГ — Backend (Google Apps Script v30.0 - ULTRA STABLE)
+# ШАГ — Backend (Google Apps Script v31.0 - MODERATION READY)
 
 Этот скрипт — ядро платформы. Он управляет всеми базами данных. 
 Инструкция:
@@ -12,8 +12,8 @@
 
 ```javascript
 /**
- * MISSION CORE ENGINE v30.0
- * Поддержка: Менторы, Таланты, Админы
+ * MISSION CORE ENGINE v31.0
+ * Поддержка: Менторы, Таланты, Админы + Модерация
  */
 
 function doGet(e) {
@@ -58,7 +58,8 @@ function doPost(e) {
 
   // --- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ---
   if (action === 'register') {
-    var sheet = getOrCreateSheet(ss, 'Users', ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance", "lastWeeklyUpdate"]);
+    // Добавлена колонка status в заголовки
+    var sheet = getOrCreateSheet(ss, 'Users', ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance", "status", "lastWeeklyUpdate", "businessClubs", "lifestyle"]);
     appendData(sheet, data);
     return createResponse({ result: 'success' });
   }
@@ -90,7 +91,7 @@ function doPost(e) {
     return createResponse({ result: 'success' });
   }
 
-  // --- МИССИИ (ВАКАНСИИ) ---
+  // --- ВАКАНСИИ / ПОДРАБОТКА ---
   if (action === 'save_job') {
     var sheet = getOrCreateSheet(ss, 'Jobs', ["id", "mentorId", "mentorName", "title", "description", "reward", "category", "telegram", "deadline", "status", "createdAt"]);
     appendData(sheet, data);

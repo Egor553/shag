@@ -2,7 +2,7 @@
 import { UserSession, Booking } from '../types';
 
 // Ссылка на ваш Google Apps Script. 
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyz-nFvZ67qdsxHoi5itsyQI5zbfAYFspFPsT8k5qE5T1PMu2sXvAHoxe0XARdM1ZQD/exec';
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyVhNOnuzkZHRYTa-jrFerkI04s8jxyEZoMVXgjgJ9QIjkJhIQeobRxiugfEUMg-Hhx/exec';
 
 export const dbService = {
   async syncData(email?: string) {

@@ -5,7 +5,7 @@ import { dbService } from './services/databaseService';
 import { useShagData } from './hooks/useShagData';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { RegistrationFlow } from './components/RegistrationFlow';
-import { Loader2, Star, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Loader2, Star, Zap, AlertTriangle, ShieldCheck, Clock, XCircle, LogOut, RefreshCcw } from 'lucide-react';
 import { Footer } from './components/Footer';
 
 export const ShagLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -30,11 +30,10 @@ const App: React.FC = () => {
     name: '', email: '', password: '', phone: '', city: '', direction: '',
     companyName: '', turnover: '', qualities: '', requestToYouth: '', 
     videoUrl: '', timeLimit: '', slots: {}, birthDate: '', focusGoal: '',
-    expectations: '', mutualHelp: ''
+    expectations: '', mutualHelp: '', businessClubs: '', lifestyle: ''
   });
   const [isAppLoading, setIsAppLoading] = useState(true);
 
-  // Используем наш новый хук для всех операций с БД
   const { 
     allMentors, services, jobs, bookings, transactions, mentorProfile,
     syncUserData, saveService, deleteService, saveJob, deleteJob, updateProfile,
@@ -60,7 +59,7 @@ const App: React.FC = () => {
     setErrorMsg(null);
     try {
       if (loginEmail === 'admin' && loginPassword === 'admin123') {
-        const adminSess = { id: 'admin-001', email: 'admin', name: 'Administrator', role: UserRole.ADMIN, isLoggedIn: true } as UserSession;
+        const adminSess = { id: 'admin-001', email: 'admin', name: 'Administrator', role: UserRole.ADMIN, isLoggedIn: true, status: 'active' } as UserSession;
         setSession(adminSess);
         localStorage.setItem('shag_session', JSON.stringify(adminSess));
         await syncUserData('admin', adminSess, setSession);
@@ -84,7 +83,16 @@ const App: React.FC = () => {
     e.preventDefault();
     if (regStep < 3) { setRegStep(regStep + 1); return; }
     setIsAuthLoading(true);
-    const newUser = { id: Math.random().toString(36).substr(2, 9), role: tempRole, ...regData, slots: JSON.stringify(regData.slots), balance: 0 };
+    const initialStatus = tempRole === UserRole.ENTREPRENEUR ? 'pending' : 'active';
+    const newUser = { 
+      id: Math.random().toString(36).substr(2, 9), 
+      role: tempRole, 
+      ...regData, 
+      slots: JSON.stringify(regData.slots), 
+      balance: 0,
+      status: initialStatus,
+      createdAt: new Date().toISOString()
+    };
     try {
       const res = await dbService.register(newUser);
       if (res.result === 'success') {
@@ -103,11 +111,73 @@ const App: React.FC = () => {
     }
   };
 
+  const logout = () => {
+    setSession(null);
+    localStorage.removeItem('shag_session');
+  };
+
+  const checkStatus = async () => {
+    if (session) {
+      setIsAppLoading(true);
+      await syncUserData(session.email, session, setSession);
+      setIsAppLoading(false);
+    }
+  };
+
   if (isAppLoading) return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center">
       <Loader2 className="animate-spin text-indigo-600 w-12 h-12" />
     </div>
   );
+
+  // Экран ожидания модерации
+  if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && session.status === 'pending') {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
+        <div className="w-full max-w-xl bg-[#0a0a0b] border border-white/5 p-12 md:p-16 rounded-[48px] text-center space-y-10 animate-in zoom-in duration-500">
+           <div className="w-24 h-24 bg-amber-500/10 rounded-[32px] flex items-center justify-center mx-auto text-amber-500 border border-amber-500/10">
+              <Clock className="w-12 h-12 animate-pulse" />
+           </div>
+           <div className="space-y-4">
+              <h2 className="text-4xl font-black text-white uppercase font-syne tracking-tighter leading-none">ЗАЯВКА НА<br/><span className="text-amber-500">МОДЕРАЦИИ</span></h2>
+              <p className="text-slate-400 font-medium leading-relaxed">
+                Мы получили вашу анкету. Наши администраторы проверят её на соответствие критериям (опыт 5+ лет, оборот 100млн+) и одобрят вход в течение 24 часов.
+              </p>
+           </div>
+           <div className="flex flex-col gap-4">
+              <button onClick={checkStatus} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+                 <RefreshCcw size={16} /> Проверить статус
+              </button>
+              <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto transition-colors mt-2">
+                 <LogOut size={16} /> Выйти из аккаунта
+              </button>
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Экран отклоненной заявки
+  if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && (session.status === 'rejected')) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
+        <div className="w-full max-w-xl bg-[#0a0a0b] border border-red-500/20 p-12 md:p-16 rounded-[48px] text-center space-y-10 animate-in zoom-in duration-500">
+           <div className="w-24 h-24 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto text-red-500 border border-red-500/10">
+              <XCircle className="w-12 h-12" />
+           </div>
+           <div className="space-y-4">
+              <h2 className="text-4xl font-black text-white uppercase font-syne tracking-tighter leading-none">ЗАЯВКА<br/><span className="text-red-500">ОТКЛОНЕНА</span></h2>
+              <p className="text-slate-400 font-medium leading-relaxed">
+                К сожалению, на данный момент ваш профиль не прошел модерацию. Попробуйте обновить данные или связаться с поддержкой по вопросам соответствия критериям платформы.
+              </p>
+           </div>
+           <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto transition-colors">
+              <LogOut size={16} /> Вернуться на главную
+           </button>
+        </div>
+      </div>
+    );
+  }
 
   if (session?.isLoggedIn) {
     return (
@@ -119,7 +189,7 @@ const App: React.FC = () => {
         bookings={bookings} 
         mentorProfile={mentorProfile}
         transactions={transactions}
-        onLogout={() => { setSession(null); localStorage.removeItem('shag_session'); }}
+        onLogout={logout}
         onUpdateMentorProfile={setMentorProfile}
         onSaveProfile={(updates) => updateProfile(session.email, updates || session)}
         onSaveService={(s) => saveService(s, session)}
@@ -158,13 +228,6 @@ const App: React.FC = () => {
                 {isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}
               </button>
             </form>
-            
-            <div className="p-6 bg-indigo-600/5 rounded-3xl border border-indigo-500/10 flex items-center gap-4 text-indigo-400">
-               <ShieldCheck size={18} />
-               <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
-                  Для входа в Root: admin / admin123
-               </p>
-            </div>
 
             <button onClick={() => setAuthMode(null)} className="w-full text-slate-500 hover:text-white text-[10px] uppercase font-bold tracking-widest transition-colors">Назад</button>
           </div>

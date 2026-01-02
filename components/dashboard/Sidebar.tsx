@@ -30,7 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const menuItems = [
     { id: AppTab.CATALOG, label: 'Галерея ШАГов', icon: Users },
-    { id: AppTab.JOBS, label: 'Вакансии', icon: Briefcase },
+    { id: AppTab.JOBS, label: 'Вакансии', icon: Briefcase }, // Переименовано с Миссии
     ...(isEnt ? [{ id: AppTab.SERVICES, label: 'Мои ШАГи', icon: LayoutGrid }] : []),
     { id: AppTab.MEETINGS, label: 'События', icon: CalendarIcon },
     { id: AppTab.MISSION, label: 'Миссия', icon: Info },

@@ -6,7 +6,6 @@ import {
   ArrowRight, Zap, DollarSign, Send
 } from 'lucide-react';
 
-// Added missing JobsViewProps interface
 interface JobsViewProps {
   jobs: Job[];
   session: UserSession;
@@ -19,7 +18,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Инициализируем форму, пытаясь подтянуть контакт из профиля если он есть
   const [formData, setFormData] = useState<Partial<Job>>({
     title: '',
     description: '',
@@ -79,8 +77,8 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
             <span className="text-violet-500 font-bold text-[9px] uppercase tracking-[0.4em]">Work & Projects</span>
           </div>
           <h1 className="text-[12vw] sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.9] uppercase font-syne">
-            ПОДРАБОТКА<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ВАКАНСИИ</span>
+            ВАКАНСИИ<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ПОДРАБОТКА</span>
           </h1>
         </div>
         {isEnt && !isFormOpen && (

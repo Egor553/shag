@@ -179,7 +179,8 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
-              {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} allMentors={allMentors} services={services} jobs={jobs} bookings={bookings} transactions={transactions} onUpdateMentorProfile={onUpdateMentorProfile} onSaveProfile={onSaveProfile} onSaveService={onSaveService} onUpdateService={onUpdateService} onDeleteService={onDeleteService} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onRefresh={onRefresh} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
+              {/* Fix: AdminPanel only accepts onLogout and session props as per its definition in AdminPanelProps */}
+              {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">

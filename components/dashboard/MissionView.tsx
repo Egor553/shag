@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Quote, Zap, ShieldCheck, CheckCircle2, MessageSquareX, TrendingUp, Users } from 'lucide-react';
+import { Quote, Zap, ShieldCheck, CheckCircle2, MessageSquareX, TrendingUp, Users, Star, Heart } from 'lucide-react';
 import { ShagLogo } from '../../App';
 
 export const MissionView: React.FC = () => {
@@ -58,22 +58,31 @@ export const MissionView: React.FC = () => {
           <ShieldCheck className="w-32 h-32 md:w-64 md:h-64 text-white" />
         </div>
         <div className="relative z-10 space-y-8 md:space-y-10">
-          <h2 className="text-3xl md:text-6xl font-black text-white uppercase font-syne tracking-tighter">КРИТЕРИИ ОТБОРА</h2>
+          <h2 className="text-3xl md:text-6xl font-black text-white uppercase font-syne tracking-tighter">КРИТЕРИИ ОТБОРА МЕНТОРОВ</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-8">
               <p className="text-slate-300 text-lg md:text-xl font-medium leading-relaxed">
-                Мы выбираем тех, кто не только успешен в деньгах, но и твёрд в ценностях.
+                Мы выбираем тех, кто не только успешен в деньгах, но и твёрд в ценностях. Нам важно, чтобы ментор был примером во всех сферах жизни.
               </p>
-              <div className="flex items-center gap-3 md:gap-4 text-emerald-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em]">
-                <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5" /> Проверенные эксперты
+              <div className="space-y-4">
+                 <div className="flex items-center gap-3 text-emerald-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em]">
+                   <CheckCircle2 className="w-5 h-5" /> Проверенные эксперты
+                 </div>
+                 <div className="flex items-center gap-3 text-indigo-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em]">
+                   <Star className="w-5 h-5" /> Участники топ-бизнес клубов
+                 </div>
+                 <div className="flex items-center gap-3 text-pink-400 font-black text-[10px] md:text-xs uppercase tracking-[0.2em]">
+                   <Heart className="w-5 h-5" /> Семейные ценности
+                 </div>
               </div>
             </div>
             <div className="space-y-4 bg-black/40 p-6 md:p-10 rounded-[32px] md:rounded-[40px] border border-white/10">
-               <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Проходной порог:</h4>
-               <ul className="space-y-3 text-xs md:text-sm font-bold text-slate-300">
-                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Опыт в нише: от 5 лет</li>
-                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Бизнес: оборот от 50 млн ₽</li>
-                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Твердые кейсы и результаты</li>
+               <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Жесткий проходной порог:</h4>
+               <ul className="space-y-4 text-xs md:text-sm font-bold text-slate-300">
+                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Опыт в своей нише: от 5 лет (100% подтверждение)</li>
+                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Бизнес: личный оборот от 100 млн ₽ / год</li>
+                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Доп. преимущество: резидентство в клубах Атланты, Клуб 500 и др.</li>
+                 <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0" /> Спортивный образ жизни и активная соц. позиция</li>
                </ul>
             </div>
           </div>
