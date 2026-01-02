@@ -1,6 +1,7 @@
 
-import { UserSession } from '../types';
+import { UserSession, Booking } from '../types';
 
+// Ссылка на ваш Google Apps Script. Обязательно разверните свой скрипт!
 export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz9Wop9I4Ka1XCf6XVeL1b0E2b_I5xpuK7jPEqRU1aYO6NYCHYMex22lvOwiKgI_-QR/exec';
 
 export const dbService = {
@@ -9,20 +10,15 @@ export const dbService = {
       const url = email 
         ? `${WEBHOOK_URL}?action=sync&email=${encodeURIComponent(email)}` 
         : `${WEBHOOK_URL}?action=sync`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Sync failed');
+      
+      const response = await fetch(url).catch(() => null);
+      if (!response || !response.ok) {
+        return { result: 'offline', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
+      }
       return await response.json();
     } catch (e) {
       console.error('Sync error:', e);
-      return { 
-        result: 'error', 
-        dynamicMentors: [], 
-        services: [], 
-        bookings: [], 
-        jobs: [],
-        reviews: [],
-        transactions: []
-      };
+      return { result: 'error', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
     }
   },
 
@@ -37,7 +33,7 @@ export const dbService = {
         throw new Error(data.message || 'Неверный логин или пароль');
       }
     } catch (e: any) {
-      throw new Error(e.message || 'Ошибка входа');
+      throw new Error('Ошибка входа. Проверьте соединение с бэкендом.');
     }
   },
 
@@ -50,16 +46,19 @@ export const dbService = {
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         body: JSON.stringify(payload)
-      });
+      }).catch(() => null);
+
+      if (!response) return { result: 'error', message: 'Бэкенд недоступен' };
+      
       const data = await response.json();
-      if (data.result !== 'success') {
-        console.error('Database Error:', data.message);
-      }
       return data;
     } catch (e) {
-      console.error("Network Error", e);
       return { result: 'error', message: 'Ошибка сети' };
     }
+  },
+
+  async saveBooking(booking: Partial<Booking>) {
+    return this.postAction({ action: 'save_booking', ...booking });
   },
 
   async updateProfile(email: string, updates: Partial<UserSession>) {
@@ -80,19 +79,6 @@ export const dbService = {
 
   async deleteJob(id: string) {
     return this.postAction({ action: 'delete_job', id });
-  },
-
-  async getMessages(bookingId: string) {
-    try {
-      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to fetch messages');
-      const data = await response.json();
-      return data.messages || [];
-    } catch (e) {
-      console.error('getMessages error:', e);
-      return [];
-    }
   },
 
   async sendMessage(message: any) {
@@ -129,5 +115,16 @@ export const dbService = {
       id: bookingId,
       updates: { date: newDate, time: newTime, status: 'confirmed' }
     });
+  },
+
+  async getMessages(bookingId: string) {
+    try {
+      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return data.messages || [];
+    } catch (e) {
+      return [];
+    }
   }
 };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sparkles, User, Calendar, MapPin, Phone, Mail, Key, Target, Heart, Rocket, Smile } from 'lucide-react';
 
@@ -69,7 +68,7 @@ export const YouthRegForm: React.FC<YouthRegFormProps> = ({ regStep, regData, se
       {regStep === 2 && (
         <div className="space-y-10 animate-in fade-in slide-in-from-right-8 duration-500">
           <TextAreaField 
-            label="Твоя большая цель" 
+            label="На чём сейчас твой главный фокус?" 
             icon={Target} 
             placeholder="Что ты хочешь достичь за ближайший год? В какой точке планируешь оказаться?" 
             value={regData.focusGoal} 

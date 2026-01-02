@@ -4,7 +4,7 @@ import { UserSession, Mentor, Transaction } from '../../types';
 import { 
   Briefcase, Calendar as CalendarIcon, Save, Loader2, 
   User, MapPin, Building, LogOut, Camera, 
-  Link as LinkIcon, Star, PieChart, Heart, Zap
+  Link as LinkIcon, Star, PieChart, Heart, Zap, CheckCircle
 } from 'lucide-react';
 import { SlotCalendar } from '../SlotCalendar';
 
@@ -45,6 +45,15 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
   };
 
   const totalImpact = transactions.reduce((acc, tx) => acc + (tx.amount || 0), 0);
+
+  // Расчет актуальности расписания
+  const isScheduleFresh = () => {
+    if (!session.lastWeeklyUpdate) return false;
+    const last = new Date(session.lastWeeklyUpdate);
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    return last > oneWeekAgo;
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
@@ -94,14 +103,21 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
                 <div className="flex-1 text-center md:text-left space-y-4">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                     <span className="px-5 py-2 bg-indigo-500/10 text-indigo-400 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2">
-                      <Briefcase className="w-3 h-3" /> Предприниматель / Волонтер ШАГа
+                      <Briefcase className="w-3 h-3" /> Предприниматель / Ментор ШАГа
                     </span>
                     <span className="px-4 py-2 bg-amber-500/10 text-amber-500 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2 border border-amber-500/20">
                       <Star className="w-3 h-3 fill-current" /> {session.rating || '5.0'}
                     </span>
                   </div>
                   <input className="w-full bg-transparent text-4xl md:text-5xl font-black text-white tracking-tighter leading-none outline-none focus:text-indigo-400 transition-colors font-syne uppercase" value={session?.name} onChange={e => handleChange('name', e.target.value)} />
-                  <button onClick={onLogout} className="flex items-center gap-2 text-red-400 hover:text-red-500 font-bold text-xs uppercase tracking-widest transition-colors mx-auto md:mx-0"><LogOut className="w-4 h-4" /> Выйти</button>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                    <button onClick={onLogout} className="flex items-center gap-2 text-red-400 hover:text-red-500 font-bold text-xs uppercase tracking-widest transition-colors"><LogOut className="w-4 h-4" /> Выйти</button>
+                    {isScheduleFresh() && (
+                      <div className="flex items-center gap-2 text-emerald-500 text-[9px] font-black uppercase tracking-widest bg-emerald-500/5 px-3 py-1.5 rounded-full border border-emerald-500/10">
+                        <CheckCircle className="w-3 h-3" /> Расписание актуально
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -129,7 +145,10 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
               <div className="bg-[#0a0a0b] p-8 rounded-[48px] shadow-3xl space-y-8 border border-white/5">
                 <div className="flex items-center gap-4 border-b border-white/5 pb-6">
                   <CalendarIcon className="w-6 h-6 text-indigo-500" />
-                  <h3 className="text-2xl font-black text-white font-syne">Свободные окна</h3>
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-white font-syne">Свободные окна</h3>
+                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Обновлено: {session.lastWeeklyUpdate ? new Date(session.lastWeeklyUpdate).toLocaleDateString() : 'Давно'}</p>
+                  </div>
                 </div>
                 <SlotCalendar selectedSlots={JSON.parse(mentorProfile.slots || "{}")} onChange={slots => onUpdateMentorProfile({...mentorProfile, slots: JSON.stringify(slots)})} accentColor="indigo" />
               </div>

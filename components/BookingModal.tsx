@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Mentor, MeetingFormat, Service, Booking, UserSession } from '../types';
-import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle, Eye } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle, Eye, Loader2 } from 'lucide-react';
 import { PaymentStub } from './payment/PaymentStub';
 import { dbService } from '../services/databaseService';
 
@@ -24,6 +24,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
   const [selectedSlot, setSelectedSlot] = useState(existingBooking?.time || '');
   const [showPayment, setShowPayment] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   // Режим перезаписи: если запись уже подтверждена, мы просто меняем время
@@ -64,20 +65,39 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
     }
   };
 
-  const handlePaySuccess = () => {
-    onComplete({
-      id: existingBooking?.id,
-      mentorId: mentor.id,
-      mentorEmail: mentor.ownerEmail || mentor.email,
-      serviceId: existingBooking?.serviceId || service?.id,
-      format,
-      goal,
-      exchange,
-      date: selectedDate,
-      time: selectedSlot,
-      price: getPrice(),
-      status: 'confirmed'
-    });
+  const handlePaySuccess = async () => {
+    setIsSaving(true);
+    try {
+      // FIX: Explicitly typing bookingData as Partial<Booking> to ensure the 'status' property
+      // matches the literal types defined in the Booking interface rather than being inferred as string.
+      const bookingData: Partial<Booking> = {
+        id: existingBooking?.id || Math.random().toString(36).substr(2, 9),
+        mentorId: mentor.id,
+        mentorName: mentor.name,
+        userEmail: session.email,
+        userName: session.name,
+        serviceId: existingBooking?.serviceId || service?.id || 'personal',
+        serviceTitle: existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ',
+        format,
+        goal,
+        exchange,
+        date: selectedDate || '',
+        time: selectedSlot,
+        price: getPrice(),
+        status: 'confirmed'
+      };
+
+      const res = await dbService.saveBooking(bookingData);
+      if (res.result === 'success') {
+        onComplete(bookingData);
+      } else {
+        alert('Ошибка сохранения записи: ' + res.message);
+      }
+    } catch (e) {
+      alert('Ошибка при сохранении бронирования');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const slotsSource = service?.slots || mentor.slots || '{}';
@@ -135,6 +155,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                 </div>
               </div>
               <button onClick={onClose} className="w-full bg-slate-900 text-white py-8 rounded-[32px] font-black uppercase text-xs tracking-widest">Понятно</button>
+            </div>
+          ) : isSaving ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in">
+              <Loader2 className="w-16 h-16 text-indigo-600 animate-spin" />
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900 uppercase font-syne">Сохраняем ваш ШАГ</h3>
+                <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">Ваша встреча появится в календаре через мгновение</p>
+              </div>
             </div>
           ) : !showPayment ? (
             <div className="space-y-10">

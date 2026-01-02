@@ -10,10 +10,11 @@ import { YouthProfile } from '../profiles/YouthProfile';
 import { ServiceBuilder } from '../ServiceBuilder';
 import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
+import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, Info, Heart, Zap, TrendingUp, Sparkles, ShieldCheck } from 'lucide-react';
-import { dbService } from '../../services/databaseService';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, Info } from 'lucide-react';
 import { ShagLogo } from '../../App';
+import { dbService } from '../../services/databaseService';
 
 interface MainDashboardProps {
   session: UserSession;
@@ -65,10 +66,22 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const [showBooking, setShowBooking] = useState(false);
   const [pendingPaymentBooking, setPendingPaymentBooking] = useState<Booking | null>(null);
   const [localBookings, setLocalBookings] = useState<Booking[]>(bookings);
+  const [showPlanner, setShowPlanner] = useState(false);
 
   useEffect(() => {
     setLocalBookings(bookings);
   }, [bookings]);
+
+  useEffect(() => {
+    if (session.role === UserRole.ENTREPRENEUR) {
+      const lastUpdate = session.lastWeeklyUpdate ? new Date(session.lastWeeklyUpdate) : null;
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      if (!lastUpdate || lastUpdate < oneWeekAgo) {
+        setShowPlanner(true);
+      }
+    }
+  }, [session.role, session.lastWeeklyUpdate]);
 
   const handleServiceClick = (service: Service) => {
     const mentor = allMentors.find(m => 
@@ -95,21 +108,14 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     }
   };
 
-  const handleReschedule = (booking: Booking) => {
-    const mentor = allMentors.find(m => 
-      String(m.id) === String(booking.mentorId) || 
-      String(m.ownerEmail || m.email).toLowerCase() === String(booking.mentorId).toLowerCase()
-    );
-    if (mentor) {
-      setActiveMentor(mentor);
-      setPendingPaymentBooking(booking); 
-      setShowBooking(true);
-    }
-  };
-
   const isEnt = session.role === UserRole.ENTREPRENEUR;
-  const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin@shag.app';
-  const accentColor = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
+  const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
+  
+  // Tailwind fixes for dynamic colors
+  const accentColorClass = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
+  const textAccentClass = isEnt ? 'text-indigo-400' : (isAdmin ? 'text-emerald-400' : 'text-violet-400');
+  const bgAccentSoftClass = isEnt ? 'bg-indigo-900/10' : (isAdmin ? 'bg-emerald-900/10' : 'bg-violet-900/10');
+  const borderAccentSoftClass = isEnt ? 'border-indigo-500/10' : (isAdmin ? 'border-emerald-500/10' : 'border-violet-500/10');
 
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
@@ -118,14 +124,15 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
     { id: AppTab.JOBS, icon: Briefcase, label: 'Миссии' },
     { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
-    { id: AppTab.PROFILE, icon: UserCircle, label: 'ЛК' },
+    { id: AppTab.MISSION, icon: Info, label: 'Миссия' },
+    { id: AppTab.PROFILE, icon: UserCircle, label: 'ЛК' }
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] flex font-['Inter'] relative overflow-x-hidden">
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className={`absolute top-[-10%] left-[-10%] w-[100vw] h-[100vw] bg-${accentColor}-900/10 blur-[150px] rounded-full animate-pulse`} />
-        <div className="absolute bottom-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-white/5 blur-[120px] rounded-full" />
+    <div className="min-h-screen bg-[#050505] text-white flex font-['Inter'] selection:bg-indigo-500/30">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className={`absolute -top-[20%] -left-[10%] w-[60%] h-[60%] ${bgAccentSoftClass} blur-[180px] rounded-full animate-pulse`} />
+        <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-white/5 blur-[150px] rounded-full" />
       </div>
       
       <Sidebar 
@@ -137,157 +144,73 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         onLogout={onLogout}
       />
 
-      <main className={`flex-1 transition-all duration-700 relative z-10 w-full min-w-0 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-28'}`}>
-        <div className="px-5 md:px-16 pt-8 pb-32 md:py-20 max-w-7xl mx-auto">
+      <main className={`flex-1 transition-all duration-500 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16">
           
           {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
-            <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-1000">
-               <div className="bg-white/[0.03] border border-white/5 rounded-[32px] p-6 flex flex-wrap items-center justify-between gap-8 backdrop-blur-xl">
-                  <div className="flex items-center gap-6">
-                     <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
-                        <TrendingUp className="w-6 h-6" />
+            <div className="mb-8 md:mb-20">
+               <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 backdrop-blur-xl">
+                  <div className="flex items-center gap-5">
+                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/10 shrink-0">
+                        <TrendingUp size={18} />
                      </div>
-                     <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Пульс сообщества</p>
-                        <p className="text-white font-black text-xl font-syne uppercase">Энергообмен в действии</p>
+                     <div className="space-y-0.5">
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Community Pulse</p>
+                        <h4 className="text-base md:text-lg font-black font-syne uppercase tracking-tight">Энергообмен</h4>
                      </div>
                   </div>
-                  <div className="flex gap-12">
-                     <div className="text-right">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Проведено встреч</p>
-                        <p className="text-2xl font-black text-white font-syne">{totalMeetingsCount}</p>
+                  <div className="flex items-center justify-between md:justify-end gap-8 md:gap-16">
+                     <div className="space-y-0.5">
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Событий</p>
+                        <p className="text-xl md:text-2xl font-black font-syne">{totalMeetingsCount}</p>
                      </div>
-                     <div className="text-right">
-                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Вклад в миссию</p>
-                        <p className="text-2xl font-black text-indigo-400 font-syne">{totalGlobalImpact} ₽</p>
+                     <div className="space-y-0.5 text-right">
+                        <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest leading-none">Вклад</p>
+                        <p className={`text-xl md:text-2xl font-black font-syne ${textAccentClass}`}>{totalGlobalImpact.toLocaleString()} ₽</p>
                      </div>
                   </div>
                </div>
             </div>
           )}
 
-          <div className="animate-in fade-in duration-500">
-            {activeTab === AppTab.CATALOG && (
-              <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />
-            )}
-
-            {activeTab === AppTab.JOBS && (
-              <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />
-            )}
-
-            {activeTab === AppTab.MEETINGS && (
-              <MeetingsListView 
-                bookings={localBookings} 
-                session={session} 
-                onPay={handlePayFromList} 
-                onReschedule={handleReschedule}
-                onRefresh={onRefresh}
-              />
-            )}
-
-            {activeTab === AppTab.MISSION && (
-              <MissionView />
-            )}
-
-            {activeTab === AppTab.ADMIN && isAdmin && (
-              <div className="bg-[#0a0a0b] rounded-[48px] border border-white/5 overflow-hidden min-h-[80vh]">
-                <AdminPanel onLogout={onLogout} />
-              </div>
-            )}
-
-            {activeTab === AppTab.PROFILE && (
-              <div className="animate-in slide-in-from-bottom-4 duration-700">
-                {isEnt ? (
-                  <EntrepreneurProfile 
-                    session={session} 
-                    mentorProfile={mentorProfile} 
-                    isSavingProfile={isSavingProfile} 
-                    onSaveProfile={onSaveProfile} 
-                    onUpdateMentorProfile={onUpdateMentorProfile} 
-                    onLogout={onLogout} 
-                    onUpdateAvatar={onUpdateAvatar} 
-                    onSessionUpdate={onSessionUpdate}
-                    transactions={transactions}
-                  />
-                ) : (
-                  <YouthProfile 
-                    session={session} 
-                    onCatalogClick={() => { setActiveTab(AppTab.CATALOG); }} 
-                    onLogout={onLogout} 
-                    onUpdateAvatar={onUpdateAvatar} 
-                    onSessionUpdate={onSessionUpdate} 
-                    onSaveProfile={onSaveProfile} 
-                    isSavingProfile={isSavingProfile} 
-                  />
-                )}
-              </div>
-            )}
-
+          <div className="min-h-[70vh]">
+            {activeTab === AppTab.CATALOG && <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />}
+            {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
+            {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
+            {activeTab === AppTab.MISSION && <MissionView />}
+            {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} />}
+            {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} />)}
             {activeTab === AppTab.SERVICES && isEnt && (
-              <div className="space-y-12 animate-in fade-in duration-500">
-                <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.02] p-10 md:p-16 rounded-[64px] border border-white/5 relative overflow-hidden group shadow-3xl">
-                  <div className={`absolute inset-0 bg-gradient-to-r from-${accentColor}-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000`} />
-                  <div className="space-y-6 relative z-10 text-center md:text-left mb-8 md:mb-0">
-                    <div className={`flex items-center justify-center md:justify-start gap-4 text-${accentColor}-500 mb-2`}>
-                      <LayoutGrid className="w-6 h-6" />
-                      <span className="font-black text-[11px] uppercase tracking-[0.6em]">System Management</span>
-                    </div>
-                    <h2 className="text-5xl md:text-8xl font-black text-white uppercase font-syne tracking-tighter leading-none">МОИ ШАГИ</h2>
-                    <p className="text-slate-400 text-lg font-medium max-w-md">Ваше личное пространство для создания и масштабирования экспертизы.</p>
-                  </div>
-                  <div className="relative z-10 scale-125 md:scale-[2] transition-all duration-1000 group-hover:rotate-12 group-hover:scale-[2.2] flex items-center justify-center">
-                    <ShagLogo className="w-24 h-24 md:w-32 md:h-32" />
-                  </div>
+              <div className="space-y-8 md:space-y-12">
+                <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.02] p-8 md:p-14 rounded-[40px] md:rounded-[48px] border border-white/5 relative overflow-hidden group shadow-xl">
+                   <div className="space-y-4 md:space-y-6 relative z-10 text-center md:text-left">
+                     <span className={`px-4 py-1.5 ${isEnt ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/10' : 'bg-violet-500/10 text-violet-500 border-violet-500/10'} rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest border`}>Management Studio</span>
+                     <h2 className="text-4xl md:text-7xl font-black uppercase font-syne tracking-tighter leading-none">ВИТРИНА<br/>ШАГОВ</h2>
+                   </div>
+                   <div className="relative z-10 opacity-10 md:opacity-20 group-hover:opacity-40 transition-opacity duration-700 mt-6 md:mt-0"><ShagLogo className="w-20 h-20 md:w-40 md:h-40" /></div>
                 </div>
-                <div className="pt-8">
-                  <ServiceBuilder 
-                    services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} 
-                    onSave={onSaveService} 
-                    onUpdate={onUpdateService} 
-                    onDelete={onDeleteService} 
-                  />
-                </div>
+                <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
               </div>
             )}
           </div>
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 h-24 bg-black/80 backdrop-blur-3xl border-t border-white/5 z-[100] flex md:hidden items-center justify-around px-2">
+      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/95 backdrop-blur-2xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-2 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
-            <button 
-              key={item.id} 
-              onClick={() => { setActiveTab(item.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-              className={`flex flex-col items-center gap-1.5 transition-all duration-300 w-full ${isActive ? `text-${accentColor}-400` : 'text-slate-500'}`}
-            >
-              <div className={`relative ${isActive ? 'scale-110' : 'scale-100 opacity-60'}`}>
-                <item.icon className="w-6 h-6" />
-                {isActive && (
-                  <div className={`absolute -top-1 -right-1 w-2 h-2 rounded-full bg-${accentColor}-500 animate-ping`} />
-                )}
-              </div>
-              <span className={`text-[8px] font-black uppercase tracking-tighter transition-opacity ${isActive ? 'opacity-100' : 'opacity-40'}`}>{item.label}</span>
+            <button key={item.id} onClick={() => { setActiveTab(item.id as any); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all py-2 relative ${isActive ? textAccentClass : 'text-slate-500'}`}>
+              <item.icon size={20} className={`${isActive ? 'scale-110' : 'opacity-60'} transition-transform`} />
+              <span className={`text-[8px] font-black uppercase tracking-tighter ${isActive ? 'opacity-100' : 'opacity-60'}`}>{item.label}</span>
+              {isActive && <div className={`w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-400' : 'bg-violet-400'} absolute bottom-1`} />}
             </button>
           );
         })}
       </nav>
 
-      {showBooking && activeMentor && (
-        <BookingModal 
-          mentor={activeMentor} 
-          service={selectedService || undefined} 
-          bookings={localBookings} 
-          session={session} // Передаем сессию
-          existingBooking={pendingPaymentBooking || undefined}
-          onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} 
-          onComplete={async (data) => {
-            if (onRefresh) onRefresh();
-            setShowBooking(false);
-          }} 
-        />
-      )}
+      {showPlanner && isEnt && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onUpdateMentorProfile={onUpdateMentorProfile} onSessionUpdate={onSessionUpdate} onClose={() => setShowPlanner(false)} />}
+      {showBooking && activeMentor && <BookingModal mentor={activeMentor} service={selectedService || undefined} bookings={localBookings} session={session} existingBooking={pendingPaymentBooking || undefined} onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} onComplete={() => { if (onRefresh) onRefresh(); setShowBooking(false); }} />}
     </div>
   );
 };

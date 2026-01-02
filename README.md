@@ -1,5 +1,5 @@
 
-# ШАГ — Backend (Google Apps Script v25.0)
+# ШАГ — Backend (Google Apps Script v26.0)
 
 Этот скрипт обеспечивает работу платформы ШАГ. Скопируйте его в редактор Google Apps Script, сохраните и разверните как веб-приложение с доступом "Anyone".
 
@@ -102,6 +102,13 @@ function doPost(e) {
   }
 
   // --- БРОНИРОВАНИЯ ---
+  if (action === 'save_booking') {
+    var sheet = getOrCreateSheet(ss, 'Bookings', ["id", "mentorId", "mentorName", "userEmail", "userName", "format", "date", "time", "status", "goal", "exchange", "price", "serviceId", "serviceTitle"]);
+    appendData(sheet, data);
+    SpreadsheetApp.flush();
+    return createResponse({ result: 'success' });
+  }
+
   if (action === 'update_booking') {
     updateRow(ss.getSheetByName('Bookings'), 'id', data.id, data.updates);
     SpreadsheetApp.flush();

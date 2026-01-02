@@ -70,8 +70,9 @@ export interface UserSession {
   values?: string[];
   createdAt?: string;
   ownerEmail?: string;
-  // Добавляем поле баланса, так как оно используется в хуках и при регистрации
   balance?: number;
+  lastMonthlyUpdate?: string; 
+  lastWeeklyUpdate?: string; // ISO String даты последнего обновления ресурсов
 }
 
 export interface Booking {
@@ -85,6 +86,7 @@ export interface Booking {
   time: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'refunded';
   goal: string;
+  exchange?: string;
   price?: number;
   serviceId?: string;
   serviceTitle?: string;
@@ -122,7 +124,7 @@ export interface Job {
   id: string;
   mentorId: string;
   mentorName: string;
-  telegram?: string; // Юзернейм для связи
+  telegram?: string; 
   title: string;
   description: string;
   reward: string; 

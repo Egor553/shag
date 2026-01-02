@@ -5,7 +5,7 @@ import { dbService } from './services/databaseService';
 import { useShagData } from './hooks/useShagData';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { RegistrationFlow } from './components/RegistrationFlow';
-import { Loader2, Star, Zap, AlertTriangle } from 'lucide-react';
+import { Loader2, Star, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
 
 export const ShagLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <div className={`relative flex items-center justify-center ${className}`}>
@@ -156,6 +156,14 @@ const App: React.FC = () => {
               {isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}
             </button>
           </form>
+          
+          <div className="p-6 bg-indigo-600/5 rounded-3xl border border-indigo-500/10 flex items-center gap-4 text-indigo-400">
+             <ShieldCheck size={18} />
+             <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                Для входа в Root: admin / admin123
+             </p>
+          </div>
+
           <button onClick={() => setAuthMode(null)} className="w-full text-slate-500 hover:text-white text-[10px] uppercase font-bold tracking-widest transition-colors">Назад</button>
         </div>
       ) : authMode === 'register' ? (

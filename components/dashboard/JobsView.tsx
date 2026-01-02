@@ -6,6 +6,7 @@ import {
   ArrowRight, Zap, DollarSign, Send
 } from 'lucide-react';
 
+// Added missing JobsViewProps interface
 interface JobsViewProps {
   jobs: Job[];
   session: UserSession;
@@ -63,7 +64,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
       setFormData({ ...formData, title: '', description: '', reward: '', deadline: '' });
     } catch (e) {
       console.error("Failed to save job", e);
-      alert("Ошибка при создании миссии");
+      alert("Ошибка при создании вакансии");
     } finally {
       setIsSubmitting(false);
     }
@@ -79,12 +80,12 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
           </div>
           <h1 className="text-[12vw] sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.9] uppercase font-syne">
             ПОДРАБОТКА<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">МИССИИ</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/10 to-white/60">ВАКАНСИИ</span>
           </h1>
         </div>
         {isEnt && !isFormOpen && (
           <button onClick={handleOpenForm} className="bg-white text-black px-10 py-6 rounded-[32px] font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl active:scale-95">
-            <Plus className="w-5 h-5" /> Создать миссию
+            <Plus className="w-5 h-5" /> Создать вакансию
           </button>
         )}
       </div>
@@ -95,7 +96,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-8">
                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Заголовок задачи</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Заголовок вакансии</label>
                   <input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="СДЕЛАТЬ АНАЛИЗ КОНКУРЕНТОВ..." className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl text-white outline-none focus:border-violet-500 font-bold" />
                </div>
                <div className="space-y-3">
@@ -106,7 +107,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                   </div>
                </div>
                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Описание миссии</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Описание задач</label>
                   <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="ЧЕТКОЕ ТЗ..." className="w-full bg-white/5 border border-white/10 p-6 rounded-2xl text-white outline-none focus:border-violet-500 font-medium h-48 resize-none" />
                </div>
             </div>
