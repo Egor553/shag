@@ -5,7 +5,7 @@ import { dbService } from './services/databaseService';
 import { useShagData } from './hooks/useShagData';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { RegistrationFlow } from './components/RegistrationFlow';
-import { Loader2, Star, Zap, AlertTriangle, ShieldCheck, Clock, XCircle, LogOut, RefreshCcw } from 'lucide-react';
+import { Loader2, Star, Zap, AlertTriangle, ShieldCheck, Clock, XCircle, LogOut, RefreshCcw, X } from 'lucide-react';
 import { Footer } from './components/Footer';
 
 export const ShagLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
@@ -40,18 +40,29 @@ const App: React.FC = () => {
     setMentorProfile
   } = useShagData();
 
+  // Инициализация при загрузке
   useEffect(() => {
     const initApp = async () => {
       const saved = localStorage.getItem('shag_session');
       if (saved) {
         const parsed = JSON.parse(saved);
         setSession(parsed);
+        // Синхронизируем данные, чтобы подтянуть актуальный статус (active/pending)
         await syncUserData(parsed.email, parsed, setSession);
       }
       setIsAppLoading(false);
     };
     initApp();
   }, [syncUserData]);
+
+  // Автоматическое сохранение сессии в localStorage при любых изменениях (включая статус)
+  useEffect(() => {
+    if (session) {
+      localStorage.setItem('shag_session', JSON.stringify(session));
+    } else {
+      localStorage.removeItem('shag_session');
+    }
+  }, [session]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +72,6 @@ const App: React.FC = () => {
       if (loginEmail === 'admin' && loginPassword === 'admin123') {
         const adminSess = { id: 'admin-001', email: 'admin', name: 'Administrator', role: UserRole.ADMIN, isLoggedIn: true, status: 'active' } as UserSession;
         setSession(adminSess);
-        localStorage.setItem('shag_session', JSON.stringify(adminSess));
         await syncUserData('admin', adminSess, setSession);
         setAuthMode(null);
         return;
@@ -69,7 +79,6 @@ const App: React.FC = () => {
       const userData = await dbService.login({ email: loginEmail, password: loginPassword });
       const sess = { ...userData, isLoggedIn: true } as UserSession;
       setSession(sess);
-      localStorage.setItem('shag_session', JSON.stringify(sess));
       await syncUserData(loginEmail, sess, setSession);
       setAuthMode(null);
     } catch (e: any) { 
@@ -82,7 +91,6 @@ const App: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Переход по шагам анкеты
     if (regStep < 3) { 
       setRegStep(regStep + 1); 
       return; 
@@ -107,13 +115,11 @@ const App: React.FC = () => {
       if (res.result === 'success') {
         const sess = { ...newUser, isLoggedIn: true } as UserSession;
         setSession(sess);
-        localStorage.setItem('shag_session', JSON.stringify(sess));
         await syncUserData(newUser.email, sess, setSession);
         setAuthMode(null);
       } else { 
-        // Если email занят или другая ошибка от API
-        setErrorMsg(res.message || 'Ошибка регистрации'); 
-        setRegStep(1); // Возвращаем на первый шаг, где поле Email
+        setErrorMsg(res.message || 'Этот email уже занят или произошла ошибка'); 
+        // We don't reset step anymore, just show modal
       }
     } catch (e) { 
       setErrorMsg('Ошибка соединения с сервером'); 
@@ -124,12 +130,12 @@ const App: React.FC = () => {
 
   const logout = () => {
     setSession(null);
-    localStorage.removeItem('shag_session');
   };
 
   const checkStatus = async () => {
     if (session) {
       setIsAppLoading(true);
+      // Принудительно запрашиваем синхронизацию, которая обновит session.status, если админ одобрил заявку
       await syncUserData(session.email, session, setSession);
       setIsAppLoading(false);
     }
@@ -141,6 +147,7 @@ const App: React.FC = () => {
     </div>
   );
 
+  // Экран ожидания модерации
   if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && session.status === 'pending') {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
@@ -155,7 +162,7 @@ const App: React.FC = () => {
               </p>
            </div>
            <div className="flex flex-col gap-4">
-              <button onClick={checkStatus} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+              <button onClick={checkStatus} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all">
                  <RefreshCcw size={16} /> Проверить статус
               </button>
               <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto transition-colors mt-2">
@@ -241,9 +248,32 @@ const App: React.FC = () => {
           </div>
         ) : authMode === 'register' ? (
           <div className="w-full flex flex-col items-center">
+             {/* Modal Error Overlay */}
              {errorMsg && (
-                <div className="mb-6 p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-[32px] flex gap-4 text-sm font-black uppercase tracking-widest items-center max-w-lg w-full animate-bounce shadow-2xl">
-                  <AlertTriangle className="w-6 h-6 shrink-0"/>{errorMsg}
+                <div className="fixed inset-0 z-[100] bg-[#050505]/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-300">
+                  <div className="w-full max-w-md bg-[#0a0a0b] border border-red-500/30 p-10 md:p-12 rounded-[48px] text-center space-y-8 shadow-[0_0_50px_rgba(239,68,68,0.2)] relative">
+                    <button 
+                      onClick={() => setErrorMsg(null)}
+                      className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors"
+                    >
+                      <X size={24} />
+                    </button>
+                    <div className="w-20 h-20 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto text-red-500">
+                      <XCircle className="w-10 h-10" />
+                    </div>
+                    <div className="space-y-4">
+                      <h3 className="text-2xl font-black text-white uppercase font-syne tracking-tighter">ОШИБКА ДОСТУПА</h3>
+                      <p className="text-slate-400 font-medium leading-relaxed text-sm">
+                        {errorMsg}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => setErrorMsg(null)}
+                      className="w-full bg-red-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition-all shadow-lg"
+                    >
+                      Понятно
+                    </button>
+                  </div>
                 </div>
               )}
              <RegistrationFlow 

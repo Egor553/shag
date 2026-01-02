@@ -2,7 +2,7 @@
 import { UserSession, Booking } from '../types';
 
 // НОВЫЙ URL, предоставленный пользователем
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzjvtOLPo7uvnn2tNwjMT5yv1PmRCpagrhUtuB3r5RbaRew5LHEX4cOt99VvMxghBfz/exec';
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyeHV9EI0-XuL5JOUTrFocyBPd5ZHOu5hSKi0Q9AF5VPKLKogt14DCqMUyZUSuqMr5_/exec';
 
 export const dbService = {
   async syncData(email?: string) {

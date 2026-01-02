@@ -1,13 +1,13 @@
 
-# ШАГ — Backend (Google Apps Script v33.0 - MODERATION ENGINE)
+# ШАГ — Backend (Google Apps Script v33.1 - ENHANCED SYNC)
 
-Замените ваш текущий код в Apps Script на этот. Он поддерживает раздельные листы для модерации и участников, а также перенос строк.
+Замените ваш текущий код в Apps Script на этот. Он поддерживает раздельные листы для модерации и участников, а также улучшенную синхронизацию статуса.
 
 **Важно:** Убедитесь, что у вас созданы листы с именами: `Users`, `PendingUsers`, `Services`, `Bookings`, `Jobs`, `Messages`, `Transactions`.
 
 ```javascript
 /**
- * MISSION CORE ENGINE v33.0 - PRODUCTION READY
+ * MISSION CORE ENGINE v33.1 - PRODUCTION READY
  */
 
 const HEADERS = ["id", "role", "name", "email", "password", "phone", "city", "direction", "companyName", "turnover", "slots", "paymentUrl", "qualities", "requestToYouth", "videoUrl", "timeLimit", "birthDate", "focusGoal", "expectations", "mutualHelp", "balance", "status", "lastWeeklyUpdate", "businessClubs", "lifestyle"];
@@ -24,8 +24,20 @@ function doGet(e) {
     var activeUsers = getRowsAsObjects(ss.getSheetByName('Users'));
     var pendingUsers = getRowsAsObjects(ss.getSheetByName('PendingUsers'));
     
-    // Для админа отдаем всё, для обычного пользователя только активных
-    var allUsers = adminMode ? activeUsers.concat(pendingUsers) : activeUsers;
+    var allUsers;
+    if (adminMode) {
+      allUsers = activeUsers.concat(pendingUsers);
+    } else {
+      // Если не админ, отдаем всех активных + самого себя (даже если в ожидании), 
+      // чтобы фронтенд мог увидеть свой статус 'pending' или 'active'.
+      allUsers = activeUsers.slice();
+      if (email) {
+        var meInPending = pendingUsers.find(u => String(u.email).toLowerCase().trim() === String(email).toLowerCase().trim());
+        if (meInPending && !allUsers.some(u => String(u.email).toLowerCase().trim() === String(email).toLowerCase().trim())) {
+          allUsers.push(meInPending);
+        }
+      }
+    }
 
     return createResponse({
       result: 'success',
@@ -56,7 +68,6 @@ function doPost(e) {
   var data = JSON.parse(e.postData.contents);
   var action = data.action;
 
-  // --- РЕГИСТРАЦИЯ С ПРОВЕРКОЙ EMAIL ПО ВСЕМ ЛИСТАМ ---
   if (action === 'register') {
     var allUsers = getRowsAsObjects(ss.getSheetByName('Users')).concat(getRowsAsObjects(ss.getSheetByName('PendingUsers')));
     var exists = allUsers.some(u => String(u.email).toLowerCase().trim() === String(data.email).toLowerCase().trim());
@@ -65,21 +76,19 @@ function doPost(e) {
       return createResponse({ result: 'error', message: 'Этот email уже занят' });
     }
 
-    // Предприниматели в модерацию, таланты сразу в активные
     var targetSheetName = data.role === 'entrepreneur' ? 'PendingUsers' : 'Users';
     var sheet = getOrCreateSheet(ss, targetSheetName, HEADERS);
     appendData(sheet, data);
     return createResponse({ result: 'success' });
   }
 
-  // --- ОДОБРЕНИЕ (ПЕРЕНОС ИЗ МОДЕРАЦИИ В УЧАСТНИКИ) ---
   if (action === 'approve_user') {
     var pendingSheet = ss.getSheetByName('PendingUsers');
     var usersSheet = getOrCreateSheet(ss, 'Users', HEADERS);
     var userData = findAndRemoveRow(pendingSheet, 'email', data.email);
     
     if (userData) {
-      userData.status = 'active'; // Обновляем статус
+      userData.status = 'active'; 
       appendData(usersSheet, userData);
       return createResponse({ result: 'success', message: 'Пользователь одобрен и перенесен' });
     }
@@ -91,7 +100,6 @@ function doPost(e) {
     return createResponse({ result: 'success', message: 'Заявка отклонена' });
   }
 
-  // --- ОБЩИЕ ДЕЙСТВИЯ ---
   if (action === 'update_profile') {
     var s1 = ss.getSheetByName('Users');
     var s2 = ss.getSheetByName('PendingUsers');
@@ -108,8 +116,6 @@ function doPost(e) {
 
   return createResponse({ result: 'error', message: 'Action not found: ' + action });
 }
-
-// УТИЛИТАРНЫЕ ФУНКЦИИ
 
 function createResponse(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
