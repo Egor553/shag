@@ -71,56 +71,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     }
   };
 
-  // Исправленная функция удаления
+  // Улучшенная функция удаления
   const handleDelete = async (type: string, id: string, email?: string) => {
-    const confirmMsg = `ВНИМАНИЕ: Удалить ${type} навсегда? Это действие невозможно отменить.`;
-    if (!confirm(confirmMsg)) return;
+    const displayType = type === 'user' ? 'пользователя' : (type === 'service' ? 'услугу' : (type === 'job' ? 'миссию' : 'встречу'));
+    if (!confirm(`Вы уверены, что хотите безвозвратно удалить ${displayType}?`)) return;
     
-    setIsDeleting(id);
+    // Для пользователя ID — это email, для остальных — их собственный ID
+    const targetId = type === 'user' ? (email || id) : id;
+    setIsDeleting(targetId);
+
     try {
       let res;
-      // Используем email для удаления пользователя, id для всего остального
       if (type === 'user') {
-        res = await dbService.postAction({ action: 'delete_user', email: email || id });
+        // Вызов специфического экшена для удаления пользователя
+        res = await dbService.postAction({ action: 'delete_user', email: targetId });
       } else if (type === 'service') {
-        res = await dbService.deleteService(id);
+        res = await dbService.deleteService(targetId);
       } else if (type === 'job') {
-        res = await dbService.deleteJob(id);
+        res = await dbService.deleteJob(targetId);
       } else if (type === 'booking') {
-        // Пробуем вызвать прямое удаление из БД
-        res = await dbService.postAction({ action: 'delete_booking', id: id });
-        // Если прямого удаления нет в скрипте, помечаем как отмененное
-        if (res.result !== 'success') {
-          res = await dbService.updateBookingStatus(id, 'cancelled');
-        }
+        // Если в скрипте нет delete_booking, используем общий postAction
+        res = await dbService.postAction({ action: 'delete_booking', id: targetId });
       }
 
-      if (res?.result === 'success') {
+      if (res && res.result === 'success') {
         await fetchAdminData();
       } else {
-        alert("Ошибка удаления: " + (res?.message || "Неизвестная ошибка"));
+        alert("Удаление не удалось. Убедитесь, что в вашем Google Script (backend) добавлены функции delete_user и delete_booking.");
       }
     } catch (e) {
-      alert("Ошибка сети или бэкенда при удалении");
+      console.error(e);
+      alert("Ошибка сети при удалении");
     } finally {
       setIsDeleting(null);
     }
   };
 
-  // Функция массовой очистки
   const handleClearAll = async () => {
-    const type = activeView === 'services' ? 'services' : (activeView === 'jobs' ? 'jobs' : (activeView === 'bookings' ? 'bookings' : null));
+    const typeMap: any = { services: 'services', jobs: 'jobs', bookings: 'bookings' };
+    const type = typeMap[activeView];
     if (!type) return;
 
-    if (!confirm(`ОПАСНО: Вы уверены, что хотите УДАЛИТЬ ВСЕ записи в разделе ${type}?`)) return;
+    if (!confirm(`ВНИМАНИЕ: Это удалит ВСЕ записи из раздела ${activeView}. Продолжить?`)) return;
     
     setLoading(true);
     try {
-      const res = await dbService.clearAll(type as any);
+      const res = await dbService.clearAll(type);
       if (res.result === 'success') {
         await fetchAdminData();
       } else {
-        alert("Ошибка при очистке");
+        alert("Ошибка при массовой очистке");
       }
     } catch (e) {
       alert("Ошибка сети");
@@ -149,10 +149,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     <div className="h-full min-h-screen flex items-center justify-center bg-[#050505] p-6 text-center">
       <div className="flex flex-col items-center gap-6">
         <div className="relative">
-          <div className="w-16 h-16 md:w-20 md:h-20 border-t-2 border-indigo-600 rounded-full animate-spin"></div>
-          <ShieldCheck className="absolute inset-0 m-auto w-6 h-6 md:w-8 md:h-8 text-indigo-500" />
+          <div className="w-16 h-16 border-t-2 border-indigo-600 rounded-full animate-spin"></div>
+          <ShieldCheck className="absolute inset-0 m-auto w-6 h-6 text-indigo-500" />
         </div>
-        <p className="text-indigo-400 font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[10px] animate-pulse">Инициализация Root-доступа...</p>
+        <p className="text-indigo-400 font-black uppercase tracking-widest text-[10px] animate-pulse">Загрузка данных...</p>
       </div>
     </div>
   );
@@ -185,7 +185,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
            </div>
            <div>
               <span className="font-black text-xs tracking-tight uppercase block leading-none">ШАГ ROOT</span>
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1 text-center">v2.6 Mobile Ready</span>
+              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">v2.7 Fixed Deletion</span>
            </div>
         </div>
         
@@ -204,7 +204,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                 setActiveView(item.id as any);
                 setIsMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center gap-4 p-4 lg:p-5 rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest transition-all ${activeView === item.id ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/10' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+              className={`w-full flex items-center gap-4 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeView === item.id ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/10' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
             >
               <item.icon className={`w-4 h-4 ${activeView === item.id ? 'text-white' : 'text-slate-600'}`} />
               {item.label}
@@ -235,7 +235,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
             <div className="flex gap-3">
               {showClearAllButton && (
                 <button onClick={handleClearAll} className="flex items-center justify-center gap-3 px-6 py-3 bg-red-600/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all">
-                  <Trash className="w-3.5 h-3.5" /> Очистить всё
+                  <Trash className="w-3.5 h-3.5" /> Очистить раздел
                 </button>
               )}
               <button onClick={fetchAdminData} className="flex items-center justify-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -245,141 +245,93 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           </header>
 
           {activeView === 'stats' && (
-            <div className="space-y-8 lg:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                  <StatBox label="Участников" value={data.dynamicMentors?.length} color="indigo" />
-                  <StatBox label="Всего ШАГов" value={data.services?.length} color="violet" />
-                  <StatBox label="Миссий" value={data.jobs?.length} color="pink" />
-                  <StatBox label="Встреч" value={data.bookings?.length} color="emerald" />
-               </div>
-               
-               <div className="p-6 lg:p-10 bg-white/[0.02] border border-white/5 rounded-[32px] lg:rounded-[48px] flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-                  <div className="space-y-2">
-                    <h3 className="text-lg lg:text-xl font-black uppercase font-syne">Системный отчет</h3>
-                    <p className="text-slate-500 text-[9px] lg:text-[10px] font-medium uppercase tracking-widest">Google Sheets API активен</p>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-lg text-[9px] font-black border border-emerald-500/20">
-                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> ONLINE
-                  </div>
-               </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+               <StatBox label="Участников" value={data?.dynamicMentors?.length} color="indigo" />
+               <StatBox label="Всего ШАГов" value={data?.services?.length} color="violet" />
+               <StatBox label="Миссий" value={data?.jobs?.length} color="pink" />
+               <StatBox label="Встреч" value={data?.bookings?.length} color="emerald" />
             </div>
           )}
 
           {activeView === 'payments' && (
-            <div className="space-y-8 lg:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="bg-indigo-600/5 border-2 border-indigo-500/10 p-6 lg:p-12 rounded-[40px] lg:rounded-[56px] space-y-8 lg:space-y-10">
-                  <div className="flex items-center gap-6">
-                     <div className="w-12 h-12 lg:w-16 lg:h-16 bg-indigo-600 text-white rounded-2xl lg:rounded-[24px] flex items-center justify-center shadow-2xl shadow-indigo-600/30">
-                        <CreditCard className="w-6 h-6 lg:w-8 lg:h-8" />
-                     </div>
-                     <div>
-                        <h3 className="text-xl lg:text-3xl font-black font-syne uppercase tracking-tight">ЮKassa API</h3>
-                        <p className="text-indigo-400 text-[9px] font-black uppercase tracking-widest mt-1">Конфигурация шлюза</p>
-                     </div>
+             <div className="bg-indigo-600/5 border-2 border-indigo-500/10 p-6 lg:p-12 rounded-[40px] space-y-8">
+               <div className="flex items-center gap-6">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center">
+                     <CreditCard className="w-6 h-6 lg:w-8 lg:h-8" />
                   </div>
-                  
-                  <div className="grid grid-cols-1 gap-6 lg:gap-8">
-                     <div className="space-y-3">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Notification URI (Вставьте в ЮKassa)</label>
-                        <div className="flex flex-col sm:flex-row gap-3">
-                           <div className="flex-1 bg-white/5 p-4 lg:p-6 rounded-2xl font-mono text-[9px] lg:text-[11px] text-indigo-400 break-all border border-indigo-500/20 shadow-inner overflow-hidden">
-                              {WEBHOOK_URL}
-                           </div>
-                           <button onClick={() => copyToClipboard(WEBHOOK_URL)} className="bg-white text-black py-4 px-6 rounded-2xl hover:scale-105 active:scale-95 transition-all shrink-0 font-black uppercase text-[10px]">
-                              {copied ? 'ГОТОВО' : 'КОПИРОВАТЬ'}
-                           </button>
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 pt-6 border-t border-white/5">
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Client ID</label>
-                           <div className="relative">
-                              <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                              <input 
-                                value={yooClientId}
-                                onChange={e => setYooClientId(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-xl lg:rounded-2xl text-[10px] lg:text-[11px] text-slate-300 font-mono outline-none focus:border-indigo-600"
-                              />
-                           </div>
-                        </div>
-                        <div className="space-y-3">
-                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Client Secret</label>
-                           <div className="relative">
-                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                              <input 
-                                type="password"
-                                value={yooClientSecret}
-                                onChange={e => setYooClientSecret(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-xl lg:rounded-2xl text-[10px] lg:text-[11px] text-slate-300 font-mono outline-none focus:border-indigo-600"
-                              />
-                           </div>
-                        </div>
-                     </div>
-
-                     <div className="p-6 lg:p-8 bg-indigo-600/10 rounded-[28px] lg:rounded-[32px] border border-indigo-500/20 flex flex-col sm:flex-row items-start gap-4 lg:gap-6">
-                        <AlertTriangle className="w-6 h-6 text-indigo-400 shrink-0 mt-1" />
-                        <div className="space-y-2">
-                           <p className="text-xs font-black text-indigo-100 uppercase tracking-widest">Инструкция:</p>
-                           <p className="text-[10px] lg:text-[11px] text-indigo-300/80 leading-relaxed font-medium">
-                              Ваши ключи успешно привязаны. Обязательно вставьте <b>Notification URI</b> в настройках Личного Кабинета ЮKassa в поле "Notification URI", чтобы статусы оплат обновлялись автоматически.
-                           </p>
-                        </div>
-                     </div>
+                  <div>
+                     <h3 className="text-xl lg:text-3xl font-black font-syne uppercase">ЮKassa API</h3>
+                     <p className="text-indigo-400 text-[9px] font-black uppercase tracking-widest mt-1">Прямые платежи в вашу кассу</p>
                   </div>
                </div>
-            </div>
+               
+               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-4">
+                  <p className="text-xs text-slate-400 font-medium">Для того чтобы оплаты работали, вставьте эти ключи в личном кабинете ЮKassa:</p>
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Webhook URL (Notification URI)</label>
+                    <div className="flex gap-2">
+                       <input readOnly value={WEBHOOK_URL} className="flex-1 bg-black/40 p-4 rounded-xl font-mono text-[10px] text-indigo-400 border border-white/5" />
+                       <button onClick={() => copyToClipboard(WEBHOOK_URL)} className="px-6 bg-white text-black rounded-xl font-black text-[10px] uppercase">
+                         {copied ? 'OK' : 'Копировать'}
+                       </button>
+                    </div>
+                  </div>
+               </div>
+             </div>
           )}
 
           {activeView !== 'stats' && activeView !== 'payments' && (
-             <div className="bg-[#0a0a0b] border border-white/5 rounded-[32px] lg:rounded-[40px] overflow-hidden shadow-2xl">
-                <div className="p-6 lg:p-8 border-b border-white/5 flex items-center gap-4 lg:gap-6">
+             <div className="bg-[#0a0a0b] border border-white/5 rounded-[32px] overflow-hidden shadow-2xl">
+                <div className="p-6 border-b border-white/5 flex items-center gap-4">
                    <Search className="w-5 h-5 text-slate-600" />
                    <input 
                      value={searchTerm}
                      onChange={e => setSearchTerm(e.target.value)}
-                     placeholder="Поиск..." 
+                     placeholder="Поиск по названию или email..." 
                      className="bg-transparent text-sm outline-none flex-1 text-white font-bold placeholder:text-slate-700" 
                    />
                 </div>
                 <div className="overflow-x-auto no-scrollbar">
-                  <table className="w-full text-left text-[10px] lg:text-[11px] min-w-[600px]">
+                  <table className="w-full text-left text-[11px] min-w-[600px]">
                      <thead className="bg-white/5 border-b border-white/5">
                         <tr>
-                          <th className="p-6 lg:p-8 font-black uppercase text-slate-500 tracking-widest">Название</th>
-                          <th className="p-6 lg:p-8 font-black uppercase text-slate-500 tracking-widest">Категория</th>
-                          <th className="p-6 lg:p-8 font-black uppercase text-slate-500 tracking-widest">Статус</th>
-                          <th className="p-6 lg:p-8 text-right font-black uppercase text-slate-500 tracking-widest">Действие</th>
+                          <th className="p-6 font-black uppercase text-slate-500 tracking-widest">Объект</th>
+                          <th className="p-6 font-black uppercase text-slate-500 tracking-widest">Тип/Категория</th>
+                          <th className="p-6 font-black uppercase text-slate-500 tracking-widest">Статус</th>
+                          <th className="p-6 text-right font-black uppercase text-slate-500 tracking-widest">Действие</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-white/5">
                         {filteredData().map((item: any) => {
-                          const type = activeView.slice(0, -1);
+                          const type = activeView === 'users' ? 'user' : (activeView === 'services' ? 'service' : (activeView === 'jobs' ? 'job' : 'booking'));
+                          const itemId = item.id || item.email;
+                          const isCurrentlyDeleting = isDeleting === itemId;
+
                           return (
-                            <tr key={item.id || item.email} className="hover:bg-white/[0.02] transition-colors group">
-                               <td className="p-6 lg:p-8">
-                                  <p className="font-black text-white uppercase text-xs lg:text-sm tracking-tight">{item.title || item.name || '—'}</p>
-                                  <p className="text-[8px] lg:text-[9px] text-slate-600 font-bold uppercase mt-1 tracking-widest">{item.email || item.id}</p>
+                            <tr key={itemId} className="hover:bg-white/[0.02] transition-colors group">
+                               <td className="p-6">
+                                  <p className="font-black text-white uppercase text-xs tracking-tight">{item.title || item.name || 'Без названия'}</p>
+                                  <p className="text-[9px] text-slate-600 font-bold uppercase mt-1">{item.email || item.id}</p>
                                </td>
-                               <td className="p-6 lg:p-8">
-                                  <p className="font-black text-slate-400 uppercase tracking-widest">{item.role || item.mentorName || 'SYSTEM'}</p>
+                               <td className="p-6">
+                                  <p className="font-black text-slate-400 uppercase tracking-widest">{item.role || item.category || '—'}</p>
                                </td>
-                               <td className="p-6 lg:p-8">
-                                  <span className={`px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] lg:text-[9px] font-black uppercase tracking-widest ${item.status === 'confirmed' ? 'text-emerald-500 border-emerald-500/20' : 'text-slate-400'}`}>
+                               <td className="p-6">
+                                  <span className={`px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black uppercase tracking-widest ${item.status === 'confirmed' ? 'text-emerald-500 border-emerald-500/20' : 'text-slate-400'}`}>
                                     {item.status || 'Active'}
                                   </span>
                                </td>
-                               <td className="p-6 lg:p-8 text-right">
-                                  <div className="flex justify-end gap-2 lg:gap-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                     <button onClick={() => setEditingItem({ type, data: {...item} })} className="p-3 lg:p-4 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
+                               <td className="p-6 text-right">
+                                  <div className="flex justify-end gap-3 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                                     <button onClick={() => setEditingItem({ type, data: {...item} })} className="p-3 bg-indigo-600/10 text-indigo-400 rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
                                         <Edit3 className="w-4 h-4" />
                                      </button>
                                      <button 
-                                       disabled={isDeleting === item.id}
+                                       disabled={isCurrentlyDeleting}
                                        onClick={() => handleDelete(type, item.id, item.email)} 
-                                       className="p-3 lg:p-4 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all disabled:opacity-30"
+                                       className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all disabled:opacity-30"
                                      >
-                                        {isDeleting === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                        {isCurrentlyDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                      </button>
                                   </div>
                                </td>
@@ -396,44 +348,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
       {/* Editor Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 lg:p-6 bg-black/95 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="w-full max-w-2xl bg-[#0a0a0b] lg:border border-white/10 p-8 lg:p-12 rounded-[40px] lg:rounded-[56px] space-y-8 lg:space-y-10 shadow-3xl overflow-y-auto max-h-[95vh] no-scrollbar">
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl">
+          <div className="w-full max-w-lg bg-[#0a0a0b] border border-white/10 p-8 rounded-[40px] space-y-8 shadow-3xl">
              <div className="flex items-center justify-between">
-                <h3 className="text-xl lg:text-2xl font-black font-syne uppercase">Правка {editingItem.type}</h3>
-                <button onClick={() => setEditingItem(null)} className="p-3 text-slate-500 hover:text-white transition-colors"><X className="w-6 h-6 lg:w-8 lg:h-8" /></button>
+                <h3 className="text-xl font-black font-syne uppercase">Правка {editingItem.type}</h3>
+                <button onClick={() => setEditingItem(null)} className="p-2 text-slate-500 hover:text-white"><X className="w-6 h-6" /></button>
              </div>
              
              <div className="space-y-6">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Название/Имя</label>
+                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Название</label>
                    <input 
                      value={editingItem.data.title || editingItem.data.name || ''} 
                      onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, [editingItem.data.title ? 'title' : 'name']: e.target.value}})}
-                     className="w-full bg-white/5 border border-white/10 p-5 lg:p-6 rounded-2xl text-white font-bold outline-none focus:border-indigo-600" 
+                     className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold outline-none focus:border-indigo-600" 
                    />
                 </div>
-                {editingItem.data.status && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Статус</label>
-                    <select 
-                      value={editingItem.data.status}
-                      onChange={e => setEditingItem({...editingItem, data: {...editingItem.data, status: e.target.value}})}
-                      className="w-full bg-white/5 border border-white/10 p-5 lg:p-6 rounded-2xl text-white font-bold outline-none focus:border-indigo-600 appearance-none"
-                    >
-                      <option value="pending">Ожидает оплаты</option>
-                      <option value="confirmed">Подтверждено</option>
-                      <option value="cancelled">Отменено</option>
-                      <option value="completed">Завершено</option>
-                    </select>
-                  </div>
-                )}
              </div>
 
-             <div className="flex flex-col sm:flex-row gap-4">
-                <button onClick={() => setEditingItem(null)} className="flex-1 py-5 lg:py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-500 hover:bg-white/5 transition-all">Отмена</button>
-                <button onClick={handleUpdate} className="flex-[2] bg-indigo-600 text-white py-5 lg:py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl flex items-center justify-center gap-3">
-                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                   Сохранить
+             <div className="flex gap-4">
+                <button onClick={() => setEditingItem(null)} className="flex-1 py-5 rounded-xl font-black uppercase text-[10px] text-slate-500">Отмена</button>
+                <button onClick={handleUpdate} className="flex-[2] bg-indigo-600 text-white py-5 rounded-xl font-black uppercase text-[10px] flex items-center justify-center gap-3">
+                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Сохранить
                 </button>
              </div>
           </div>
@@ -452,9 +388,9 @@ const StatBox = ({ label, value, color }: any) => {
   };
 
   return (
-    <div className={`border p-6 lg:p-10 rounded-[32px] lg:rounded-[48px] space-y-2 lg:space-y-4 shadow-xl shadow-black/20 ${colorClasses[color]}`}>
-       <p className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest opacity-60">{label}</p>
-       <p className="text-4xl lg:text-7xl font-black text-white font-syne tracking-tighter leading-none">{value || 0}</p>
+    <div className={`border p-8 rounded-[32px] space-y-2 ${colorClasses[color]}`}>
+       <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{label}</p>
+       <p className="text-4xl font-black text-white font-syne tracking-tighter leading-none">{value || 0}</p>
     </div>
   );
 };

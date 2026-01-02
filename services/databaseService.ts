@@ -1,8 +1,8 @@
 
 import { UserSession, Booking } from '../types';
 
-// Ссылка на ваш Google Apps Script. Обязательно разверните свой скрипт!
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz9Wop9I4Ka1XCf6XVeL1b0E2b_I5xpuK7jPEqRU1aYO6NYCHYMex22lvOwiKgI_-QR/exec';
+// Ссылка на ваш Google Apps Script. 
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyz-nFvZ67qdsxHoi5itsyQI5zbfAYFspFPsT8k5qE5T1PMu2sXvAHoxe0XARdM1ZQD/exec';
 
 export const dbService = {
   async syncData(email?: string) {
@@ -65,12 +65,20 @@ export const dbService = {
     return this.postAction({ action: 'update_profile', email, updates });
   },
 
+  async saveService(service: any) {
+    return this.postAction({ action: 'save_service', ...service });
+  },
+
   async updateService(id: string, updates: any) {
     return this.postAction({ action: 'update_service', id, updates });
   },
 
   async deleteService(id: string) {
     return this.postAction({ action: 'delete_service', id });
+  },
+
+  async saveJob(job: any) {
+    return this.postAction({ action: 'save_job', ...job });
   },
 
   async updateJob(id: string, updates: any) {
@@ -115,6 +123,14 @@ export const dbService = {
       id: bookingId,
       updates: { date: newDate, time: newTime, status: 'confirmed' }
     });
+  },
+
+  async deleteUser(email: string) {
+    return this.postAction({ action: 'delete_user', email });
+  },
+
+  async deleteBooking(id: string) {
+    return this.postAction({ action: 'delete_booking', id });
   },
 
   async getMessages(bookingId: string) {
