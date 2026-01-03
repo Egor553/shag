@@ -111,7 +111,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
-  const textAccentClass = 'text-white';
 
   const mobileNavItems = [
     { id: AppTab.CATALOG, icon: LayoutGrid, label: 'ШАГи' },
@@ -138,26 +137,26 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen flex flex-col">
             
             {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
-              <div className="mb-14 md:mb-20">
-                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                    <div className="col-span-2 md:col-span-1 bg-white/[0.05] border border-white/20 p-8 rounded-tl-[40px] rounded-br-[40px] backdrop-blur-3xl flex items-center gap-6 group hover:bg-white/[0.08] transition-all">
-                       <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                          <Activity size={24} />
+              <div className="mb-8 md:mb-20">
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
+                    <div className="col-span-2 md:col-span-1 bg-white/[0.05] border border-white/20 p-4 md:p-8 rounded-tl-[32px] md:rounded-tl-[40px] rounded-br-[32px] md:rounded-br-[40px] backdrop-blur-3xl flex items-center gap-4 md:gap-6 group hover:bg-white/[0.08] transition-all">
+                       <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                          <Activity size={20} className="md:w-6 md:h-6" />
                        </div>
                        <div>
-                          <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-1">Pulse_Module</p>
-                          <h4 className="text-xl font-black font-syne uppercase text-white leading-none">Энергообмен</h4>
+                          <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-0.5 md:mb-1">Pulse_Module</p>
+                          <h4 className="text-sm md:text-xl font-black font-syne uppercase text-white leading-none">Энергообмен</h4>
                        </div>
                     </div>
                     
-                    <div className="bg-white/[0.03] border border-white/10 p-8 rounded-tl-[24px] rounded-br-[24px] flex flex-col justify-center">
-                       <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-2 leading-none">Events_Total</p>
-                       <p className="text-3xl font-black font-syne text-white tracking-tighter">{totalMeetingsCount}</p>
+                    <div className="bg-white/[0.03] border border-white/10 p-4 md:p-8 rounded-tl-[16px] md:rounded-tl-[24px] rounded-br-[16px] md:rounded-br-[24px] flex flex-col justify-center">
+                       <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-none">Событий</p>
+                       <p className="text-xl md:text-3xl font-black font-syne text-white tracking-tighter">{totalMeetingsCount}</p>
                     </div>
 
-                    <div className="bg-white/[0.03] border border-white/10 p-8 rounded-tr-[24px] rounded-bl-[24px] flex flex-col justify-center">
-                       <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-2 leading-none">Impact_Total</p>
-                       <p className="text-3xl font-black font-syne text-white tracking-tighter">{totalGlobalImpact.toLocaleString()} ₽</p>
+                    <div className="bg-white/[0.03] border border-white/10 p-4 md:p-8 rounded-tr-[16px] md:rounded-tr-[24px] rounded-bl-[16px] md:rounded-bl-[24px] flex flex-col justify-center">
+                       <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-none">Вклад</p>
+                       <p className="text-xl md:text-3xl font-black font-syne text-white tracking-tighter">{totalGlobalImpact.toLocaleString()} ₽</p>
                     </div>
                  </div>
               </div>
@@ -171,20 +170,22 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
-                <div className="space-y-12">
-                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.03] p-10 md:p-16 rounded-tr-[80px] rounded-bl-[80px] border border-white/15 shadow-3xl overflow-hidden relative">
-                     <div className="relative z-10 space-y-4 text-center md:text-left">
-                        <span className="text-white opacity-60 text-[10px] font-black uppercase tracking-[0.5em]">SYSTEM_MODULE_MANAGER</span>
-                        <h2 className="text-5xl md:text-8xl font-black uppercase font-syne tracking-tighter leading-[0.9] text-white">ВИТРИНА<br/><span className="text-white/30 italic">ШАГОВ</span></h2>
+                <div className="space-y-8 md:space-y-12">
+                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.03] p-6 md:p-16 rounded-tr-[32px] md:rounded-tr-[80px] rounded-bl-[32px] md:rounded-bl-[80px] border border-white/15 shadow-3xl overflow-hidden relative">
+                     <div className="relative z-10 space-y-2 md:space-y-4 text-center md:text-left">
+                        <span className="text-white opacity-60 text-[7px] md:text-[10px] font-black uppercase tracking-[0.5em]">SYSTEM_MODULE_MANAGER</span>
+                        <h2 className="text-2xl md:text-8xl font-black uppercase font-syne tracking-tighter leading-tight md:leading-[0.9] text-white">ВИТРИНА<br/><span className="text-white/30 italic">ШАГОВ</span></h2>
                      </div>
-                     <ShagLogo className="w-32 h-32 md:w-64 md:h-64 opacity-15 absolute -right-12 -bottom-12" />
+                     <div className="md:absolute md:-right-12 md:-bottom-12 flex justify-center mt-4 md:mt-0">
+                        <ShagLogo className="w-16 h-16 md:w-64 md:h-64 opacity-15" />
+                     </div>
                   </div>
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}
             </div>
             
-            <div className="mt-auto pt-24">
+            <div className="mt-auto pt-16">
               <Footer />
             </div>
           </div>

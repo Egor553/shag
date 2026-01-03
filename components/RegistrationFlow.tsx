@@ -28,7 +28,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 }) => {
   const isEnt = tempRole === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
-  const roleLabel = isEnt ? 'PARTICIPANT_ACCESS' : 'MENTOR_ACCESS';
+  const roleLabel = isEnt ? 'ДОСТУП_УЧАСТНИКА' : 'ДОСТУП_МЕНТОРА';
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 lg:p-12 font-['Inter'] relative overflow-x-hidden bg-[#1a1d23]">
@@ -50,13 +50,13 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
               className="flex items-center gap-3 text-white/40 hover:text-white transition-all group font-black uppercase text-[10px] tracking-[0.3em]"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-              BACK_STEP
+              НАЗАД
             </button>
 
             <div className="space-y-3 lg:space-y-4">
               <p className="text-white/40 text-[9px] font-black tracking-[0.5em] uppercase">{roleLabel}</p>
               <h2 className="text-4xl lg:text-5xl font-black text-white font-syne uppercase tracking-tighter leading-none">
-                STEP_<br/>0{regStep}
+                ШАГ_<br/>0{regStep}
               </h2>
             </div>
           </div>
@@ -67,7 +67,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                 <div key={s} className="flex items-center gap-4 group">
                   <div className={`w-2 h-2 rounded-full transition-all duration-500 ${s === regStep ? `bg-${accentColor}-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] scale-125` : (s < regStep ? 'bg-emerald-500' : 'bg-white/10')}`} />
                   <span className={`hidden lg:inline text-[8px] font-black uppercase tracking-widest ${s === regStep ? 'text-white' : 'text-white/30'}`}>
-                    {s === 1 ? 'IDENTITY' : s === 2 ? 'EXPERIENCE' : 'RESOURCE'}
+                    {s === 1 ? 'ЛИЧНОСТЬ' : s === 2 ? 'ОПЫТ' : 'РЕСУРСЫ'}
                   </span>
                 </div>
               ))}
@@ -82,9 +82,9 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
           <div className="max-w-3xl mx-auto space-y-10 lg:space-y-16">
             <div className="space-y-4 lg:space-y-6">
                <h3 className="text-4xl md:text-7xl font-black text-white uppercase font-syne tracking-tighter leading-none">
-                 {regStep === 3 ? 'FINISH' : 'SYSTEM'}<br/>
+                 {regStep === 3 ? 'ЗАВЕРШЕНИЕ' : 'СИСТЕМА'}<br/>
                  <span className={`text-white/20 italic`}>
-                   {regStep === 3 ? 'DEPLOY' : 'CONFIG'}
+                   {regStep === 3 ? 'ЗАПУСК' : 'НАСТРОЙКА'}
                  </span>
                </h3>
             </div>
@@ -101,7 +101,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
               <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="hidden md:flex items-center gap-3 text-white/30">
                   <Layers className="w-4 h-4" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest">Data protected by encryption</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">Данные защищены шифрованием</span>
                 </div>
                 
                 <button 
@@ -112,7 +112,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
                     <Loader2 className="animate-spin w-5 h-5" />
                   ) : (
                     <>
-                      {regStep === 3 ? 'COMPLETE_REGISTRATION' : 'NEXT_MODULE'} 
+                      {regStep === 3 ? 'ЗАВЕРШИТЬ_РЕГИСТРАЦИЮ' : 'СЛЕДУЮЩИЙ_ШАГ'} 
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                     </>
                   )}
