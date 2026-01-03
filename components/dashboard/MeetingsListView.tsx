@@ -35,15 +35,14 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
   const handleCancel = async (booking: Booking) => {
     if (isEnt && !isAdmin) return; 
 
-    const personName = booking.mentorName || 'наставника';
+    const personName = booking.mentorName || 'ментора';
     if (!confirm(`Вы уверены, что хотите отменить запись к ${personName}?`)) return;
     
     setIsProcessing(booking.id);
     try {
-      const res = await dbService.cancelBooking(booking.id, isAdmin ? 'Отменено администратором' : 'Отменено талантом');
+      const res = await dbService.cancelBooking(booking.id, isAdmin ? 'Отменено администратором' : 'Отменено ментором');
       if (res.result === 'success') {
         if (isAdmin) {
-          // Отправка уведомления таланту
           await dbService.sendMessage({
             id: Math.random().toString(36).substr(2, 9),
             bookingId: booking.id,
@@ -160,8 +159,8 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                         <User size={20} />
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{isEnt ? 'Талант' : 'Наставник'}</p>
-                        <h3 className="text-2xl font-black text-white uppercase font-syne">{isEnt ? booking.userName : (booking.mentorName || 'Наставник')}</h3>
+                        <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{isEnt ? 'Ментор' : 'Участник'}</p>
+                        <h3 className="text-2xl font-black text-white uppercase font-syne">{isEnt ? booking.userName : (booking.mentorName || 'Ментор')}</h3>
                       </div>
                     </div>
 
@@ -170,7 +169,7 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                         <div className="p-6 bg-indigo-500/5 rounded-3xl border border-white/5 space-y-3">
                            <div className="flex items-center gap-2 text-indigo-400">
                              <Target size={14} />
-                             <span className="text-[9px] font-black uppercase tracking-widest">Запрос таланта</span>
+                             <span className="text-[9px] font-black uppercase tracking-widest">Запрос ментора</span>
                            </div>
                            <p className="text-xs text-slate-300 font-medium leading-relaxed italic">«{booking.goal}»</p>
                         </div>

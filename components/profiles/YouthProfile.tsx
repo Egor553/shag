@@ -71,7 +71,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
 
             <div className="flex-1 text-center md:text-left space-y-4">
               <span className="px-5 py-2 bg-violet-500/10 text-violet-400 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2">
-                <Zap className="w-3 h-3" /> Молодой талант
+                <Zap className="w-3 h-3" /> Ментор ШАГа
               </span>
               <input 
                 className="w-full bg-transparent text-4xl md:text-5xl font-black text-white outline-none focus:text-violet-400 font-syne"
@@ -114,8 +114,8 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
         <div className="bg-violet-600 p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
           <Sparkles className="absolute top-0 right-0 p-8 opacity-10 w-40 h-40 group-hover:scale-110 transition-transform" />
           <h4 className="text-3xl font-black font-syne">Твой успех</h4>
-          <p className="font-medium text-violet-100 text-lg">Забирай миссии, учись у лучших и становись частью сильного сообщества!</p>
-          <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10">Найти ментора</button>
+          <p className="font-medium text-violet-100 text-lg">Выбирай участников, учись у лучших и становись частью сильного сообщества!</p>
+          <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10">Найти участника</button>
         </div>
       </div>
     </div>

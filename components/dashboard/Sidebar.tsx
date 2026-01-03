@@ -39,20 +39,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside 
-      className={`fixed left-4 top-4 bottom-4 transition-all duration-500 z-[70] hidden md:flex flex-col rounded-[32px] border border-white/5 bg-[#2d323c]/80 backdrop-blur-3xl shadow-2xl ${isSidebarOpen ? 'w-64' : 'w-20'}`}
+      className={`fixed left-4 top-4 bottom-4 transition-all duration-500 z-[70] hidden md:flex flex-col rounded-[32px] border border-white/15 bg-[#252930]/95 backdrop-blur-3xl shadow-2xl ${isSidebarOpen ? 'w-64' : 'w-20'}`}
     >
-      <div className="py-10 flex flex-col items-center border-b border-white/5">
+      <div className="py-10 flex flex-col items-center border-b border-white/10">
         <div 
           onClick={() => setActiveTab(AppTab.CATALOG)}
           className="cursor-pointer transition-transform hover:scale-110 active:scale-95"
         >
-          <div className={`w-10 h-10 rounded-xl overflow-hidden border border-white/10 shadow-lg ${activeTab === AppTab.CATALOG ? `ring-2 ring-${accentColor}-500/50` : ''}`}>
+          <div className={`w-11 h-11 rounded-xl overflow-hidden border border-white/20 shadow-lg ${activeTab === AppTab.CATALOG ? 'ring-2 ring-white/50' : ''}`}>
              <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 flex flex-col items-center py-8 space-y-2 px-3 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 flex flex-col items-center py-8 space-y-3 px-3 overflow-y-auto no-scrollbar">
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;
           const Icon = item.icon;
@@ -61,14 +61,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button 
               key={item.id} 
               onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center group relative transition-all duration-300 py-3.5 px-3.5 rounded-2xl ${isActive ? 'text-white' : 'text-[#adb5bd] hover:text-white'}`}
+              className={`w-full flex items-center group relative transition-all duration-300 py-4 px-4 rounded-2xl ${isActive ? 'text-white' : 'text-white/40 hover:text-white/90'}`}
             >
               {isActive && (
-                <div className={`absolute inset-0 bg-${accentColor}-500/15 border border-white/10 rounded-2xl z-0 animate-in fade-in zoom-in duration-300`} />
+                <div className={`absolute inset-0 bg-white/10 border border-white/20 rounded-2xl z-0 animate-in fade-in zoom-in duration-300`} />
               )}
               
               <div className="relative z-10 flex items-center">
-                <Icon className={`w-5 h-5 shrink-0 transition-all ${isActive ? `text-${accentColor}-400` : 'opacity-40 group-hover:opacity-100 group-hover:scale-110'}`} />
+                <Icon className={`w-5 h-5 shrink-0 transition-all ${isActive ? 'text-white scale-110 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'opacity-60 group-hover:opacity-100 group-hover:scale-110'}`} />
                 {isSidebarOpen && (
                   <span className="ml-4 font-bold text-[11px] uppercase tracking-[0.15em] animate-in fade-in slide-in-from-left-2 duration-300 truncate">
                     {item.label}
@@ -80,19 +80,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
 
-      <div className="py-6 flex flex-col items-center border-t border-white/5 space-y-4 px-3">
+      <div className="py-6 flex flex-col items-center border-t border-white/10 space-y-4 px-3">
         <button 
           onClick={() => setActiveTab(AppTab.PROFILE)}
-          className={`w-full flex items-center relative transition-all py-3.5 px-3.5 rounded-2xl ${activeTab === AppTab.PROFILE ? 'text-white' : 'text-[#adb5bd] hover:text-white'}`}
+          className={`w-full flex items-center relative transition-all py-4 px-4 rounded-2xl ${activeTab === AppTab.PROFILE ? 'text-white' : 'text-white/40 hover:text-white/90'}`}
         >
           {activeTab === AppTab.PROFILE && (
-            <div className={`absolute inset-0 bg-${accentColor}-500/15 border border-white/10 rounded-2xl z-0`} />
+            <div className={`absolute inset-0 bg-white/10 border border-white/20 rounded-2xl z-0`} />
           )}
           <div className="relative z-10 flex items-center">
              {session?.paymentUrl ? (
-                <img src={session.paymentUrl} className={`w-5 h-5 rounded-full object-cover ${activeTab === AppTab.PROFILE ? 'ring-2 ring-indigo-500 shadow-md shadow-indigo-500/20' : ''}`} alt="Profile" />
+                <img src={session.paymentUrl} className={`w-5 h-5 rounded-full object-cover ${activeTab === AppTab.PROFILE ? 'ring-2 ring-white shadow-md' : ''}`} alt="Profile" />
              ) : (
-                <UserCircle className={`w-5 h-5 shrink-0 ${activeTab === AppTab.PROFILE ? `text-${accentColor}-400` : 'opacity-40'}`} />
+                <UserCircle className={`w-5 h-5 shrink-0 ${activeTab === AppTab.PROFILE ? 'text-white scale-110' : 'opacity-60'}`} />
              )}
              {isSidebarOpen && <span className="ml-4 font-bold text-[11px] uppercase tracking-[0.15em]">Профиль</span>}
           </div>
@@ -100,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button 
           onClick={onLogout} 
-          className="p-3.5 text-[#6c757d] hover:text-red-400 hover:bg-red-400/10 transition-all rounded-2xl group"
+          className="p-4 text-white/30 hover:text-red-400 hover:bg-red-400/10 transition-all rounded-2xl group"
         >
           <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
         </button>
@@ -108,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="absolute top-1/2 -right-3 translate-y-[-50%] w-6 h-12 rounded-r-xl text-white/20 hover:text-white transition-colors bg-[#2d323c] border border-white/5 flex items-center justify-center group shadow-2xl"
+        className="absolute top-1/2 -right-3 translate-y-[-50%] w-6 h-12 rounded-r-xl text-white/40 hover:text-white transition-colors bg-[#2d323c] border border-white/15 flex items-center justify-center group shadow-2xl"
       >
         {isSidebarOpen ? <ChevronLeft size={10} /> : <ChevronRight size={10} />}
       </button>

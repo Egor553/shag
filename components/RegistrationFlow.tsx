@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserRole } from '../types';
-import { ArrowLeft, Loader2, Zap, ArrowRight, Check, ShieldCheck, Star } from 'lucide-react';
+import { ArrowLeft, Loader2, ArrowRight, Check, ShieldCheck, Star, Layers } from 'lucide-react';
 import { EntrepreneurRegForm } from './registration/EntrepreneurRegForm';
 import { YouthRegForm } from './registration/YouthRegForm';
 
@@ -28,88 +28,98 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 }) => {
   const isEnt = tempRole === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
-  const roleLabel = isEnt ? 'МЕНТОР' : 'ТАЛАНТ';
+  const roleLabel = isEnt ? 'PARTICIPANT_ACCESS' : 'MENTOR_ACCESS';
 
   return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 md:p-12 overflow-y-auto no-scrollbar font-['Inter']">
-      <div className="w-full max-w-4xl bg-[#0a0a0b] border border-white/5 p-8 md:p-16 lg:p-24 rounded-[64px] shadow-[0_40px_100px_rgba(0,0,0,1)] relative overflow-hidden">
-        {/* Ambient Glow */}
-        <div className={`absolute -top-24 -right-24 w-96 h-96 bg-${accentColor}-600/10 blur-[120px] rounded-full opacity-50`} />
-        <div className={`absolute -bottom-24 -left-24 w-96 h-96 bg-${accentColor}-600/5 blur-[120px] rounded-full opacity-30`} />
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 lg:p-12 font-['Inter'] relative overflow-x-hidden bg-[#1a1d23]">
+      {/* Архитектурные линии декора */}
+      <div className="absolute inset-0 pointer-events-none opacity-10">
+        <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-[#ffffff] to-transparent" />
+        <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#ffffff] to-transparent" />
+      </div>
+
+      <div className="w-full max-w-6xl flex flex-col lg:flex-row relative z-10 min-h-0">
         
-        {/* Navigation Top */}
-        <div className="absolute top-12 left-12 md:top-16 md:left-16 flex items-center gap-6 z-20">
-          <button 
-            onClick={() => regStep === 1 ? onCancel() : setRegStep(regStep - 1)} 
-            className="flex items-center gap-3 text-slate-500 hover:text-white transition-all group font-black uppercase text-[10px] tracking-widest"
-          >
-            <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ArrowLeft className="w-4 h-4" />
+        {/* Левая панель - Навигация и Статус */}
+        <div className={`w-full lg:w-80 bg-[#252930] p-6 md:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/10 lg:rounded-l-[40px] rounded-t-[32px] lg:rounded-tr-none relative overflow-hidden shrink-0`}>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent lg:hidden" />
+          
+          <div className="space-y-8 lg:space-y-12 relative z-10">
+            <button 
+              onClick={() => regStep === 1 ? onCancel() : setRegStep(regStep - 1)} 
+              className="flex items-center gap-3 text-white/40 hover:text-white transition-all group font-black uppercase text-[10px] tracking-[0.3em]"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              BACK_STEP
+            </button>
+
+            <div className="space-y-3 lg:space-y-4">
+              <p className="text-white/40 text-[9px] font-black tracking-[0.5em] uppercase">{roleLabel}</p>
+              <h2 className="text-4xl lg:text-5xl font-black text-white font-syne uppercase tracking-tighter leading-none">
+                STEP_<br/>0{regStep}
+              </h2>
             </div>
-            Назад
-          </button>
+          </div>
+
+          <div className="mt-8 lg:mt-0 space-y-6 relative z-10">
+            <div className="flex lg:flex-col gap-4 lg:gap-3 justify-center lg:justify-start">
+              {[1, 2, 3].map(s => (
+                <div key={s} className="flex items-center gap-4 group">
+                  <div className={`w-2 h-2 rounded-full transition-all duration-500 ${s === regStep ? `bg-${accentColor}-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] scale-125` : (s < regStep ? 'bg-emerald-500' : 'bg-white/10')}`} />
+                  <span className={`hidden lg:inline text-[8px] font-black uppercase tracking-widest ${s === regStep ? 'text-white' : 'text-white/30'}`}>
+                    {s === 1 ? 'IDENTITY' : s === 2 ? 'EXPERIENCE' : 'RESOURCE'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="relative z-10">
-          <header className="mb-16 space-y-8">
-             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full bg-${accentColor}-500 animate-pulse`} />
-                  <span className={`text-${accentColor}-500 font-black uppercase text-[10px] tracking-[0.4em]`}>
-                    ШАГ {regStep} / 3
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  {[1, 2, 3].map(s => (
-                    <div 
-                      key={s} 
-                      className={`h-1 rounded-full transition-all duration-700 ${s === regStep ? `w-12 bg-${accentColor}-600 shadow-[0_0_15px_rgba(79,70,229,0.3)]` : (s < regStep ? `w-4 bg-${accentColor}-800` : 'w-4 bg-white/5')}`} 
-                    />
-                  ))}
-                </div>
-             </div>
-
-             <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                   {isEnt ? <ShieldCheck className="w-5 h-5 text-indigo-500" /> : <Star className="w-5 h-5 text-violet-500" />}
-                   <span className="text-white/40 text-[10px] font-bold uppercase tracking-widest">{roleLabel} — ENERGY EXCHANGE</span>
-                </div>
-                <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-[0.9] font-syne">
-                  {isEnt ? 'ВАША' : 'ТВОЯ'}<br/>
-                  <span className={`text-transparent bg-clip-text bg-gradient-to-r ${isEnt ? 'from-indigo-400 to-indigo-700' : 'from-violet-400 to-violet-700'}`}>
-                    АНКЕТА
-                  </span>
-                </h2>
-             </div>
-          </header>
-
-          <form onSubmit={onSubmit} className="space-y-16">
-            <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-              {isEnt ? (
-                <EntrepreneurRegForm regStep={regStep} regData={regData} setRegData={setRegData} />
-              ) : (
-                <YouthRegForm regStep={regStep} regData={regData} setRegData={setRegData} />
-              )}
+        {/* Правая панель - Форма (Основной контент) */}
+        <div className="flex-1 bg-[#1d2127]/80 backdrop-blur-xl p-6 md:p-12 lg:p-24 lg:rounded-r-[40px] rounded-b-[32px] lg:rounded-bl-none border-t lg:border-t-0 lg:border-l border-white/5 relative">
+          <div className="absolute top-0 right-0 w-24 h-24 lg:w-32 lg:h-32 bg-[#2d323c] rounded-bl-[60px] lg:rounded-bl-[80px] border-l border-b border-white/5 hidden sm:block" />
+          
+          <div className="max-w-3xl mx-auto space-y-10 lg:space-y-16">
+            <div className="space-y-4 lg:space-y-6">
+               <h3 className="text-4xl md:text-7xl font-black text-white uppercase font-syne tracking-tighter leading-none">
+                 {regStep === 3 ? 'FINISH' : 'SYSTEM'}<br/>
+                 <span className={`text-white/20 italic`}>
+                   {regStep === 3 ? 'DEPLOY' : 'CONFIG'}
+                 </span>
+               </h3>
             </div>
 
-            <div className="pt-4">
-              <button 
-                disabled={isAuthLoading} 
-                className={`w-full py-10 rounded-[40px] font-black uppercase text-[11px] tracking-[0.4em] text-white shadow-2xl transition-all flex items-center justify-center group relative overflow-hidden ${isEnt ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-violet-600 hover:bg-violet-500'}`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                
-                {isAuthLoading ? (
-                  <Loader2 className="animate-spin w-6 h-6" />
+            <form onSubmit={onSubmit} className="space-y-12 lg:space-y-16">
+              <div className="animate-in fade-in slide-in-from-right-8 duration-700">
+                {isEnt ? (
+                  <EntrepreneurRegForm regStep={regStep} regData={regData} setRegData={setRegData} />
                 ) : (
-                  <span className="flex items-center gap-4 relative z-10">
-                    {regStep === 3 ? 'Создать аккаунт' : 'Следующий этап'} 
-                    {regStep === 3 ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />}
-                  </span>
+                  <YouthRegForm regStep={regStep} regData={regData} setRegData={setRegData} />
                 )}
-              </button>
-            </div>
-          </form>
+              </div>
+
+              <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="hidden md:flex items-center gap-3 text-white/30">
+                  <Layers className="w-4 h-4" />
+                  <span className="text-[9px] font-bold uppercase tracking-widest">Data protected by encryption</span>
+                </div>
+                
+                <button 
+                  disabled={isAuthLoading} 
+                  className={`w-full md:w-auto px-10 lg:px-14 py-6 lg:py-8 rounded-tr-[30px] rounded-bl-[30px] font-black uppercase text-[11px] lg:text-[13px] tracking-[0.4em] text-white transition-all flex items-center justify-center gap-6 group overflow-hidden shadow-2xl ${isEnt ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-violet-600 hover:bg-violet-500'}`}
+                >
+                  {isAuthLoading ? (
+                    <Loader2 className="animate-spin w-5 h-5" />
+                  ) : (
+                    <>
+                      {regStep === 3 ? 'COMPLETE_REGISTRATION' : 'NEXT_MODULE'} 
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

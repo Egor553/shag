@@ -12,7 +12,7 @@ import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
 import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, ShieldCheck, Heart, UserPlus } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, ShieldCheck, Heart, UserPlus, Activity, Target, Zap } from 'lucide-react';
 import { ShagLogo } from '../../App';
 import { dbService } from '../../services/databaseService';
 import { Footer } from '../Footer';
@@ -111,124 +111,98 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
-  const textAccentClass = isEnt ? 'text-indigo-400' : (isAdmin ? 'text-emerald-400' : 'text-violet-400');
-  const bgAccentSoftClass = isEnt ? 'bg-indigo-600/5' : (isAdmin ? 'bg-emerald-600/5' : 'bg-violet-600/5');
+  const textAccentClass = 'text-white';
 
   const mobileNavItems = [
-    { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
+    { id: AppTab.CATALOG, icon: LayoutGrid, label: 'ШАГи' },
     ...(isEnt ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Мои ШАГи' }] : []),
-    { id: AppTab.JOBS, icon: Briefcase, label: 'Подработка' },
-    { id: AppTab.MISSION, icon: Heart, label: 'Миссия' },
-    { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
-    { id: AppTab.PROFILE, icon: UserCircle, label: 'Профиль' },
-    ...(isAdmin ? [{ id: AppTab.ADMIN, icon: ShieldCheck, label: 'Админ' }] : [])
+    { id: AppTab.JOBS, icon: Briefcase, label: 'Работа' },
+    { id: AppTab.MISSION, icon: Target, label: 'Миссия' },
+    { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'Встречи' },
+    { id: AppTab.PROFILE, icon: UserCircle, label: 'Кабинет' }
   ];
 
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
 
   return (
-    <div className="min-h-screen bg-[#1a1d23] text-[#f8f9fa] flex flex-col font-['Inter']">
-      {/* Background Decorative Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className={`absolute -top-[10%] -left-[10%] w-[70%] h-[70%] bg-indigo-600/10 blur-[150px] rounded-full opacity-30`} />
-        <div className={`absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-violet-600/5 blur-[120px] rounded-full opacity-20`} />
+    <div className="min-h-screen bg-[#1a1d23] text-white flex flex-col font-['Inter'] relative">
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       </div>
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative z-10">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} onLogout={onLogout} />
 
         <main className={`flex-1 transition-all duration-500 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen flex flex-col">
             
             {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
-              <div className="mb-8 md:mb-20">
-                 <div className="bg-[#2d323c]/80 border border-white/10 rounded-[32px] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 backdrop-blur-3xl shadow-xl">
-                    <div className="flex items-center gap-5">
-                       <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 border border-indigo-500/10">
-                          <TrendingUp size={18} />
+              <div className="mb-14 md:mb-20">
+                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                    <div className="col-span-2 md:col-span-1 bg-white/[0.05] border border-white/20 p-8 rounded-tl-[40px] rounded-br-[40px] backdrop-blur-3xl flex items-center gap-6 group hover:bg-white/[0.08] transition-all">
+                       <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                          <Activity size={24} />
                        </div>
-                       <div className="space-y-0.5">
-                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Community Pulse</p>
-                          <h4 className="text-base md:text-lg font-black font-syne uppercase tracking-tight text-white">Энергообмен</h4>
+                       <div>
+                          <p className="text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-1">Pulse_Module</p>
+                          <h4 className="text-xl font-black font-syne uppercase text-white leading-none">Энергообмен</h4>
                        </div>
                     </div>
-                    <div className="flex items-center justify-between md:justify-end gap-8 md:gap-16">
-                       <div className="space-y-0.5">
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Событий</p>
-                          <p className="text-xl md:text-2xl font-black font-syne text-white">{totalMeetingsCount}</p>
-                       </div>
-                       <div className="space-y-0.5 text-right">
-                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">Вклад</p>
-                          <p className={`text-xl md:text-2xl font-black font-syne ${textAccentClass}`}>{totalGlobalImpact.toLocaleString()} ₽</p>
-                       </div>
+                    
+                    <div className="bg-white/[0.03] border border-white/10 p-8 rounded-tl-[24px] rounded-br-[24px] flex flex-col justify-center">
+                       <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-2 leading-none">Events_Total</p>
+                       <p className="text-3xl font-black font-syne text-white tracking-tighter">{totalMeetingsCount}</p>
+                    </div>
+
+                    <div className="bg-white/[0.03] border border-white/10 p-8 rounded-tr-[24px] rounded-bl-[24px] flex flex-col justify-center">
+                       <p className="text-[9px] font-black text-white/60 uppercase tracking-widest mb-2 leading-none">Impact_Total</p>
+                       <p className="text-3xl font-black font-syne text-white tracking-tighter">{totalGlobalImpact.toLocaleString()} ₽</p>
                     </div>
                  </div>
               </div>
             )}
 
-            <div className="flex-1 min-h-[70vh]">
+            <div className="flex-1">
               {activeTab === AppTab.CATALOG && <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />}
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
               {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
-              {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={onSaveProfile} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={onSaveProfile} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
+              {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
-                <div className="space-y-8 md:space-y-12">
-                  <div className="flex flex-col md:flex-row items-center justify-between bg-[#2d323c] p-8 md:p-14 rounded-[40px] md:rounded-[48px] border border-white/10 relative overflow-hidden group shadow-2xl">
-                     <div className="space-y-4 md:space-y-6 relative z-10 text-center md:text-left">
-                       <span className={`px-4 py-1.5 ${isEnt ? 'bg-indigo-500/15 text-indigo-400 border-indigo-500/10' : 'bg-violet-500/15 text-violet-400 border-violet-500/10'} rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest border`}>Management Studio</span>
-                       <h2 className="text-4xl md:text-7xl font-black uppercase font-syne tracking-tighter leading-none text-white">ВИТРИНА<br/>ШАГОВ</h2>
+                <div className="space-y-12">
+                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.03] p-10 md:p-16 rounded-tr-[80px] rounded-bl-[80px] border border-white/15 shadow-3xl overflow-hidden relative">
+                     <div className="relative z-10 space-y-4 text-center md:text-left">
+                        <span className="text-white opacity-60 text-[10px] font-black uppercase tracking-[0.5em]">SYSTEM_MODULE_MANAGER</span>
+                        <h2 className="text-5xl md:text-8xl font-black uppercase font-syne tracking-tighter leading-[0.9] text-white">ВИТРИНА<br/><span className="text-white/30 italic">ШАГОВ</span></h2>
                      </div>
-                     <div className="relative z-10 opacity-100 flex items-center justify-center mt-6 md:mt-0">
-                        <div className="absolute inset-0 bg-indigo-600 blur-[100px] opacity-20" />
-                        <ShagLogo className="w-24 h-24 md:w-56 md:h-56 relative z-20" />
-                     </div>
+                     <ShagLogo className="w-32 h-32 md:w-64 md:h-64 opacity-15 absolute -right-12 -bottom-12" />
                   </div>
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}
             </div>
             
-            <div className="mt-auto pt-20">
+            <div className="mt-auto pt-24">
               <Footer />
             </div>
           </div>
         </main>
       </div>
 
-      {/* Mobile Navigation Bar - Gunmetal Theme */}
-      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#2d323c]/95 backdrop-blur-3xl border border-white/15 z-[100] md:hidden flex items-center justify-around px-0.5 rounded-[32px] shadow-[0_15px_40px_rgba(0,0,0,0.4)]">
+      <nav className="fixed bottom-6 left-6 right-6 h-20 bg-white/[0.08] backdrop-blur-3xl border border-white/20 z-[100] md:hidden flex items-center justify-around rounded-[32px] shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
-          const isProfile = item.id === AppTab.PROFILE;
-          
           return (
             <button 
               key={item.id} 
               onClick={() => setActiveTab(item.id as any)} 
-              className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all py-2 relative h-full ${isActive ? textAccentClass : 'text-[#6c757d]'}`}
+              className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all ${isActive ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
             >
-              {isProfile && session.paymentUrl ? (
-                <div className="relative">
-                  <img 
-                    src={session.paymentUrl} 
-                    className={`w-6 h-6 rounded-full object-cover transition-all ${isActive ? 'ring-2 ring-indigo-500 scale-110' : 'opacity-50 grayscale-[0.3]'}`} 
-                    alt="Me" 
-                  />
-                </div>
-              ) : (
-                <item.icon size={18} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-40'} transition-all`} />
-              )}
-              
-              <span className={`text-[7px] font-black uppercase tracking-tighter text-center leading-none ${isActive ? 'opacity-100' : 'opacity-50'}`}>
-                {item.label}
-              </span>
-              
-              {isActive && (
-                <div className={`absolute bottom-2 w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-400' : 'bg-violet-400'} shadow-[0_0_10px_rgba(79,70,229,0.8)]`} />
-              )}
+              <item.icon size={22} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-60'}`} />
+              <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{item.label}</span>
+              {isActive && <div className={`w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 shadow-[0_0_12px_#ffffff]`} />}
             </button>
           );
         })}

@@ -225,20 +225,26 @@ const App: React.FC = () => {
           </div>
         ) : (
           <div className="text-center space-y-20">
-             <h1 className="text-7xl md:text-[8rem] font-black text-white tracking-tighter uppercase font-syne leading-none">СДЕЛАЙ СВОЙ<br/><span className="text-indigo-600">ШАГ</span></h1>
+             <h1 className="text-5xl md:text-[8rem] font-black text-white tracking-tighter uppercase font-syne leading-none">СДЕЛАЙ СВОЙ<br/><span className="text-indigo-600">ШАГ</span></h1>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
                 <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-indigo-600 transition-all text-left space-y-8 shadow-2xl hover:shadow-indigo-500/10">
                    <Zap className="text-indigo-600 w-10 h-10" />
-                   <h3 className="text-3xl font-black text-white font-syne uppercase">МЕНТОР</h3>
-                   <p className="text-slate-400 font-medium italic">Предприниматель, готовый делиться опытом</p>
+                   <h3 className="text-3xl font-black text-white font-syne uppercase">УЧАСТНИК</h3>
+                   <p className="text-slate-400 font-medium italic">Лидер, готовый делиться опытом и смыслами</p>
                 </button>
                 <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-violet-500 transition-all text-left space-y-8 shadow-2xl hover:shadow-violet-500/10">
                    <Star className="text-violet-500 w-10 h-10" />
-                   <h3 className="text-3xl font-black text-white font-syne uppercase">ТАЛАНТ</h3>
-                   <p className="text-slate-400 font-medium italic">Молодой талант, желающий расти</p>
+                   <h3 className="text-3xl font-black text-white font-syne uppercase">МЕНТОР</h3>
+                   <p className="text-slate-400 font-medium italic">Эксперт, желающий расти через энергообмен</p>
                 </button>
              </div>
-             <button onClick={() => setAuthMode('login')} className="text-slate-500 hover:text-white uppercase tracking-[0.5em] font-black text-[10px] py-4 px-10 border border-white/10 rounded-full hover:bg-white/5 transition-all">Уже в ШАГе? Войти</button>
+             
+             <button 
+               onClick={() => setAuthMode('login')} 
+               className="text-white bg-white/5 border-2 border-white/40 hover:border-indigo-500 hover:bg-white/10 uppercase tracking-[0.4em] font-black text-[11px] py-6 px-12 rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-indigo-500/20 active:scale-95"
+             >
+               Уже в ШАГе? Войти
+             </button>
           </div>
         )}
       </div>
