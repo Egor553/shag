@@ -124,9 +124,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
 
           {/* Progress Indicator - Thin segments */}
           {!isRescheduleMode && !isOwner && !showPayment && (
-            <div className="flex gap-1.5 mb-12">
+            <div className="flex gap-1.5 mb-10">
               {[1, 2, 3, 4].map((s) => (
-                <div key={s} className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${s <= step ? 'bg-[#5c56f2]' : 'bg-slate-100'}`} />
+                <div key={s} className={`flex-1 h-1 rounded-full transition-all duration-500 ${s <= step ? 'bg-[#5c56f2]' : 'bg-slate-100'}`} />
               ))}
             </div>
           )}
@@ -142,11 +142,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
           ) : !showPayment ? (
             <div className="space-y-8">
               {step === 1 && (
-                <div className="space-y-8 animate-in slide-in-from-right-4">
-                  <div className="space-y-6">
+                <div className="space-y-6 animate-in slide-in-from-right-4">
+                  <div className="space-y-5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ФОРМАТ УЧАСТИЯ</label>
                     <div className="space-y-3">
-                      {/* Individual Format Card refined */}
+                      {/* Card - Centered content and responsive font */}
                       <button 
                         onClick={() => setFormat(MeetingFormat.ONLINE_1_ON_1)} 
                         className={`w-full p-4 md:p-5 rounded-[28px] border-2 transition-all flex items-center justify-between group ${format === MeetingFormat.ONLINE_1_ON_1 ? 'border-[#5c56f2] bg-white shadow-xl' : 'border-slate-50 bg-slate-50/50'}`}
@@ -155,11 +155,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${format === MeetingFormat.ONLINE_1_ON_1 ? 'bg-[#5c56f2]/10 text-[#5c56f2]' : 'bg-white text-slate-300'}`}>
                             <User className="w-5 h-5" />
                           </div>
-                          <p className={`font-black text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-400'}`}>Индивидуально</p>
+                          <p className={`font-black text-[10px] md:text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-400'}`}>Индивидуально</p>
                         </div>
-                        <div className="text-right flex items-baseline gap-1">
-                           <p className={`text-xl md:text-2xl font-black font-syne leading-none ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-300'}`}>{service?.price || mentor.singlePrice}</p>
-                           <p className={`text-[10px] font-bold uppercase ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]/60' : 'text-slate-200'}`}>₽</p>
+                        <div className="text-right flex items-baseline gap-1 shrink-0">
+                           <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-300'}`}>{service?.price || mentor.singlePrice}</p>
+                           <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]/60' : 'text-slate-200'}`}>₽</p>
                         </div>
                       </button>
 
@@ -172,11 +172,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${format === MeetingFormat.GROUP_OFFLINE ? 'bg-emerald-500/10 text-emerald-500' : 'bg-white text-slate-300'}`}>
                               <UsersIcon className="w-5 h-5" />
                             </div>
-                            <p className={`font-black text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-600' : 'text-slate-400'}`}>Групповая встреча</p>
+                            <p className={`font-black text-[10px] md:text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-600' : 'text-slate-400'}`}>Групповая встреча</p>
                           </div>
-                          <div className="text-right flex items-baseline gap-1">
-                             <p className={`text-xl md:text-2xl font-black font-syne leading-none ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500' : 'text-slate-300'}`}>{service?.groupPrice || mentor.groupPrice}</p>
-                             <p className={`text-[10px] font-bold uppercase ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500/60' : 'text-slate-200'}`}>₽</p>
+                          <div className="text-right flex items-baseline gap-1 shrink-0">
+                             <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500' : 'text-slate-300'}`}>{service?.groupPrice || mentor.groupPrice}</p>
+                             <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500/60' : 'text-slate-200'}`}>₽</p>
                           </div>
                         </button>
                       )}
@@ -235,7 +235,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                 </div>
               )}
 
-              {/* Action Button */}
+              {/* Action Button - Centered and full width */}
               <div className="pt-6">
                 <button 
                   disabled={(step === 2 && !goal) || (step === 3 && !exchange) || (step === 4 && !selectedSlot) || isRescheduling} 

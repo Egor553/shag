@@ -11,10 +11,10 @@ import { ServiceBuilder } from '../ServiceBuilder';
 import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
 import { ResourcePlannerModal } from '../ResourcePlannerModal';
+import { MobileNav } from './MobileNav';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, ShieldCheck, Heart, UserPlus, Activity, Target, Zap } from 'lucide-react';
 import { ShagLogo } from '../../App';
-import { dbService } from '../../services/databaseService';
+import { Activity, Target } from 'lucide-react';
 import { Footer } from '../Footer';
 
 interface MainDashboardProps {
@@ -112,15 +112,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
 
-  // ПОРЯДОК: 1. ШАГи (Каталог), 2. Витрина (Мои услуги), 3. Подработка, 4. Миссия, 5. Кабинет
-  const mobileNavItems = [
-    { id: AppTab.CATALOG, icon: LayoutGrid, label: 'ШАГи' },
-    ...(isEnt ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Витрина' }] : []),
-    { id: AppTab.JOBS, icon: Briefcase, label: 'Подработка' },
-    { id: AppTab.MISSION, icon: Target, label: 'Миссия' },
-    { id: AppTab.PROFILE, icon: UserCircle, label: 'Кабинет' }
-  ];
-
   const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
   const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
 
@@ -191,22 +182,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         </main>
       </div>
 
-      <nav className="fixed bottom-6 left-6 right-6 h-20 bg-white/[0.08] backdrop-blur-3xl border border-white/20 z-[100] md:hidden flex items-center justify-around rounded-[32px] shadow-[0_25px_60px_rgba(0,0,0,0.7)]">
-        {mobileNavItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button 
-              key={item.id} 
-              onClick={() => setActiveTab(item.id as any)} 
-              className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all ${isActive ? 'text-white' : 'text-white/50 hover:text-white/80'}`}
-            >
-              <item.icon size={22} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-60'}`} />
-              <span className={`text-[8px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-0 h-0'}`}>{item.label}</span>
-              {isActive && <div className={`w-1.5 h-1.5 rounded-full bg-white absolute bottom-2 shadow-[0_0_12px_#ffffff]`} />}
-            </button>
-          );
-        })}
-      </nav>
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={session.role} />
 
       {showPlanner && isEnt && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onSaveProfile={onSaveProfile} onClose={() => setShowPlanner(false)} />}
       {showBooking && activeMentor && <BookingModal mentor={activeMentor} service={selectedService || undefined} bookings={localBookings} session={session} existingBooking={pendingPaymentBooking || undefined} onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} onComplete={() => { if (onRefresh) onRefresh(); setShowBooking(false); }} />}
