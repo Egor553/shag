@@ -115,12 +115,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const bgAccentSoftClass = isEnt ? 'bg-indigo-900/10' : (isAdmin ? 'bg-emerald-900/10' : 'bg-violet-900/10');
 
   // Strict 6-icon Mobile Navigation Order for Mentors
-  // 1. ШАГи (CATALOG)
-  // 2. Мои ШАГи (SERVICES) - Only for Mentors
-  // 3. Подработка (JOBS)
-  // 4. Миссия (MISSION)
-  // 5. События (MEETINGS)
-  // 6. Профиль (PROFILE)
   const mobileNavItems = [
     { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
     ...(isEnt ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Мои ШАГи' }] : []),
@@ -203,20 +197,34 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         </main>
       </div>
 
-      {/* Mobile Navigation Bar - Compact for 6 icons */}
+      {/* Mobile Navigation Bar - Optimized with Avatar for Profile */}
       <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/98 backdrop-blur-3xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-0.5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
+          const isProfile = item.id === AppTab.PROFILE;
+          
           return (
             <button 
               key={item.id} 
               onClick={() => setActiveTab(item.id as any)} 
               className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all py-2 relative h-full ${isActive ? textAccentClass : 'text-slate-500'}`}
             >
-              <item.icon size={18} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-50'} transition-all`} />
+              {isProfile && session.paymentUrl ? (
+                <div className="relative">
+                  <img 
+                    src={session.paymentUrl} 
+                    className={`w-6 h-6 rounded-full object-cover transition-all ${isActive ? 'ring-2 ring-white scale-110' : 'opacity-60 grayscale-[0.5]'}`} 
+                    alt="Me" 
+                  />
+                </div>
+              ) : (
+                <item.icon size={18} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-50'} transition-all`} />
+              )}
+              
               <span className={`text-[7px] font-black uppercase tracking-tighter text-center leading-none ${isActive ? 'opacity-100' : 'opacity-40'}`}>
                 {item.label}
               </span>
+              
               {isActive && (
                 <div className={`absolute bottom-2 w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-500' : 'bg-violet-500'} shadow-[0_0_10px_rgba(79,70,229,0.8)]`} />
               )}

@@ -150,7 +150,7 @@ const App: React.FC = () => {
                  <RefreshCcw size={16} /> Проверить статус
               </button>
               <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto mt-2">
-                 <LogOut size(16) /> Выйти
+                 <LogOut size={16} /> Выйти
               </button>
            </div>
         </div>
