@@ -25,15 +25,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const isEnt = session?.role === UserRole.ENTREPRENEUR;
   const isAdmin = session?.role === UserRole.ADMIN || session?.email === 'admin';
-  const accentColor = isEnt ? 'indigo' : (isAdmin ? 'emerald' : 'violet');
   const logoUrl = "https://s5.iimage.su/s/01/uK0lK8nxZppHltfQVmPpMgi2r1MXOiTdLgwF9qev.png";
 
+  // Порядок: 1. ШАГи, 2. Мои ШАГи / Подработка, 3. События, 4. Наша Миссия
   const menuItems = [
     { id: AppTab.CATALOG, label: 'ШАГи', icon: Users },
     ...(isEnt ? [{ id: AppTab.SERVICES, label: 'Мои ШАГи', icon: UserPlus }] : []),
     { id: AppTab.JOBS, label: 'Подработка', icon: Briefcase }, 
-    { id: AppTab.MISSION, label: 'Наша Миссия', icon: Heart },
     { id: AppTab.MEETINGS, label: 'События', icon: CalendarIcon },
+    { id: AppTab.MISSION, label: 'Наша Миссия', icon: Heart },
     ...(isAdmin ? [{ id: AppTab.ADMIN, label: 'Админ', icon: ShieldCheck }] : []),
   ];
 
