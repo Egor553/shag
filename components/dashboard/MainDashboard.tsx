@@ -12,7 +12,7 @@ import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
 import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, Info, ShieldCheck, Heart } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, LayoutGrid, UserCircle, Briefcase, TrendingUp, ShieldCheck, Heart, UserPlus } from 'lucide-react';
 import { ShagLogo } from '../../App';
 import { dbService } from '../../services/databaseService';
 import { Footer } from '../Footer';
@@ -114,16 +114,16 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const textAccentClass = isEnt ? 'text-indigo-400' : (isAdmin ? 'text-emerald-400' : 'text-violet-400');
   const bgAccentSoftClass = isEnt ? 'bg-indigo-900/10' : (isAdmin ? 'bg-emerald-900/10' : 'bg-violet-900/10');
 
-  // Unified Mobile Navigation - EXACT ORDER REQUESTED:
+  // Strict 6-icon Mobile Navigation Order for Mentors
   // 1. ШАГи (CATALOG)
-  // 2. Мои ШАГи (SERVICES - if Mentor)
+  // 2. Мои ШАГи (SERVICES) - Only for Mentors
   // 3. Подработка (JOBS)
-  // 4. Наша Миссия (MISSION)
+  // 4. Миссия (MISSION)
   // 5. События (MEETINGS)
   // 6. Профиль (PROFILE)
   const mobileNavItems = [
     { id: AppTab.CATALOG, icon: Users, label: 'ШАГи' },
-    ...(isEnt ? [{ id: AppTab.SERVICES, icon: LayoutGrid, label: 'Мои ШАГи' }] : []),
+    ...(isEnt ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Мои ШАГи' }] : []),
     { id: AppTab.JOBS, icon: Briefcase, label: 'Подработка' },
     { id: AppTab.MISSION, icon: Heart, label: 'Миссия' },
     { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
@@ -144,7 +144,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} onLogout={onLogout} />
 
         <main className={`flex-1 transition-all duration-500 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen flex flex-col">
             
             {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
               <div className="mb-8 md:mb-20">
@@ -172,7 +172,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               </div>
             )}
 
-            <div className="min-h-[70vh]">
+            <div className="flex-1 min-h-[70vh]">
               {activeTab === AppTab.CATALOG && <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />}
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
@@ -187,7 +187,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
                        <h2 className="text-4xl md:text-7xl font-black uppercase font-syne tracking-tighter leading-none">ВИТРИНА<br/>ШАГОВ</h2>
                      </div>
                      <div className="relative z-10 opacity-100 flex items-center justify-center mt-6 md:mt-0">
-                        {/* Extra glow for the Vitrina logo to ensure it's not "dimmed" */}
                         <div className="absolute inset-0 bg-indigo-600 blur-[80px] opacity-20" />
                         <ShagLogo className="w-24 h-24 md:w-56 md:h-56 relative z-20" />
                      </div>
@@ -197,24 +196,29 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               )}
             </div>
             
-            <div className="mt-20">
+            <div className="mt-auto pt-20">
               <Footer />
             </div>
           </div>
         </main>
       </div>
 
-      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/98 backdrop-blur-3xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-1 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      {/* Mobile Navigation Bar - Compact for 6 icons */}
+      <nav className="fixed bottom-4 left-4 right-4 h-20 bg-[#0a0a0b]/98 backdrop-blur-3xl border border-white/10 z-[100] md:hidden flex items-center justify-around px-0.5 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {mobileNavItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
-            <button key={item.id} onClick={() => setActiveTab(item.id as any)} className={`flex flex-col items-center justify-center gap-1 flex-1 transition-all py-2 relative ${isActive ? textAccentClass : 'text-slate-500'}`}>
-              <item.icon size={18} className={`${isActive ? 'scale-110' : 'opacity-60'} transition-transform`} />
-              <span className={`text-[7px] font-black uppercase tracking-tighter text-center leading-none ${isActive ? 'opacity-100' : 'opacity-60'}`}>
+            <button 
+              key={item.id} 
+              onClick={() => setActiveTab(item.id as any)} 
+              className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all py-2 relative h-full ${isActive ? textAccentClass : 'text-slate-500'}`}
+            >
+              <item.icon size={18} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-50'} transition-all`} />
+              <span className={`text-[7px] font-black uppercase tracking-tighter text-center leading-none ${isActive ? 'opacity-100' : 'opacity-40'}`}>
                 {item.label}
               </span>
               {isActive && (
-                <div className={`absolute -bottom-1 w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-500' : 'bg-violet-500'} shadow-[0_0_10px_rgba(79,70,229,0.8)]`} />
+                <div className={`absolute bottom-2 w-1 h-1 rounded-full ${isEnt ? 'bg-indigo-500' : 'bg-violet-500'} shadow-[0_0_10px_rgba(79,70,229,0.8)]`} />
               )}
             </button>
           );
