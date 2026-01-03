@@ -173,7 +173,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
                 <div className="space-y-8 md:space-y-12">
                   <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.03] p-6 md:p-16 rounded-tr-[32px] md:rounded-tr-[80px] rounded-bl-[32px] md:rounded-bl-[80px] border border-white/15 shadow-3xl overflow-hidden relative">
                      <div className="relative z-10 space-y-2 md:space-y-4 text-center md:text-left">
-                        <span className="text-white opacity-60 text-[7px] md:text-[10px] font-black uppercase tracking-[0.5em]">SYSTEM_MODULE_MANAGER</span>
                         <h2 className="text-2xl md:text-8xl font-black uppercase font-syne tracking-tighter leading-tight md:leading-[0.9] text-white">ВИТРИНА<br/><span className="text-white/30 italic">ШАГОВ</span></h2>
                      </div>
                      <div className="md:absolute md:-right-12 md:-bottom-12 flex justify-center mt-4 md:mt-0">

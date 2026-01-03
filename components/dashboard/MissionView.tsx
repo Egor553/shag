@@ -15,11 +15,6 @@ export const MissionView: React.FC = () => {
           </div>
         </div>
         <div className="space-y-4 md:space-y-6 px-2">
-           <div className="flex items-center justify-center gap-3 md:gap-4 text-indigo-500 mb-2">
-              <div className="w-8 md:w-12 h-px bg-indigo-500/30" />
-              <span className="font-black text-[8px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.6em]">Energy Exchange Platform</span>
-              <div className="w-8 md:w-12 h-px bg-indigo-500/30" />
-           </div>
            <h1 className="text-5xl sm:text-7xl md:text-9xl font-black text-white tracking-tighter leading-[0.85] uppercase font-syne">
             НАША<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-violet-500 to-white">МИССИЯ</span>

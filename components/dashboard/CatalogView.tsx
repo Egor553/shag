@@ -24,11 +24,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
     <div className="space-y-16 md:space-y-28 animate-in fade-in duration-1000 pb-20">
       <div className="space-y-12">
         <div className="space-y-8 relative">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-px bg-white/20" />
-            <span className="text-white font-black text-[10px] uppercase tracking-[0.6em] opacity-60">Global_Service_Registry</span>
-          </div>
-          
           <div className="relative">
             {/* Исправлен leading для предотвращения наезда букв и добавлен чисто белый цвет */}
             <h1 className="text-[14vw] sm:text-8xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.95] uppercase font-syne">

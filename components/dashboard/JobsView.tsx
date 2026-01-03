@@ -72,10 +72,6 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
     <div className="space-y-8 md:space-y-24 animate-in fade-in duration-1000 pb-24 md:pb-0">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8">
         <div className="space-y-2 md:space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-8 md:w-12 h-px bg-white/40" />
-            <span className="text-white font-black text-[8px] md:text-[10px] uppercase tracking-[0.5em]">Work_Registry_04</span>
-          </div>
           <h1 className="text-4xl sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[1.1] md:leading-[0.9] uppercase font-syne">
             ПОДРАБОТКА<br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/30 to-white/5 italic">ВАКАНСИИ</span>
@@ -189,11 +185,11 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
                </div>
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                   <div className="p-5 md:p-8 bg-white/[0.03] rounded-2xl md:rounded-3xl border border-white/5">
-                    <span className="text-[8px] md:text-[9px] font-black text-white/40 uppercase tracking-widest block mb-1.5">Награда</span>
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest block mb-1.5">Награда</span>
                     <p className="text-lg md:text-2xl font-black text-white font-syne">{selectedJob.reward || '—'}</p>
                   </div>
                   <div className="p-5 md:p-8 bg-white/[0.03] rounded-2xl md:rounded-3xl border border-white/5">
-                    <span className="text-[8px] md:text-[9px] font-black text-white/40 uppercase tracking-widest block mb-1.5">Telegram</span>
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest block mb-1.5">Telegram</span>
                     <p className="text-lg md:text-2xl font-black text-white truncate font-syne">{selectedJob.telegram || '—'}</p>
                   </div>
                </div>
