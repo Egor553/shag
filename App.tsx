@@ -10,13 +10,12 @@ import { Footer } from './components/Footer';
 
 export const ShagLogo = ({ className = "w-12 h-12" }: { className?: string }) => (
   <div className={`relative flex items-center justify-center ${className}`}>
-    {/* Vivid glow background for depth */}
-    <div className="absolute inset-0 bg-indigo-600 blur-3xl opacity-30 rounded-full" />
+    <div className="absolute inset-0 bg-indigo-500 blur-3xl opacity-20 rounded-full" />
     <div className="relative w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
       <img 
         src="https://s5.iimage.su/s/01/uK0lK8nxZppHltfQVmPpMgi2r1MXOiTdLgwF9qev.png" 
         alt="ШАГ Logo" 
-        className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]"
+        className="w-full h-full object-contain drop-shadow-[0_4px_12px_rgba(108,117,125,0.4)]"
       />
     </div>
   </div>
@@ -129,16 +128,16 @@ const App: React.FC = () => {
   };
 
   if (isAppLoading) return (
-    <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-600 w-12 h-12" />
+    <div className="min-h-screen bg-[#1a1d23] flex items-center justify-center">
+      <Loader2 className="animate-spin text-indigo-500 w-12 h-12" />
     </div>
   );
 
   if (session?.isLoggedIn && session.role === UserRole.ENTREPRENEUR && session.status === 'pending') {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6">
-        <div className="w-full max-w-xl bg-[#0a0a0b] border border-white/5 p-12 md:p-16 rounded-[48px] text-center space-y-10">
-           <div className="w-24 h-24 bg-amber-500/10 rounded-[32px] flex items-center justify-center mx-auto text-amber-500 border border-amber-500/10">
+      <div className="min-h-screen bg-[#1a1d23] flex items-center justify-center p-6">
+        <div className="w-full max-w-xl bg-[#2d323c] border border-white/10 p-12 md:p-16 rounded-[48px] text-center space-y-10 shadow-2xl">
+           <div className="w-24 h-24 bg-amber-500/10 rounded-[32px] flex items-center justify-center mx-auto text-amber-500 border border-white/5">
               <Clock className="w-12 h-12 animate-pulse" />
            </div>
            <div className="space-y-4">
@@ -146,7 +145,7 @@ const App: React.FC = () => {
               <p className="text-slate-400 font-medium leading-relaxed">Наши администраторы проверят её в течение 24 часов.</p>
            </div>
            <div className="flex flex-col gap-4">
-              <button onClick={checkStatus} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+              <button onClick={checkStatus} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-indigo-500 transition-all shadow-xl">
                  <RefreshCcw size={16} /> Проверить статус
               </button>
               <button onClick={logout} className="flex items-center gap-3 text-slate-500 hover:text-white font-black uppercase text-[10px] tracking-widest mx-auto mt-2">
@@ -188,10 +187,10 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] flex flex-col items-center">
+    <div className="min-h-screen bg-[#1a1d23] flex flex-col items-center">
       <div className="flex-1 flex flex-col items-center justify-center p-6 w-full">
         {authMode === 'login' ? (
-          <div className="w-full max-w-md bg-[#0a0a0b] border border-white/10 p-12 rounded-[48px] space-y-10">
+          <div className="w-full max-w-md bg-[#2d323c] border border-white/10 p-12 rounded-[48px] space-y-10 shadow-2xl">
             <h2 className="text-3xl font-black text-white uppercase font-syne tracking-tighter text-center">Вход</h2>
             {errorMsg && (
               <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex gap-3 text-xs font-bold items-center">
@@ -201,7 +200,7 @@ const App: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-6">
               <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 uppercase font-bold" />
               <input required type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="ПАРОЛЬ" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold" />
-              <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">
+              <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-500 transition-all shadow-xl">
                 {isAuthLoading ? <Loader2 className="animate-spin mx-auto w-5 h-5"/> : 'Войти'}
               </button>
             </form>
@@ -210,10 +209,10 @@ const App: React.FC = () => {
         ) : authMode === 'register' ? (
           <div className="w-full flex flex-col items-center">
              {errorMsg && (
-                <div className="fixed inset-0 z-[100] bg-[#050505]/80 backdrop-blur-md flex items-center justify-center p-6">
-                  <div className="w-full max-w-md bg-[#0a0a0b] border border-red-500/30 p-10 md:p-12 rounded-[48px] text-center space-y-8 relative">
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+                  <div className="w-full max-w-md bg-[#2d323c] border border-red-500/30 p-10 md:p-12 rounded-[48px] text-center space-y-8 relative shadow-3xl">
                     <button onClick={() => setErrorMsg(null)} className="absolute top-6 right-6 text-slate-500 hover:text-white"><X size={24} /></button>
-                    <div className="w-20 h-20 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto text-red-500"><XCircle className="w-10 h-10" /></div>
+                    <div className="w-20 h-20 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto text-red-500 border border-white/10"><XCircle className="w-10 h-10" /></div>
                     <div className="space-y-4">
                       <h3 className="text-2xl font-black text-white uppercase font-syne tracking-tighter">ОШИБКА ДОСТУПА</h3>
                       <p className="text-slate-400 font-medium text-sm">{errorMsg}</p>
@@ -228,18 +227,18 @@ const App: React.FC = () => {
           <div className="text-center space-y-20">
              <h1 className="text-7xl md:text-[8rem] font-black text-white tracking-tighter uppercase font-syne leading-none">СДЕЛАЙ СВОЙ<br/><span className="text-indigo-600">ШАГ</span></h1>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
-                <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-white/5 border border-white/10 rounded-[48px] hover:border-indigo-600 transition-all text-left space-y-8">
+                <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-indigo-600 transition-all text-left space-y-8 shadow-2xl hover:shadow-indigo-500/10">
                    <Zap className="text-indigo-600 w-10 h-10" />
                    <h3 className="text-3xl font-black text-white font-syne uppercase">МЕНТОР</h3>
                    <p className="text-slate-400 font-medium italic">Предприниматель, готовый делиться опытом</p>
                 </button>
-                <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-white/5 border border-white/10 rounded-[48px] hover:border-violet-600 transition-all text-left space-y-8">
-                   <Star className="text-violet-600 w-10 h-10" />
+                <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-violet-500 transition-all text-left space-y-8 shadow-2xl hover:shadow-violet-500/10">
+                   <Star className="text-violet-500 w-10 h-10" />
                    <h3 className="text-3xl font-black text-white font-syne uppercase">ТАЛАНТ</h3>
                    <p className="text-slate-400 font-medium italic">Молодой талант, желающий расти</p>
                 </button>
              </div>
-             <button onClick={() => setAuthMode('login')} className="text-slate-500 hover:text-white uppercase tracking-[0.5em] font-black text-[10px] py-4 px-10 border border-white/5 rounded-full hover:bg-white/5 transition-all">Уже в ШАГе? Войти</button>
+             <button onClick={() => setAuthMode('login')} className="text-slate-500 hover:text-white uppercase tracking-[0.5em] font-black text-[10px] py-4 px-10 border border-white/10 rounded-full hover:bg-white/5 transition-all">Уже в ШАГе? Войти</button>
           </div>
         )}
       </div>

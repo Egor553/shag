@@ -20,59 +20,59 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="w-full bg-[#050505] border-t border-white/5 pt-16 pb-32 md:pb-12 px-6">
+    <footer className="w-full bg-[#1a1d23] border-t border-white/5 pt-16 pb-32 md:pb-12 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
-        {/* Brand & Legal - Centered on mobile */}
+        {/* Brand & Legal */}
         <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
           <div className="flex flex-col items-center md:items-start">
-            <span className="text-3xl font-black tracking-tight text-white font-syne uppercase">ШАГ</span>
-            <span className="text-[9px] font-bold text-indigo-600 tracking-[0.2em] uppercase -mt-1">платформа энергообмена</span>
+            <span className="text-3xl font-black tracking-tight text-white font-syne uppercase leading-none">ШАГ</span>
+            <span className="text-[9px] font-bold text-indigo-500 tracking-[0.2em] uppercase mt-1">платформа энергообмена</span>
           </div>
           <div className="flex flex-col items-center md:items-start space-y-3">
             <button 
               onClick={() => openLegal('agreement')}
-              className="flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest"
+              className="flex items-center gap-2 text-[#6c757d] hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest"
             >
               <FileText size={12} /> Пользовательское соглашение
             </button>
             <button 
               onClick={() => openLegal('offer')}
-              className="flex items-center gap-2 text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest"
+              className="flex items-center gap-2 text-[#6c757d] hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest"
             >
               <ShieldCheck size={12} /> Публичная оферта
             </button>
           </div>
         </div>
 
-        {/* Contacts - Centered on mobile */}
+        {/* Contacts */}
         <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Связаться с нами</h4>
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Связаться с нами</h4>
           <div className="space-y-6 md:space-y-4 flex flex-col items-center md:items-start">
             <a href="tel:+79296754641" className="flex items-center gap-4 text-white hover:text-indigo-400 transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Phone size={16} className="text-slate-500" />
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Phone size={16} className="text-[#6c757d] group-hover:text-indigo-400" />
               </div>
               <span className="text-base font-bold">+7 (929) 675-46-41</span>
             </a>
             <a href="mailto:Vanstep@inbox.ru" className="flex items-center gap-4 text-white hover:text-indigo-400 transition-all group">
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Mail size={16} className="text-slate-500" />
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Mail size={16} className="text-[#6c757d] group-hover:text-indigo-400" />
               </div>
               <span className="text-base font-bold">Vanstep@inbox.ru</span>
             </a>
             <div className="flex items-center gap-4 text-white">
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
-                <MapPin size={16} className="text-slate-500" />
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center">
+                <MapPin size={16} className="text-[#6c757d]" />
               </div>
-              <span className="text-base font-bold text-slate-300">г. Москва</span>
+              <span className="text-base font-bold text-slate-400">г. Москва</span>
             </div>
           </div>
         </div>
 
-        {/* Requisites - Centered on mobile */}
+        {/* Requisites */}
         <div className="flex flex-col items-center md:items-start space-y-6 text-center md:text-left">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Реквизиты</h4>
-          <div className="w-full p-8 bg-white/[0.02] border border-white/5 rounded-[40px] space-y-3 flex flex-col items-center md:items-start">
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Реквизиты</h4>
+          <div className="w-full p-8 bg-[#2d323c] border border-white/5 rounded-[40px] space-y-3 flex flex-col items-center md:items-start shadow-xl">
             <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Самозанятый</p>
             <p className="text-lg font-black text-white uppercase font-syne leading-tight">Степанов Иван Артемович</p>
             <p className="text-[11px] font-medium text-slate-500">ИНН: 771551514336</p>
@@ -86,17 +86,17 @@ export const Footer: React.FC = () => {
       {/* Legal Modal */}
       {modalContent && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl">
-          <div className="w-full max-w-2xl bg-[#0a0a0b] border border-white/10 rounded-[48px] p-10 md:p-14 relative animate-in fade-in zoom-in-95 duration-300">
+          <div className="w-full max-w-2xl bg-[#2d323c] border border-white/10 rounded-[48px] p-10 md:p-14 relative animate-in fade-in zoom-in-95 duration-300 shadow-3xl">
             <button onClick={() => setModalContent(null)} className="absolute top-8 right-8 p-3 text-slate-500 hover:text-white transition-all">
               <X size={24} />
             </button>
             <h3 className="text-3xl font-black text-white uppercase font-syne mb-8 tracking-tighter">{modalContent.title}</h3>
             <div className="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-              <p className="text-slate-400 text-base leading-relaxed whitespace-pre-line font-medium italic">
+              <p className="text-[#adb5bd] text-base leading-relaxed whitespace-pre-line font-medium italic">
                 {modalContent.text}
               </p>
             </div>
-            <button onClick={() => setModalContent(null)} className="w-full mt-10 bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest">Понятно</button>
+            <button onClick={() => setModalContent(null)} className="w-full mt-10 bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">Понятно</button>
           </div>
         </div>
       )}

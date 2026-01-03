@@ -30,7 +30,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
           </div>
           <h1 className="text-[12vw] sm:text-7xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.8] uppercase font-syne">
             СДЕЛАЙ<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/20 to-white/60">СВОЙ ШАГ</span>
+            <span className="text-white/20">СВОЙ ШАГ</span>
           </h1>
         </div>
 
@@ -39,7 +39,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
              <button 
                key={cat} 
                onClick={() => setActiveCategory(cat)} 
-               className={`whitespace-nowrap px-6 md:px-8 py-2.5 md:py-3.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest border transition-all duration-300 ${activeCategory === cat ? 'bg-white text-black border-white shadow-xl scale-105' : 'bg-white/5 text-slate-500 border-white/5 hover:border-white/20'}`}
+               className={`whitespace-nowrap px-6 md:px-8 py-2.5 md:py-3.5 rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest border transition-all duration-300 ${activeCategory === cat ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl scale-105' : 'bg-[#2d323c] text-[#adb5bd] border-white/5 hover:border-white/10 hover:text-white'}`}
              >
                {cat}
              </button>
@@ -56,11 +56,11 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
           ))}
         </div>
       ) : (
-        <div className="py-24 md:py-40 flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 bg-white/[0.01] border border-dashed border-white/5 rounded-[32px] md:rounded-[48px]">
-           <UserX size={32} className="text-slate-800 md:size-48" />
+        <div className="py-24 md:py-40 flex flex-col items-center justify-center text-center space-y-4 md:space-y-6 bg-[#2d323c]/60 border border-dashed border-white/10 rounded-[32px] md:rounded-[48px] shadow-sm">
+           <UserX size={32} className="text-slate-600 md:size-48 opacity-40" />
            <div className="space-y-1 md:space-y-2">
               <h3 className="text-xl md:text-2xl font-black text-white uppercase font-syne tracking-tight">Ничего не найдено</h3>
-              <p className="text-slate-500 text-[10px] md:text-xs max-w-[200px] md:max-w-xs mx-auto font-medium uppercase tracking-widest opacity-60">В этой категории еще нет ШАГов.</p>
+              <p className="text-slate-500 text-[10px] md:text-xs max-w-[200px] md:max-w-xs mx-auto font-medium uppercase tracking-widest">В этой категории еще нет ШАГов.</p>
            </div>
         </div>
       )}
