@@ -112,11 +112,11 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
 
-  // Порядок вкладок: 1. Каталог, 2. Мои ШАГи/Работа, 3. Встречи, 4. Миссия, 5. Профиль
+  // ПОРЯДОК: 1. ШАГи (Каталог), 2. Витрина (Мои услуги), 3. Подработка, 4. Миссия, 5. Кабинет
   const mobileNavItems = [
     { id: AppTab.CATALOG, icon: LayoutGrid, label: 'ШАГи' },
-    { id: isEnt ? AppTab.SERVICES : AppTab.JOBS, icon: isEnt ? UserPlus : Briefcase, label: isEnt ? 'Мои ШАГи' : 'Работа' },
-    { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'Встречи' },
+    ...(isEnt ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Витрина' }] : []),
+    { id: AppTab.JOBS, icon: Briefcase, label: 'Подработка' },
     { id: AppTab.MISSION, icon: Target, label: 'Миссия' },
     { id: AppTab.PROFILE, icon: UserCircle, label: 'Кабинет' }
   ];
