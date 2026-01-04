@@ -120,7 +120,7 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
                 <div className="flex-1 text-center md:text-left space-y-4 md:space-y-6">
                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4">
                     <span className="px-4 md:px-6 py-2 md:py-2.5 bg-white/10 text-white rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] inline-flex items-center gap-2 md:gap-3 border border-white/10">
-                      <Briefcase className="w-3 md:w-3.5 h-3 md:h-3.5" /> Участник
+                      <Briefcase className="w-3 md:w-3.5 h-3 md:h-3.5" /> Ментор
                     </span>
                     <span className="px-3 md:px-5 py-2 md:py-2.5 bg-white/10 text-white rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2 md:gap-3 border border-white/10">
                       <Star className="w-3 md:w-3.5 h-3 md:h-3.5 text-white" /> {session.rating || '5.0'}

@@ -36,14 +36,15 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
             src={photoUrl} 
             alt={mentor.name} 
             onError={() => setImgError(true)}
-            className="w-full h-full object-cover grayscale-[0.2] transition-transform duration-1000 group-hover:scale-105 group-hover:grayscale-0"
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black flex items-center justify-center">
             <User className="w-24 h-24 text-white/10" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+        {/* Subtle decorative bottom gradient only */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/60 via-transparent to-transparent" />
       </div>
 
       {/* Top Tags */}
@@ -64,7 +65,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-indigo-400">
             <Zap className="w-3 h-3 fill-current" />
-            <span className="text-[8px] font-black uppercase tracking-[0.4em]">TOP MENTOR</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.4em]">ТОП МЕНТОР</span>
           </div>
           <h3 className="text-3xl md:text-5xl font-black text-white leading-none tracking-tighter uppercase font-syne">
             {mentor.name.split(' ')[0]}<br/>
@@ -74,7 +75,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
 
         <div className="pt-5 border-t border-white/10 flex items-center justify-between">
            <div className="space-y-0.5">
-              <span className="text-[7px] font-bold text-white/30 uppercase tracking-widest">Exchange</span>
+              <span className="text-[7px] font-bold text-white/30 uppercase tracking-widest">Энергообмен</span>
               <p className="text-xl md:text-3xl font-black text-white tracking-tighter leading-none font-syne">
                 {mentor.groupPrice || mentor.singlePrice} <span className="text-xs font-bold text-white/40">₽</span>
               </p>
@@ -82,7 +83,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
            
            <div className="flex items-center gap-1.5 text-white/60">
              <MapPin className="w-3 h-3" />
-             <span className="text-[9px] font-bold uppercase tracking-widest">{mentor.city || 'Planet'}</span>
+             <span className="text-[9px] font-bold uppercase tracking-widest">{mentor.city || 'Планета'}</span>
            </div>
         </div>
       </div>

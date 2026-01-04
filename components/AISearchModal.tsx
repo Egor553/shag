@@ -50,7 +50,7 @@ export const AISearchModal: React.FC<AISearchModalProps> = ({ mentors, onClose, 
               <div className="space-y-4">
                 <div className="flex items-center justify-center md:justify-start gap-4 text-indigo-400">
                   <Sparkles className="w-6 h-6 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.5em]">AI Mentor Matching</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.5em]">ПОИСК_МЕНТОРА_НЕЙРОСЕТЬЮ</span>
                 </div>
                 <h2 className="text-4xl md:text-7xl font-black text-white uppercase font-syne tracking-tighter leading-none">
                   КТО ТЕБЕ<br/>НУЖЕН?

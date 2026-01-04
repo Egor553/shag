@@ -229,13 +229,13 @@ const App: React.FC = () => {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
                 <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-indigo-600 transition-all text-left space-y-8 shadow-2xl hover:shadow-indigo-500/10">
                    <Zap className="text-indigo-600 w-10 h-10" />
-                   <h3 className="text-3xl font-black text-white font-syne uppercase">УЧАСТНИК</h3>
-                   <p className="text-slate-400 font-medium italic">Лидер, готовый делиться опытом и смыслами</p>
+                   <h3 className="text-3xl font-black text-white font-syne uppercase">МЕНТОР</h3>
+                   <p className="text-slate-400 font-medium italic">Предприниматель и эксперт, готовый отдавать и делиться опытом</p>
                 </button>
                 <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="group p-12 bg-[#2d323c] border border-white/5 rounded-[48px] hover:border-violet-500 transition-all text-left space-y-8 shadow-2xl hover:shadow-violet-500/10">
                    <Star className="text-violet-500 w-10 h-10" />
-                   <h3 className="text-3xl font-black text-white font-syne uppercase">МЕНТОР</h3>
-                   <p className="text-slate-400 font-medium italic">Эксперт, желающий расти через энергообмен</p>
+                   <h3 className="text-3xl font-black text-white font-syne uppercase">УЧАСТНИК</h3>
+                   <p className="text-slate-400 font-medium italic">Амбициозный талант, желающий расти через энергообмен</p>
                 </button>
              </div>
              

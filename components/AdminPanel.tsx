@@ -100,7 +100,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
               <ShieldCheck size={18} className="text-white" />
            </div>
-           <span className="font-black text-[10px] uppercase tracking-widest text-white">ROOT PANEL</span>
+           <span className="font-black text-[10px] uppercase tracking-widest text-white">АДМИН_ПАНЕЛЬ</span>
         </div>
 
         <nav className="flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0 lg:space-y-1">

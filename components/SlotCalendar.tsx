@@ -40,7 +40,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
 
       <div className="flex flex-col sm:flex-row justify-between items-center mb-10 relative z-10 gap-6">
         <div className="space-y-1 text-center sm:text-left">
-          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.5em]">SYSTEM_CALENDAR_V2</p>
+          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.5em]">КАЛЕНДАРЬ_СИСТЕМЫ</p>
           <h4 className="text-white font-black text-2xl uppercase tracking-widest font-syne">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h4>
         </div>
         <div className="flex gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/10">
@@ -81,7 +81,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
             <div className="flex items-center gap-3">
                <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]" />
                <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] flex items-center gap-2">
-                 TIMELINE_SLOTS
+                 ДОСТУПНЫЕ_СЛОТЫ
                </p>
             </div>
             <span className="text-[11px] font-black text-black bg-white px-5 py-2 rounded-full border border-white tracking-widest">{selectedDate.split('-').reverse().join('.')}</span>

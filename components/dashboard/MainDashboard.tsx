@@ -12,6 +12,7 @@ import { BookingModal } from '../BookingModal';
 import { AdminPanel } from '../AdminPanel';
 import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { MobileNav } from './MobileNav';
+import { ShowcaseBanner } from './ShowcaseBanner';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
 import { ShagLogo } from '../../App';
 import { Activity, Target } from 'lucide-react';
@@ -135,7 +136,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
                           <Activity size={20} className="md:w-6 md:h-6" />
                        </div>
                        <div>
-                          <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-0.5 md:mb-1">Pulse_Module</p>
+                          <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-0.5 md:mb-1">ПУЛЬС_ПЛАТФОРМЫ</p>
                           <h4 className="text-sm md:text-xl font-black font-syne uppercase text-white leading-none">Энергообмен</h4>
                        </div>
                     </div>
@@ -162,14 +163,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">
-                  <div className="flex flex-col md:flex-row items-center justify-between bg-white/[0.03] p-6 md:p-16 rounded-tr-[32px] md:rounded-tr-[80px] rounded-bl-[32px] md:rounded-bl-[80px] border border-white/15 shadow-3xl overflow-hidden relative">
-                     <div className="relative z-10 space-y-2 md:space-y-4 text-center md:text-left">
-                        <h2 className="text-2xl md:text-8xl font-black uppercase font-syne tracking-tighter leading-tight md:leading-[0.9] text-white">ВИТРИНА<br/><span className="text-white/30 italic">ШАГОВ</span></h2>
-                     </div>
-                     <div className="md:absolute md:-right-12 md:-bottom-12 flex justify-center mt-4 md:mt-0">
-                        <ShagLogo className="w-16 h-16 md:w-64 md:h-64 opacity-15" />
-                     </div>
-                  </div>
+                  <ShowcaseBanner imageUrl={session.paymentUrl || session.avatarUrl} />
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}

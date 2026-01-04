@@ -27,8 +27,8 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/5 font-black text-3xl md:text-5xl font-syne select-none">ШАГ</div>
         )}
-        {/* Removed heavy darkening gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b]/40 via-transparent to-transparent opacity-40" />
+        {/* Subtle decorative gradient only, no full darkening */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b]/20 to-transparent" />
         
         {/* Floating Tags */}
         <div className="absolute top-3 md:top-5 left-3 md:left-5 flex flex-wrap gap-1.5 md:gap-2 max-w-[calc(100%-24px)] md:max-w-[calc(100%-40px)]">
@@ -57,7 +57,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, onClick }) =>
         <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
           <div className="flex items-center gap-2 text-indigo-400">
              <Zap size={10} className="fill-current" />
-             <span className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em]">Premium Experience</span>
+             <span className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em]">ПРЕМИАЛЬНЫЙ ОПЫТ</span>
           </div>
           
           <h3 className="text-lg md:text-2xl font-black text-white leading-tight uppercase font-syne break-words group-hover:text-indigo-400 transition-colors">

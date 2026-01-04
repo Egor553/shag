@@ -28,7 +28,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 }) => {
   const isEnt = tempRole === UserRole.ENTREPRENEUR;
   const accentColor = isEnt ? 'indigo' : 'violet';
-  const roleLabel = isEnt ? 'ДОСТУП_УЧАСТНИКА' : 'ДОСТУП_МЕНТОРА';
+  const roleLabel = isEnt ? 'ДОСТУП_МЕНТОРА' : 'ДОСТУП_УЧАСТНИКА';
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 lg:p-12 font-['Inter'] relative overflow-x-hidden bg-[#1a1d23]">

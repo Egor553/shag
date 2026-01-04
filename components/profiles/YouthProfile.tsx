@@ -81,7 +81,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
 
               <div className="flex-1 text-center md:text-left space-y-4">
                 <span className="px-5 py-2 bg-violet-500/10 text-violet-400 rounded-2xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-2">
-                  <Zap className="w-3 h-3" /> Ментор ШАГа
+                  <Zap className="w-3 h-3" /> Участник ШАГа
                 </span>
                 <input 
                   className="w-full bg-transparent text-4xl md:text-5xl font-black text-white outline-none focus:text-violet-400 font-syne"
