@@ -12,6 +12,24 @@ interface CatalogViewProps {
   onSelectMentorFromSearch?: (mentor: Mentor) => void;
 }
 
+// Fixed: CategoryButton component moved outside to resolve TypeScript "key" prop errors 
+// and to follow React performance best practices by avoiding component re-creation on every render.
+// Added React.FC type to allow the 'key' prop which is automatically handled by React.
+const CategoryButton: React.FC<{ cat: string; isActive: boolean; onClick: (cat: string) => void }> = ({ cat, isActive, onClick }) => (
+  <button 
+    onClick={() => onClick(cat)} 
+    className={`
+      whitespace-nowrap px-8 py-4 font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300
+      ${isActive 
+        ? 'bg-white text-black rounded-tr-[32px] rounded-bl-[32px] shadow-[0_0_30px_rgba(255,255,255,0.2)] scale-105 z-10' 
+        : 'bg-white/5 text-white/40 border border-white/5 rounded-tr-[32px] rounded-bl-[32px] hover:bg-white/10 hover:text-white'
+      }
+    `}
+  >
+    {cat}
+  </button>
+);
+
 export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onServiceClick }) => {
   const [activeCategory, setActiveCategory] = useState('Все');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,22 +48,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
     setActiveCategory(cat);
     setIsMobileMenuOpen(false);
   };
-
-  // CategoryButton component
-  const CategoryButton = ({ cat, isActive }: { cat: string, isActive: boolean }) => (
-    <button 
-      onClick={() => handleCategorySelect(cat)} 
-      className={`
-        whitespace-nowrap px-8 py-4 font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300
-        ${isActive 
-          ? 'bg-white text-black rounded-tr-[32px] rounded-bl-[32px] shadow-[0_0_30px_rgba(255,255,255,0.2)] scale-105 z-10' 
-          : 'bg-white/5 text-white/40 border border-white/5 rounded-tr-[32px] rounded-bl-[32px] hover:bg-white/10 hover:text-white'
-        }
-      `}
-    >
-      {cat}
-    </button>
-  );
 
   return (
     <div className="space-y-10 md:space-y-24 animate-in fade-in duration-1000 pb-20">
@@ -73,17 +75,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
 
            {/* Row 1: 5 items */}
            <div className="flex justify-center gap-4 w-full">
-              {row1.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} />)}
+              {row1.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
 
            {/* Row 2: 3 items */}
            <div className="flex justify-center gap-4 w-full">
-              {row2.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} />)}
+              {row2.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
 
            {/* Row 3: 1 item */}
            <div className="flex justify-center gap-4 w-full">
-              {row3.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} />)}
+              {row3.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
         </div>
 

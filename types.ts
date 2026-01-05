@@ -7,9 +7,9 @@ export enum UserRole {
 
 export enum MeetingFormat {
   ONLINE_1_ON_1 = 'Онлайн 1 на 1',
-  OFFLINE_1_ON_1 = 'Оффлайн 1 на 1',
-  GROUP_OFFLINE = 'Групповая встреча (до 10 чел)',
-  GROUP_ONLINE = 'Групбовой онлайн-созвон'
+  OFFLINE_1_ON_1 = 'Офлайн 1 на 1',
+  GROUP_OFFLINE = 'Групповая встреча офлайн',
+  GROUP_ONLINE = 'Групповой онлайн-созвон'
 }
 
 export enum AppTab {

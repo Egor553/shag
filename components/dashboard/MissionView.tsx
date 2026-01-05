@@ -2,10 +2,11 @@
 import React from 'react';
 import { Quote, Zap, ShieldCheck, CheckCircle2, MessageSquareX, TrendingUp, Users, Star, Heart } from 'lucide-react';
 import { ShagLogo } from '../../App';
+import { FormatsInfo } from '../FormatsInfo';
 
 export const MissionView: React.FC = () => {
   return (
-    <div className="max-w-5xl mx-auto space-y-16 md:space-y-32 py-6 md:py-10 animate-in fade-in duration-1000 pb-20">
+    <div className="max-w-5xl mx-auto space-y-24 md:space-y-40 py-6 md:py-10 animate-in fade-in duration-1000 pb-20">
       {/* Hero Section */}
       <div className="text-center space-y-8 md:space-y-12">
         <div className="flex justify-center mb-4 md:mb-8 relative">
@@ -46,6 +47,9 @@ export const MissionView: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* Interaction Formats Section */}
+      <FormatsInfo />
 
       {/* The Selection Criteria */}
       <div className="bg-gradient-to-br from-indigo-600/20 to-violet-600/20 border border-white/10 rounded-[40px] md:rounded-[64px] p-8 md:p-20 relative overflow-hidden">
