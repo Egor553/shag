@@ -1,7 +1,7 @@
 
 import { UserSession, Booking } from '../types';
 
-// НОВЫЙ URL, предоставленный пользователем
+// URL вашего Google Apps Script
 export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyeHV9EI0-XuL5JOUTrFocyBPd5ZHOu5hSKi0Q9AF5VPKLKogt14DCqMUyZUSuqMr5_/exec';
 
 export const dbService = {
@@ -55,6 +55,23 @@ export const dbService = {
     } catch (e) {
       return { result: 'error', message: 'Ошибка сети' };
     }
+  },
+
+  /**
+   * Инициализация реального платежа через ЮKassa
+   */
+  async createPayment(bookingData: Partial<Booking>) {
+    // 1. Сначала сохраняем бронь со статусом 'pending'
+    const saveRes = await this.saveBooking({ ...bookingData, status: 'pending' });
+    if (saveRes.result !== 'success') return saveRes;
+
+    // 2. Запрашиваем у бэкенда создание платежа в ЮKassa
+    return this.postAction({
+      action: 'create_yookassa_payment',
+      bookingId: bookingData.id,
+      amount: bookingData.price,
+      description: `Оплата ШАГа: ${bookingData.serviceTitle}`
+    });
   },
 
   async saveBooking(booking: Partial<Booking>) {

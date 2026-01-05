@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserX, Zap, Layers, ChevronDown, X, Filter, Sparkles } from 'lucide-react';
 import { Mentor, Service } from '../../types';
@@ -30,8 +31,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
     setIsMobileMenuOpen(false);
   };
 
-  // Added optional key to the props definition to resolve TypeScript "Excess Property Checking" error when used in JSX maps
-  const CategoryButton = ({ cat, isActive }: { cat: string, isActive: boolean, key?: React.Key }) => (
+  // CategoryButton component
+  const CategoryButton = ({ cat, isActive }: { cat: string, isActive: boolean }) => (
     <button 
       onClick={() => handleCategorySelect(cat)} 
       className={`
@@ -144,7 +145,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
             <div key={service.id} className="animate-in fade-in slide-in-from-bottom-12 duration-1000" style={{ animationDelay: `${idx * 150}ms` }}>
               <ServiceCard service={service} onClick={onServiceClick} />
             </div>
-          )}
+          ))}
         </div>
       ) : (
         <div className="py-24 md:py-40 flex flex-col items-center justify-center text-center space-y-8 bg-white/[0.02] border border-dashed border-white/10 rounded-[48px] md:rounded-[64px] backdrop-blur-sm mx-2">
