@@ -1,20 +1,17 @@
 
 import React, { useState } from 'react';
-import { UserX, Zap, Layers, ChevronDown, X, Filter, Sparkles } from 'lucide-react';
+import { UserX, Zap, Layers, ChevronDown, X, Filter, Sparkles, TrendingUp, Heart } from 'lucide-react';
 import { Mentor, Service } from '../../types';
 import { ServiceCard } from '../ServiceCard';
 import { INDUSTRIES } from '../../constants';
 
+// Define the missing props interface for CatalogView
 interface CatalogViewProps {
   services: Service[];
   mentors: Mentor[];
   onServiceClick: (service: Service) => void;
-  onSelectMentorFromSearch?: (mentor: Mentor) => void;
 }
 
-// Fixed: CategoryButton component moved outside to resolve TypeScript "key" prop errors 
-// and to follow React performance best practices by avoiding component re-creation on every render.
-// Added React.FC type to allow the 'key' prop which is automatically handled by React.
 const CategoryButton: React.FC<{ cat: string; isActive: boolean; onClick: (cat: string) => void }> = ({ cat, isActive, onClick }) => (
   <button 
     onClick={() => onClick(cat)} 
@@ -34,7 +31,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
   const [activeCategory, setActiveCategory] = useState('Все');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Split industries for pyramid: Marketing, IT, Finance, Production, Retail, Beauty, HoReCa, Estate, Tourism
   const mainCategories = INDUSTRIES.filter(cat => cat !== 'Все');
   const row1 = mainCategories.slice(0, 5);
   const row2 = mainCategories.slice(5, 8);
@@ -52,18 +48,26 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
   return (
     <div className="space-y-10 md:space-y-24 animate-in fade-in duration-1000 pb-20">
       <div className="space-y-10 md:space-y-16">
-        <div className="space-y-4 md:space-y-8 relative">
-          <div className="relative">
-            <h1 className="text-[12vw] sm:text-8xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.95] uppercase font-syne">
-              СДЕЛАЙ<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/10 italic">СВОЙ ШАГ</span>
-            </h1>
+        <div className="relative">
+          {/* Декоративный элемент в духе Charity */}
+          <div className="absolute -top-10 left-0 flex items-center gap-3 px-4 py-2 bg-indigo-600/10 border border-indigo-600/20 rounded-full">
+             <Heart size={12} className="text-indigo-500 fill-current" />
+             <span className="text-[9px] font-black text-white uppercase tracking-widest">Экосистема Вклада и Роста</span>
+          </div>
+
+          <h1 className="text-[12vw] sm:text-8xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.95] uppercase font-syne">
+            СДЕЛАЙ<br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/10 italic">СВОЙ ШАГ</span>
+          </h1>
+          
+          <div className="mt-6 md:mt-10 flex items-center gap-4 text-white/30 text-[10px] font-black uppercase tracking-[0.4em]">
+             <div className="w-12 h-px bg-white/10" />
+             ВЫБИРАЙ УЧАСТНИКА ДЛЯ ЭНЕРГООБМЕНА
           </div>
         </div>
 
         {/* Desktop Categories Pyramid */}
         <div className="hidden md:flex flex-col items-center gap-6">
-           {/* Row All */}
            <div className="flex justify-center">
               <button 
                 onClick={() => handleCategorySelect('Все')}
@@ -72,18 +76,12 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
                 ВСЕ КАТЕГОРИИ
               </button>
            </div>
-
-           {/* Row 1: 5 items */}
            <div className="flex justify-center gap-4 w-full">
               {row1.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
-
-           {/* Row 2: 3 items */}
            <div className="flex justify-center gap-4 w-full">
               {row2.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
-
-           {/* Row 3: 1 item */}
            <div className="flex justify-center gap-4 w-full">
               {row3.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
@@ -104,7 +102,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
         </div>
       </div>
 
-      {/* Mobile Category Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl p-6 flex flex-col animate-in fade-in duration-300">
            <div className="flex justify-between items-center mb-10">
@@ -116,7 +113,6 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
                  <X size={24} />
               </button>
            </div>
-
            <div className="grid grid-cols-1 gap-3 overflow-y-auto no-scrollbar pb-20">
               {INDUSTRIES.map(cat => {
                 const isActive = activeCategory === cat;

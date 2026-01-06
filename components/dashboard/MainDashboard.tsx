@@ -163,7 +163,8 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">
-                  <ShowcaseBanner imageUrl={session.paymentUrl || session.avatarUrl} />
+                  {/* Fixed Property 'avatarUrl' does not exist on type 'UserSession' by using mentorProfile?.avatarUrl which has the property */}
+                  <ShowcaseBanner imageUrl={session.paymentUrl || mentorProfile?.avatarUrl} />
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}

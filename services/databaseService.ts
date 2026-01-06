@@ -1,12 +1,19 @@
 
 import { UserSession, Booking } from '../types';
 
-// URL вашего Google Apps Script
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyeHV9EI0-XuL5JOUTrFocyBPd5ZHOu5hSKi0Q9AF5VPKLKogt14DCqMUyZUSuqMr5_/exec';
+/** 
+ * АКТУАЛЬНЫЙ URL ВАШЕГО GOOGLE APPS SCRIPT
+ */
+export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxda4vxbVk3aCNfGzF4EbD9iDlh-Jhq0KfM2qQ1X2Ef7brViSl51EyYzijJEPUm-fud/exec';
 
 export const dbService = {
   async syncData(email?: string) {
     try {
+      if (!WEBHOOK_URL || WEBHOOK_URL.includes('ВАША_ССЫЛКА')) {
+        console.warn('WEBHOOK_URL не настроен. Работаем в демо-режиме.');
+        return { result: 'offline', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
+      }
+
       const url = email 
         ? `${WEBHOOK_URL}?action=sync&email=${encodeURIComponent(email)}` 
         : `${WEBHOOK_URL}?action=sync`;
@@ -57,20 +64,16 @@ export const dbService = {
     }
   },
 
-  /**
-   * Инициализация реального платежа через ЮKassa
-   */
   async createPayment(bookingData: Partial<Booking>) {
-    // 1. Сначала сохраняем бронь со статусом 'pending'
+    // Сначала сохраняем бронь со статусом pending
     const saveRes = await this.saveBooking({ ...bookingData, status: 'pending' });
     if (saveRes.result !== 'success') return saveRes;
 
-    // 2. Запрашиваем у бэкенда создание платежа в ЮKassa
     return this.postAction({
       action: 'create_yookassa_payment',
       bookingId: bookingData.id,
       amount: bookingData.price,
-      description: `Оплата ШАГа: ${bookingData.serviceTitle}`
+      description: `Энергообмен ШАГ: ${bookingData.serviceTitle || 'Встреча'}`
     });
   },
 
@@ -114,10 +117,6 @@ export const dbService = {
     return this.updateProfile(email, { paymentUrl: avatarUrl });
   },
 
-  async clearAll(type: 'services' | 'jobs' | 'bookings') {
-    return this.postAction({ action: 'clear_all', type });
-  },
-
   async updateBookingStatus(id: string, status: string) {
     return this.postAction({
       action: 'update_booking',
@@ -140,10 +139,6 @@ export const dbService = {
       id: bookingId,
       updates: { date: newDate, time: newTime, status: 'confirmed' }
     });
-  },
-
-  async deleteUser(email: string) {
-    return this.postAction({ action: 'delete_user', email });
   },
 
   async deleteBooking(id: string) {
