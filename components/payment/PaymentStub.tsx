@@ -5,7 +5,6 @@ import {
   CreditCard, AlertCircle, CheckCircle2, Zap, ExternalLink, Lock, PartyPopper, ChevronRight, Heart
 } from 'lucide-react';
 import { yookassaService } from '../../services/yookassaService';
-import { YOOKASSA_CONFIG } from '../../config/yookassa';
 
 interface PaymentStubProps {
   amount: number;
@@ -17,12 +16,11 @@ interface PaymentStubProps {
 
 export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onCancel, title, bookingId }) => {
   const [loading, setLoading] = useState(false);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
-  // Пытаемся автоматически проверить статус, если пользователь вернулся после оплаты
   useEffect(() => {
     const savedId = sessionStorage.getItem('last_payment_id');
     if (savedId && !isSuccess) {
@@ -37,43 +35,39 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
     try {
       const response = await yookassaService.createPayment({
         amount,
-        description: `Взнос ШАГ: ${title}`,
-        metadata: { bookingId, charity: true },
-        return_url: window.location.href // ЮKassa вернет пользователя сюда
+        description: `ШАГ Энергообмен: ${title}`,
+        metadata: { bookingId },
+        return_url: window.location.origin + window.location.pathname // Возврат на главную
       });
 
       if (response.confirmation?.confirmation_url) {
-        // Сохраняем ID, чтобы проверить статус по возвращении
         sessionStorage.setItem('last_payment_id', response.id);
-        setPaymentId(response.id);
+        setCheckoutUrl(response.confirmation.confirmation_url);
         
-        // РЕАЛЬНЫЙ ПЕРЕХОД на страницу оплаты ЮKassa
-        window.location.href = response.confirmation.confirmation_url;
+        // Пробуем автоматический переход
+        setTimeout(() => {
+          window.location.href = response.confirmation!.confirmation_url;
+        }, 1000);
       }
     } catch (e: any) {
-      setError(e.message || "Не удалось инициировать платеж. Проверьте настройки магазина.");
-    } finally {
+      setError(e.message || "Ошибка соединения с ЮKassa.");
       setLoading(false);
     }
   };
 
   const verifyPayment = async (idToVerify: string) => {
     setIsVerifying(true);
-    setError(null);
     try {
       const status = await yookassaService.checkPaymentStatus(idToVerify);
       if (status === 'succeeded' || status === 'waiting_for_capture') {
         setIsSuccess(true);
         sessionStorage.removeItem('last_payment_id');
         setTimeout(onSuccess, 1500);
-      } else if (status === 'canceled') {
-        setError("Платеж был отменен.");
-        sessionStorage.removeItem('last_payment_id');
       } else {
-        setError("Платеж еще не завершен. Если вы уже оплатили, подождите пару минут.");
+        setError("Платеж еще не подтвержден банком. Попробуйте проверить через минуту.");
       }
     } catch (e) {
-      setError("Ошибка при проверке статуса платежа.");
+      setError("Не удалось проверить статус.");
     } finally {
       setIsVerifying(false);
     }
@@ -82,16 +76,10 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
   if (isSuccess) {
     return (
       <div className="py-20 flex flex-col items-center justify-center text-center space-y-8 animate-in zoom-in duration-500">
-        <div className="relative">
-          <div className="w-32 h-32 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.4)]">
-            <CheckCircle2 className="w-16 h-16 text-white animate-bounce" />
-          </div>
-          <PartyPopper className="absolute -top-4 -right-4 text-emerald-500 animate-pulse w-10 h-10" />
+        <div className="w-32 h-32 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.4)]">
+          <CheckCircle2 className="w-16 h-16 text-white animate-bounce" />
         </div>
-        <div className="space-y-3">
-          <h3 className="text-3xl font-black text-slate-900 uppercase font-syne tracking-tighter">ОПЛАТА ПОЛУЧЕНА</h3>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">Встреча подтверждена в системе</p>
-        </div>
+        <h3 className="text-3xl font-black text-slate-900 uppercase font-syne tracking-tighter">УСПЕШНО ОПЛАЧЕНО</h3>
       </div>
     );
   }
@@ -109,23 +97,39 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
       </div>
 
       <div className="space-y-4">
-        {loading ? (
+        {loading && !checkoutUrl ? (
           <div className="w-full py-12 flex flex-col items-center justify-center gap-4 bg-slate-50 rounded-[32px] border border-slate-100">
              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Соединение с ЮKassa...</p>
+             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Формируем защищенный счет...</p>
+          </div>
+        ) : checkoutUrl ? (
+          <div className="space-y-4 animate-in fade-in">
+            <a 
+              href={checkoutUrl}
+              className="w-full flex items-center justify-between p-8 bg-emerald-600 text-white rounded-[32px] hover:bg-emerald-500 transition-all shadow-xl"
+            >
+              <div className="text-left">
+                <p className="text-base font-black uppercase font-syne">Перейти к оплате</p>
+                <p className="text-[9px] font-bold opacity-70 uppercase tracking-widest">Открыть шлюз ЮKassa</p>
+              </div>
+              <ExternalLink size={24} />
+            </a>
+            <p className="text-[9px] text-center text-slate-400 font-bold px-4">
+              Если страница оплаты не открылась автоматически, нажмите на кнопку выше
+            </p>
           </div>
         ) : (
           <button 
             onClick={requestPayment}
-            className="w-full flex items-center justify-between p-8 bg-indigo-600 text-white rounded-[32px] hover:bg-indigo-500 transition-all group shadow-2xl shadow-indigo-600/20 active:scale-95"
+            className="w-full flex items-center justify-between p-8 bg-indigo-600 text-white rounded-[32px] hover:bg-indigo-500 transition-all group shadow-2xl active:scale-95"
           >
             <div className="flex items-center gap-6">
                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center">
                   <CreditCard size={28} />
                </div>
                <div className="text-left">
-                  <p className="text-base font-black uppercase font-syne">Оплатить через ЮKassa</p>
-                  <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Карты, СБП, Кошельки</p>
+                  <p className="text-base font-black uppercase font-syne">Оплатить взнос</p>
+                  <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Банковские карты / СБП</p>
                </div>
             </div>
             <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
@@ -139,24 +143,19 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
             className="w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-emerald-600 border-2 border-emerald-100 hover:bg-emerald-50 transition-all flex items-center justify-center gap-3"
           >
             {isVerifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-            Проверить оплату
+            Я оплатил, проверить статус
           </button>
         )}
       </div>
 
       {error && (
-        <div className="p-5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 text-[10px] font-bold uppercase">
+        <div className="p-5 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 text-[10px] font-bold uppercase leading-relaxed">
           <AlertCircle size={16} className="shrink-0" />
           {error}
         </div>
       )}
 
-      <button onClick={onCancel} className="w-full text-slate-400 font-black uppercase text-[10px] py-2 tracking-[0.3em] hover:text-slate-900 transition-colors">Вернуться назад</button>
-      
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 opacity-30 grayscale">
-         <img src="https://yookassa.ru/assets/img/logo.svg" className="h-4" alt="YooKassa" />
-         <span className="text-[8px] font-bold uppercase tracking-widest">Secure Payments</span>
-      </div>
+      <button onClick={onCancel} className="w-full text-slate-400 font-black uppercase text-[10px] py-2 tracking-[0.3em] hover:text-slate-900 transition-colors">Вернуться в кабинет</button>
     </div>
   );
 };
