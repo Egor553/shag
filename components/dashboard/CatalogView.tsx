@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { UserX, Zap, Layers, ChevronDown, X, Filter, Sparkles, TrendingUp, Heart } from 'lucide-react';
+import { UserX, Zap, Layers, ChevronDown, X, Filter, Sparkles, TrendingUp, Heart, AlertCircle, Search, Quote } from 'lucide-react';
 import { Mentor, Service } from '../../types';
 import { ServiceCard } from '../ServiceCard';
 import { INDUSTRIES } from '../../constants';
+import { AISearchModal } from '../AISearchModal';
 
-// Define the missing props interface for CatalogView
 interface CatalogViewProps {
   services: Service[];
   mentors: Mentor[];
@@ -30,6 +30,7 @@ const CategoryButton: React.FC<{ cat: string; isActive: boolean; onClick: (cat: 
 export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onServiceClick }) => {
   const [activeCategory, setActiveCategory] = useState('Все');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
 
   const mainCategories = INDUSTRIES.filter(cat => cat !== 'Все');
   const row1 = mainCategories.slice(0, 5);
@@ -49,20 +50,32 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
     <div className="space-y-10 md:space-y-24 animate-in fade-in duration-1000 pb-20">
       <div className="space-y-10 md:space-y-16">
         <div className="relative">
-          {/* Декоративный элемент в духе Charity */}
-          <div className="absolute -top-10 left-0 flex items-center gap-3 px-4 py-2 bg-indigo-600/10 border border-indigo-600/20 rounded-full">
+          <div className="absolute -top-10 left-0 hidden md:flex items-center gap-3 px-4 py-2 bg-indigo-600/10 border border-indigo-600/20 rounded-full">
              <Heart size={12} className="text-indigo-500 fill-current" />
-             <span className="text-[9px] font-black text-white uppercase tracking-widest">Экосистема Вклада и Роста</span>
+             <span className="text-[9px] font-black text-white uppercase tracking-widest">Принцип Meet for Charity</span>
           </div>
 
-          <h1 className="text-[12vw] sm:text-8xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.95] uppercase font-syne">
-            СДЕЛАЙ<br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/10 italic">СВОЙ ШАГ</span>
-          </h1>
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <h1 className="text-[12vw] sm:text-8xl md:text-[9.5rem] font-black text-white tracking-tighter leading-[0.85] uppercase font-syne">
+              ЭНЕРГО<br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/10 italic">ОБМЕН ШАГ</span>
+            </h1>
+            
+            <button 
+              onClick={() => setShowAIModal(true)}
+              className="lg:mb-4 px-10 py-8 bg-indigo-600 rounded-tr-[40px] rounded-bl-[40px] text-white flex items-center gap-6 group hover:bg-indigo-500 transition-all shadow-2xl shadow-indigo-600/20 active:scale-95"
+            >
+              <div className="text-left">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-60">ИНТЕЛЛЕКТУАЛЬНЫЙ</p>
+                <p className="text-xl font-black uppercase font-syne">ПОДБОР ЛОТА</p>
+              </div>
+              <Sparkles className="w-8 h-8 group-hover:rotate-12 transition-transform" />
+            </button>
+          </div>
           
           <div className="mt-6 md:mt-10 flex items-center gap-4 text-white/30 text-[10px] font-black uppercase tracking-[0.4em]">
              <div className="w-12 h-px bg-white/10" />
-             ВЫБИРАЙ УЧАСТНИКА ДЛЯ ЭНЕРГООБМЕНА
+             ВЫБЕРИТЕ ВСТРЕЧУ И СДЕЛАЙТЕ СВОЙ ВКЛАД В ФОНД
           </div>
         </div>
 
@@ -86,56 +99,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
               {row3.map(cat => <CategoryButton key={cat} cat={cat} isActive={activeCategory === cat} onClick={handleCategorySelect} />)}
            </div>
         </div>
-
-        {/* Mobile Category Selector */}
-        <div className="md:hidden flex items-center justify-between bg-white/[0.05] border border-white/10 p-5 rounded-[24px] backdrop-blur-xl">
-           <div className="space-y-1">
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">ВЫБРАНО</p>
-              <p className="text-lg font-black text-white uppercase font-syne">{activeCategory}</p>
-           </div>
-           <button 
-             onClick={() => setIsMobileMenuOpen(true)}
-             className="bg-white text-black px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center gap-2 active:scale-95 transition-all shadow-xl"
-           >
-             <Filter size={14} /> КАТЕГОРИЯ
-           </button>
-        </div>
       </div>
-
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl p-6 flex flex-col animate-in fade-in duration-300">
-           <div className="flex justify-between items-center mb-10">
-              <div className="space-y-1">
-                 <h2 className="text-2xl font-black text-white uppercase font-syne">ВЫБОР ШАГА</h2>
-                 <div className="w-12 h-1 bg-white/20 rounded-full" />
-              </div>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white/5 rounded-full text-white/60">
-                 <X size={24} />
-              </button>
-           </div>
-           <div className="grid grid-cols-1 gap-3 overflow-y-auto no-scrollbar pb-20">
-              {INDUSTRIES.map(cat => {
-                const isActive = activeCategory === cat;
-                return (
-                  <button 
-                    key={cat} 
-                    onClick={() => handleCategorySelect(cat)} 
-                    className={`
-                      w-full p-6 font-black text-xs uppercase tracking-[0.2em] transition-all text-left flex items-center justify-between
-                      ${isActive 
-                        ? 'bg-white text-black rounded-tr-[32px] rounded-bl-[32px]' 
-                        : 'bg-white/5 text-white/60 border border-white/5 rounded-tr-[32px] rounded-bl-[32px]'
-                      }
-                    `}
-                  >
-                    {cat}
-                    {isActive && <Zap size={14} className="fill-current" />}
-                  </button>
-                );
-              })}
-           </div>
-        </div>
-      )}
 
       {filteredServices.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-14">
@@ -153,15 +117,21 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, onS
            </div>
            <div className="space-y-3">
               <h3 className="text-xl md:text-3xl font-black text-white uppercase font-syne tracking-tight">ТУТ ПОКА ПУСТО</h3>
-              <p className="text-white/40 text-[9px] md:text-[11px] font-black uppercase tracking-[0.4em] max-w-xs mx-auto">В категории "{activeCategory}" ещё не опубликовано ни одного ШАГа.</p>
+              <p className="text-white/40 text-[9px] md:text-[11px] font-black uppercase tracking-[0.4em] max-w-xs mx-auto">В категории "{activeCategory}" ещё не опубликовано ни одного лота.</p>
            </div>
-           <button 
-             onClick={() => setActiveCategory('Все')} 
-             className="px-8 py-4 bg-white/5 text-white/60 rounded-full font-black text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/10 transition-all border border-white/10"
-           >
-             Смотреть всё
-           </button>
         </div>
+      )}
+
+      {showAIModal && (
+        <AISearchModal 
+          mentors={mentors} 
+          onClose={() => setShowAIModal(false)} 
+          onSelectMentor={(mentor) => {
+            const firstService = services.find(s => s.mentorId === mentor.id || s.mentorId === mentor.email);
+            if (firstService) onServiceClick(firstService);
+            setShowAIModal(false);
+          }}
+        />
       )}
     </div>
   );

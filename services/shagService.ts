@@ -3,15 +3,18 @@ import { Service } from '../types';
 import { dbService } from './databaseService';
 
 export const shagService = {
+  // Using saveService from dbService for saving new services
   async save(service: Service) {
-    return dbService.postAction({ action: 'save_service', ...service });
+    return dbService.saveService(service);
   },
 
+  // Using saveService from dbService for updates (id is already in the object)
   async update(id: string, updates: Partial<Service>) {
-    return dbService.postAction({ action: 'update_service', id, updates });
+    return dbService.saveService({ ...updates, id });
   },
 
+  // Using deleteService from dbService
   async delete(id: string) {
-    return dbService.postAction({ action: 'delete_service', id });
+    return dbService.deleteService(id);
   }
 };

@@ -1,4 +1,5 @@
 
+
 export enum UserRole {
   ENTREPRENEUR = 'entrepreneur',
   YOUTH = 'youth',
@@ -47,6 +48,7 @@ export interface UserSession {
   email: string;
   isLoggedIn: boolean;
   id: string;
+  password?: string; // Добавлено поле пароля для корректной работы локальной БД
   status?: 'active' | 'pending' | 'rejected'; // Статус модерации
   isVerified?: boolean;
   phone?: string;

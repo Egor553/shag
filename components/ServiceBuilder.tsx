@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Trash2, Save, Layers, Clock, DollarSign, Edit3, Camera, Video, Calendar as CalendarIcon, X, Globe, MapPin, Users as UsersIcon, ChevronDown, User, AlertCircle, Zap, LayoutGrid, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Save, Layers, Clock, DollarSign, Edit3, Camera, Video, Calendar as CalendarIcon, X, Globe, MapPin, Users as UsersIcon, ChevronDown, User, AlertCircle, Zap, LayoutGrid, Sparkles, Loader2 } from 'lucide-react';
 import { Service, MeetingFormat } from '../types';
 import { SlotCalendar } from './SlotCalendar';
 import { INDUSTRIES } from '../constants';
@@ -8,13 +8,14 @@ import { ServiceCard } from './ServiceCard';
 
 interface ServiceBuilderProps {
   services: Service[];
-  onSave: (service: Partial<Service>) => void;
-  onUpdate?: (id: string, updates: Partial<Service>) => void;
-  onDelete: (id: string) => void;
+  onSave: (service: Partial<Service>) => Promise<void>;
+  onUpdate?: (id: string, updates: Partial<Service>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
 export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave, onUpdate, onDelete }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<Service>>({
     title: '',
@@ -53,17 +54,34 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
     setIsFormOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title || !formData.description) {
       alert("Пожалуйста, заполните основные поля");
       return;
     }
-    if (editingId && onUpdate) {
-      onUpdate(editingId, formData);
-    } else {
-      onSave(formData);
+    
+    setIsSubmitting(true);
+    try {
+      if (editingId && onUpdate) {
+        await onUpdate(editingId, formData);
+      } else {
+        await onSave(formData);
+      }
+      setIsFormOpen(false);
+    } catch (e) {
+      alert("Ошибка при сохранении. Попробуйте еще раз.");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsFormOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Вы уверены, что хотите удалить этот ШАГ?")) return;
+    try {
+      await onDelete(id);
+    } catch (e) {
+      alert("Ошибка при удалении.");
+    }
   };
 
   return (
@@ -96,7 +114,7 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                  </h3>
                  <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">РЕДАКТИРОВАНИЕ_АКТИВНО</p>
               </div>
-              <button onClick={() => setIsFormOpen(false)} className="p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
+              <button disabled={isSubmitting} onClick={() => setIsFormOpen(false)} className="p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-colors">
                 <X className="w-8 h-8" />
               </button>
             </div>
@@ -105,7 +123,7 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
               <div className="space-y-8 md:space-y-12">
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-2 font-syne">ЗАГОЛОВОК ШАГА</label>
-                  <input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Напр: Личный разбор маркетинга" className="w-full bg-white/[0.03] border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] text-white outline-none focus:border-indigo-500 transition-all font-black text-lg md:text-2xl uppercase font-syne" />
+                  <input disabled={isSubmitting} value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="Напр: Личный разбор маркетинга" className="w-full bg-white/[0.03] border border-white/10 p-6 md:p-8 rounded-[24px] md:rounded-[32px] text-white outline-none focus:border-indigo-500 transition-all font-black text-lg md:text-2xl uppercase font-syne" />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
@@ -113,6 +131,7 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                     <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-2 font-syne">НИША</label>
                     <div className="relative">
                       <select 
+                        disabled={isSubmitting}
                         value={formData.category} 
                         onChange={e => setFormData({...formData, category: e.target.value})} 
                         className="w-full bg-white/[0.03] border border-white/10 p-6 rounded-[24px] text-white outline-none focus:border-indigo-500 font-bold appearance-none cursor-pointer text-sm"
@@ -127,7 +146,7 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                   <div className="space-y-4">
                     <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-2 font-syne">ФОРМАТ</label>
                     <div className="relative">
-                      <select value={formData.format} onChange={e => setFormData({...formData, format: e.target.value as MeetingFormat})} className="w-full bg-white/[0.03] border border-white/10 p-6 rounded-[24px] text-white outline-none focus:border-indigo-500 font-bold appearance-none cursor-pointer text-sm">
+                      <select disabled={isSubmitting} value={formData.format} onChange={e => setFormData({...formData, format: e.target.value as MeetingFormat})} className="w-full bg-white/[0.03] border border-white/10 p-6 rounded-[24px] text-white outline-none focus:border-indigo-500 font-bold appearance-none cursor-pointer text-sm">
                         {Object.values(MeetingFormat).map(f => (<option key={f} value={f} className="bg-[#0a0a0b] text-white">{f}</option>))}
                       </select>
                       <ChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" />
@@ -140,18 +159,18 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                    <div className="grid grid-cols-2 gap-6">
                       <div className="bg-white/[0.03] p-6 rounded-[24px] border border-white/10 space-y-2">
                          <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Индивидуально</span>
-                         <input type="number" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full bg-transparent text-2xl font-black text-white outline-none" />
+                         <input disabled={isSubmitting} type="number" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full bg-transparent text-2xl font-black text-white outline-none" />
                       </div>
                       <div className="bg-white/[0.03] p-6 rounded-[24px] border border-white/10 space-y-2">
                          <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Групповой</span>
-                         <input type="number" value={formData.groupPrice} onChange={e => setFormData({...formData, groupPrice: Number(e.target.value)})} className="w-full bg-transparent text-2xl font-black text-white outline-none" />
+                         <input disabled={isSubmitting} type="number" value={formData.groupPrice} onChange={e => setFormData({...formData, groupPrice: Number(e.target.value)})} className="w-full bg-transparent text-2xl font-black text-white outline-none" />
                       </div>
                    </div>
                 </div>
 
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-white/40 uppercase tracking-widest px-2 font-syne">ОПИСАНИЕ ЦЕННОСТИ</label>
-                  <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Что получит участник после вашего ШАГа?" className="w-full bg-white/[0.03] border border-white/10 p-8 rounded-[32px] text-white outline-none focus:border-indigo-500 transition-all font-medium h-48 md:h-64 resize-none text-base leading-relaxed break-words" />
+                  <textarea disabled={isSubmitting} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Что получит участник после вашего ШАГа?" className="w-full bg-white/[0.03] border border-white/10 p-8 rounded-[32px] text-white outline-none focus:border-indigo-500 transition-all font-medium h-48 md:h-64 resize-none text-base leading-relaxed break-words" />
                 </div>
               </div>
 
@@ -164,15 +183,19 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                   </div>
                 </div>
                 <div className="flex-1 bg-white/[0.02] rounded-[48px] border border-white/5 p-4 md:p-8">
-                  <SlotCalendar selectedSlots={JSON.parse(formData.slots || '{}')} onChange={s => setFormData({...formData, slots: JSON.stringify(s)})} accentColor="indigo" />
+                  <SlotCalendar 
+                    selectedSlots={typeof formData.slots === 'string' ? JSON.parse(formData.slots || '{}') : (formData.slots || {})} 
+                    onChange={s => setFormData({...formData, slots: JSON.stringify(s)})} 
+                    accentColor="indigo" 
+                  />
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row gap-6 pt-12 md:pt-16 border-t border-white/5">
-              <button onClick={() => setIsFormOpen(false)} className="order-2 md:order-1 flex-1 py-6 rounded-[24px] font-black uppercase text-[11px] tracking-widest text-white/40 hover:text-white hover:bg-white/5 transition-all">ОТМЕНА</button>
-              <button onClick={handleSave} className="order-1 md:order-2 flex-[2] bg-white text-black py-7 rounded-[28px] md:rounded-[32px] font-black uppercase text-[11px] tracking-[0.4em] shadow-2xl flex items-center justify-center gap-6 active:scale-95 transition-all">
-                <Save className="w-6 h-6" /> {editingId ? 'СОХРАНИТЬ' : 'ОПУБЛИКОВАТЬ В ВИТРИНЕ'}
+              <button disabled={isSubmitting} onClick={() => setIsFormOpen(false)} className="order-2 md:order-1 flex-1 py-6 rounded-[24px] font-black uppercase text-[11px] tracking-widest text-white/40 hover:text-white hover:bg-white/5 transition-all">ОТМЕНА</button>
+              <button disabled={isSubmitting} onClick={handleSave} className="order-1 md:order-2 flex-[2] bg-white text-black py-7 rounded-[28px] md:rounded-[32px] font-black uppercase text-[11px] tracking-[0.4em] shadow-2xl flex items-center justify-center gap-6 active:scale-95 transition-all">
+                {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />} {editingId ? 'СОХРАНИТЬ' : 'ОПУБЛИКОВАТЬ В ВИТРИНЕ'}
               </button>
             </div>
           </div>
@@ -211,7 +234,7 @@ export const ServiceBuilder: React.FC<ServiceBuilderProps> = ({ services, onSave
                   <Edit3 size={18} />
                 </button>
                 <button 
-                  onClick={() => onDelete(service.id)}
+                  onClick={() => handleDelete(service.id)}
                   className="w-12 h-12 bg-red-600 text-white rounded-2xl shadow-2xl flex items-center justify-center hover:bg-red-500 transition-colors"
                 >
                   <Trash2 size={18} />

@@ -63,6 +63,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
   };
 
   const handlePaySuccess = async () => {
+    // Этот метод теперь вызывается реже, так как оплата идет через редирект
+    // Но мы оставляем его для совместимости или ручного подтверждения
     setIsSaving(true);
     try {
       const bookingData: Partial<Booking> = {
@@ -96,10 +98,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
   };
 
   const slotsSource = service?.slots || mentor.slots || '{}';
-  const availableSlots = JSON.parse(slotsSource);
+  const availableSlots = typeof slotsSource === 'string' ? JSON.parse(slotsSource) : slotsSource;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-0 md:p-6 bg-slate-950/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-0 md:p-6 bg-slate-950/90 backdrop-blur-sm">
       <div className="bg-white w-full h-full md:h-auto md:max-w-md md:rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-300 flex flex-col">
         
         {/* Close Button */}
@@ -109,20 +111,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-8 md:p-10">
           
-          {/* Header Area according to screenshot */}
+          {/* Header Area */}
           <div className="flex items-center gap-5 mb-8 pt-4">
             <div className="w-14 h-14 bg-[#5c56f2] rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-               <User className="w-6 h-6 text-white" />
+               {showPayment ? <CreditCard className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
             </div>
             <div>
               <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-[1.1] uppercase font-syne tracking-tight">
-                {isRescheduleMode ? 'ПЕРЕНОС ВСТРЕЧИ' : (service?.title || 'ОФЛАЙН ВСТРЕЧА С ПРЕДПРИНИМАТЕЛЕМ')}
+                {showPayment ? 'ОФОРМЛЕНИЕ ОПЛАТЫ' : isRescheduleMode ? 'ПЕРЕНОС ВСТРЕЧИ' : (service?.title || 'ПЕРСОНАЛЬНЫЙ ШАГ')}
               </h2>
               <p className="text-[#5c56f2] font-black text-[9px] md:text-[10px] uppercase tracking-widest mt-1">МЕНТОР: {mentor.name}</p>
             </div>
           </div>
 
-          {/* Progress Indicator - Thin segments */}
+          {/* Progress Indicator */}
           {!isRescheduleMode && !isOwner && !showPayment && (
             <div className="flex gap-1.5 mb-10">
               {[1, 2, 3, 4].map((s) => (
@@ -135,8 +137,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
             <div className="py-20 flex flex-col items-center justify-center text-center space-y-6">
               <Loader2 className="w-12 h-12 text-[#5c56f2] animate-spin" />
               <div className="space-y-1">
-                <h3 className="text-xl font-black text-slate-900 uppercase font-syne">Инициализация</h3>
-                <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Обработка данных...</p>
+                <h3 className="text-xl font-black text-slate-900 uppercase font-syne">ОБРАБОТКА</h3>
+                <p className="text-slate-500 text-[9px] font-black uppercase tracking-widest">Пожалуйста, подождите...</p>
               </div>
             </div>
           ) : !showPayment ? (
@@ -146,7 +148,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                   <div className="space-y-5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ФОРМАТ УЧАСТИЯ</label>
                     <div className="space-y-3">
-                      {/* Card - Centered content and responsive font */}
                       <button 
                         onClick={() => setFormat(MeetingFormat.ONLINE_1_ON_1)} 
                         className={`w-full p-4 md:p-5 rounded-[28px] border-2 transition-all flex items-center justify-between group ${format === MeetingFormat.ONLINE_1_ON_1 ? 'border-[#5c56f2] bg-white shadow-xl' : 'border-slate-50 bg-slate-50/50'}`}
@@ -177,8 +178,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                           <div className="text-right flex items-baseline gap-1 shrink-0">
                              <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500' : 'text-slate-300'}`}>{service?.groupPrice || mentor.groupPrice}</p>
                              <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500/60' : 'text-slate-200'}`}>₽</p>
-                          </div>
-                        </button>
+                        </div>
+                      </button>
                       )}
                     </div>
                   </div>
@@ -235,14 +236,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                 </div>
               )}
 
-              {/* Action Button - Centered and full width */}
+              {/* Action Button */}
               <div className="pt-6">
                 <button 
                   disabled={(step === 2 && !goal) || (step === 3 && !exchange) || (step === 4 && !selectedSlot) || isRescheduling} 
                   onClick={handleAction} 
                   className="w-full bg-[#5c56f2] text-white py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-30 transition-all"
                 >
-                  {isRescheduling ? <RefreshCw className="w-5 h-5 animate-spin" /> : (
+                  {isRescheduling ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                     step === 4 ? (isRescheduleMode ? 'ПОДТВЕРДИТЬ ПЕРЕНОС' : 'ОПЛАТИТЬ ШАГ') : 'ПРОДОЛЖИТЬ'
                   )}
                 </button>
@@ -257,6 +258,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
               title={existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'} 
               onSuccess={handlePaySuccess} 
               onCancel={() => existingBooking ? onClose() : setShowPayment(false)} 
+              bookingId={existingBooking?.id}
             />
           )}
         </div>

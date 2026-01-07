@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { Mentor, Service, Job, Booking, Transaction, UserSession } from '../types';
+import { Mentor, Service, Job, Booking, Transaction, UserSession, UserRole } from '../types';
 import { dbService } from '../services/databaseService';
 import { shagService } from '../services/shagService';
 import { missionService } from '../services/missionService';
@@ -20,8 +20,10 @@ export const useShagData = () => {
     try {
       const data = await dbService.syncData(email);
       
-      const newMentors = data.dynamicMentors || MENTORS;
-      setAllMentors(newMentors);
+      // Fix: Filter all users for mentors only and cast correctly
+      const allUsers = data.dynamicMentors || [];
+      const mentorsFromDb = allUsers.filter(u => u.role === UserRole.ENTREPRENEUR) as Mentor[];
+      setAllMentors(mentorsFromDb.length > 0 ? mentorsFromDb : MENTORS);
       
       const enrichedServices = (data.services || []).map((s: Service) => ({
         ...s,
@@ -33,14 +35,25 @@ export const useShagData = () => {
       setJobs(data.jobs || []);
       setTransactions(data.transactions || []);
       
-      const currentMentor = newMentors.find((m: any) => 
-        String(m.ownerEmail || m.email).toLowerCase() === String(email).toLowerCase()
+      // Ищем любого пользователя в базе по email для обновления сессии
+      const currentUser = allUsers.find((u: UserSession) => 
+        String(u.email).toLowerCase() === String(email).toLowerCase()
       );
 
-      if (currentMentor) {
-        setMentorProfile(currentMentor);
+      if (currentUser) {
+        // Fix: Cast currentUser to Mentor when the role matches
+        if (currentUser.role === UserRole.ENTREPRENEUR) {
+          setMentorProfile(currentUser as Mentor);
+        }
+        
+        // Обновляем состояние сессии для любого пользователя
         if (session && updateSession) {
-          updateSession({ ...session, ...currentMentor, balance: Number(currentMentor.balance) || 0 });
+          updateSession({ 
+            ...session, 
+            ...currentUser, 
+            isLoggedIn: true, 
+            balance: Number(currentUser.balance) || 0 
+          });
         }
       }
     } catch (e) {

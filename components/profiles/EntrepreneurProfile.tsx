@@ -176,7 +176,11 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
                   </div>
                 </div>
                 <div className="scale-90 md:scale-100 origin-top">
-                   <SlotCalendar selectedSlots={JSON.parse(mentorProfile.slots || "{}")} onChange={slots => onUpdateMentorProfile({...mentorProfile, slots: JSON.stringify(slots)})} accentColor="indigo" />
+                   <SlotCalendar 
+                    selectedSlots={typeof mentorProfile.slots === 'string' ? JSON.parse(mentorProfile.slots || "{}") : (mentorProfile.slots || {})} 
+                    onChange={slots => onUpdateMentorProfile({...mentorProfile, slots: JSON.stringify(slots)})} 
+                    accentColor="indigo" 
+                   />
                 </div>
               </div>
             )}

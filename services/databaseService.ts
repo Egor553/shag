@@ -1,158 +1,252 @@
 
-import { UserSession, Booking } from '../types';
+import { UserSession, Booking, ChatMessage, Service, Job, Transaction, UserRole } from '../types';
+import { db, initDefaultData } from './db';
 
-/** 
- * АКТУАЛЬНЫЙ URL ВАШЕГО GOOGLE APPS SCRIPT
- */
-export const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxda4vxbVk3aCNfGzF4EbD9iDlh-Jhq0KfM2qQ1X2Ef7brViSl51EyYzijJEPUm-fud/exec';
+const logDB = (op: string, data?: any) => {
+  console.log(`%c[Embedded DB] ${op}`, 'color: #10b981; font-weight: bold;', data || '');
+};
+
+// Инициализируем БД при загрузке
+initDefaultData().catch(console.error);
 
 export const dbService = {
-  async syncData(email?: string) {
-    try {
-      if (!WEBHOOK_URL || WEBHOOK_URL.includes('ВАША_ССЫЛКА')) {
-        console.warn('WEBHOOK_URL не настроен. Работаем в демо-режиме.');
-        return { result: 'offline', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
-      }
-
-      const url = email 
-        ? `${WEBHOOK_URL}?action=sync&email=${encodeURIComponent(email)}` 
-        : `${WEBHOOK_URL}?action=sync`;
-      
-      const response = await fetch(url).catch(() => null);
-      if (!response || !response.ok) {
-        return { result: 'offline', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
-      }
-      return await response.json();
-    } catch (e) {
-      console.error('Sync error:', e);
-      return { result: 'error', dynamicMentors: null, services: [], bookings: [], jobs: [], transactions: [] };
-    }
-  },
-
   async login(credentials: { email: string; password: string }) {
-    try {
-      const url = `${WEBHOOK_URL}?action=login&email=${encodeURIComponent(credentials.email)}&password=${encodeURIComponent(credentials.password)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.result === 'success') {
-        return data.user;
-      } else {
-        throw new Error(data.message || 'Неверный логин или пароль');
-      }
-    } catch (e: any) {
-      throw new Error(e.message || 'Ошибка входа. Проверьте соединение с бэкендом.');
+    const email = credentials.email.trim().toLowerCase();
+    logDB('LOGIN ATTEMPT', email);
+    
+    const user = await db.users.where('email').equalsIgnoreCase(email).first();
+
+    if (!user || String(user.password) !== credentials.password) {
+      throw new Error('Неверный логин или пароль');
     }
+    
+    return { ...user, isLoggedIn: true } as UserSession;
   },
 
-  async register(data: any) {
-    return this.postAction({ action: 'register', ...data });
-  },
-
-  async postAction(payload: any) {
+  async register(userData: any): Promise<{ result: string; user: any; message?: string }> {
     try {
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      }).catch(() => null);
+      logDB('REGISTER USER', userData.email);
+      const existing = await db.users.where('email').equalsIgnoreCase(userData.email).first();
+      if (existing) return { result: 'error', user: null, message: 'Пользователь с таким email уже существует' };
 
-      if (!response) return { result: 'error', message: 'Бэкенд недоступен' };
+      const data = { 
+        ...userData, 
+        createdAt: new Date().toISOString(), 
+        balance: 0, 
+        status: userData.role === UserRole.ENTREPRENEUR ? 'pending' : 'active' 
+      };
       
-      const data = await response.json();
-      return data;
-    } catch (e) {
-      return { result: 'error', message: 'Ошибка сети' };
+      const id = await db.users.add(data);
+      const user = await db.users.get(id);
+      
+      return { result: 'success', user };
+    } catch (e: any) {
+      return { result: 'error', user: null, message: e.message };
     }
   },
 
-  async createPayment(bookingData: Partial<Booking>) {
-    // Сначала сохраняем бронь со статусом pending
-    const saveRes = await this.saveBooking({ ...bookingData, status: 'pending' });
-    if (saveRes.result !== 'success') return saveRes;
+  async syncData(email?: string) {
+    logDB('SYNC ALL DATA');
+    const [allUsers, services, bookings, jobs, transactions] = await Promise.all([
+      db.users.toArray(),
+      db.services.toArray(),
+      db.bookings.toArray(),
+      db.jobs.toArray(),
+      db.transactions.toArray()
+    ]);
 
-    return this.postAction({
-      action: 'create_yookassa_payment',
-      bookingId: bookingData.id,
-      amount: bookingData.price,
-      description: `Энергообмен ШАГ: ${bookingData.serviceTitle || 'Встреча'}`
-    });
+    return {
+      dynamicMentors: allUsers as UserSession[],
+      services,
+      bookings,
+      jobs,
+      transactions
+    };
   },
 
-  async saveBooking(booking: Partial<Booking>) {
-    return this.postAction({ action: 'save_booking', ...booking });
+  async recordTransaction(transaction: Partial<Transaction>) {
+    logDB('RECORD TRANSACTION', transaction);
+    const txId = await db.transactions.add({
+      id: Math.random().toString(36).substr(2, 9),
+      userId: transaction.userId || 'anonymous',
+      amount: transaction.amount || 0,
+      type: transaction.type || 'credit',
+      description: transaction.description || 'Энергообмен ШАГ',
+      status: 'completed',
+      date: new Date().toISOString(),
+      ...transaction
+    } as Transaction);
+    return txId;
   },
 
-  async updateProfile(email: string, updates: Partial<UserSession>) {
-    return this.postAction({ action: 'update_profile', email, updates });
+  async updateProfile(email: string, updates: any): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('UPDATE PROFILE', email);
+      const user = await db.users.where('email').equalsIgnoreCase(email).first();
+      if (user && user.id) {
+        await db.users.update(user.id, updates);
+        return { result: 'success' };
+      }
+      return { result: 'error', message: 'Пользователь не найден' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async saveService(service: any) {
-    return this.postAction({ action: 'save_service', ...service });
+  async saveBooking(booking: any): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('SAVE BOOKING', booking);
+      // Если бронирование подтверждается (оплачено), создаем транзакцию
+      if (booking.status === 'confirmed') {
+        await this.recordTransaction({
+          userId: booking.userEmail,
+          amount: booking.price,
+          description: `Оплата ШАГа: ${booking.serviceTitle || 'Персональный разбор'}`,
+          type: 'debit'
+        });
+      }
+      
+      const exists = await db.bookings.get(booking.id);
+      if (exists) {
+        await db.bookings.update(booking.id, booking);
+      } else {
+        await db.bookings.add(booking);
+      }
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async updateService(id: string, updates: any) {
-    return this.postAction({ action: 'update_service', id, updates });
+  async saveService(service: any): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('SAVE SERVICE', service.title);
+      if (service.id) {
+        const exists = await db.services.get(service.id);
+        if (exists) {
+          await db.services.update(service.id, service);
+        } else {
+          await db.services.add(service);
+        }
+      } else {
+        await db.services.add({ ...service, id: Math.random().toString(36).substr(2, 9) });
+      }
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async deleteService(id: string) {
-    return this.postAction({ action: 'delete_service', id });
+  async deleteService(id: string): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('DELETE SERVICE', id);
+      await db.services.delete(id);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async saveJob(job: any) {
-    return this.postAction({ action: 'save_job', ...job });
+  async saveJob(job: any): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('SAVE JOB', job.title);
+      if (job.id) {
+        const exists = await db.jobs.get(job.id);
+        if (exists) {
+          await db.jobs.update(job.id, job);
+        } else {
+          await db.jobs.add(job);
+        }
+      } else {
+        await db.jobs.add({ ...job, id: Math.random().toString(36).substr(2, 9) });
+      }
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async updateJob(id: string, updates: any) {
-    return this.postAction({ action: 'update_job', id, updates });
+  async deleteJob(id: string): Promise<{ result: string; message?: string }> {
+    try {
+      logDB('DELETE JOB', id);
+      await db.jobs.delete(id);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async deleteJob(id: string) {
-    return this.postAction({ action: 'delete_job', id });
+  async updateAvatar(email: string, url: string): Promise<{ result: string; message?: string }> {
+    try {
+      const user = await db.users.where('email').equalsIgnoreCase(email).first();
+      if (user && user.id) {
+        await db.users.update(user.id, { paymentUrl: url });
+        return { result: 'success' };
+      }
+      return { result: 'error', message: 'User not found' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async sendMessage(message: any) {
-    return this.postAction({ action: 'send_message', ...message });
+  async getMessages(bookingId: string): Promise<ChatMessage[]> {
+    return db.messages.where('bookingId').equals(bookingId).sortBy('timestamp');
   },
 
-  async updateAvatar(email: string, avatarUrl: string) {
-    return this.updateProfile(email, { paymentUrl: avatarUrl });
+  async sendMessage(message: ChatMessage): Promise<{ result: string; message?: string }> {
+    try {
+      await db.messages.add(message);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
-  async updateBookingStatus(id: string, status: string) {
-    return this.postAction({
-      action: 'update_booking',
-      id: id,
-      updates: { status }
-    });
+  async getUsers(): Promise<UserSession[]> {
+    const users = await db.users.toArray();
+    return users as UserSession[];
+  },
+  
+  async getServices(): Promise<Service[]> {
+    return db.services.toArray();
   },
 
-  async cancelBooking(bookingId: string, reason?: string) {
-    return this.postAction({ 
-      action: 'cancel_booking', 
-      id: bookingId, 
-      reason: reason || 'Отмена' 
-    });
+  async getBookings(): Promise<Booking[]> {
+    return db.bookings.toArray();
   },
 
-  async rescheduleBooking(bookingId: string, newDate: string, newTime: string) {
-    return this.postAction({
-      action: 'update_booking',
-      id: bookingId,
-      updates: { date: newDate, time: newTime, status: 'confirmed' }
-    });
+  async getJobs(): Promise<Job[]> {
+    return db.jobs.toArray();
+  },
+
+  async getTransactions(): Promise<Transaction[]> {
+    return db.transactions.toArray();
+  },
+
+  async rescheduleBooking(id: string, date: string, time: string) {
+    try {
+      await db.bookings.update(id, { date, time });
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
+  },
+
+  async cancelBooking(id: string, reason: string) {
+    try {
+      await db.bookings.update(id, { status: 'cancelled' });
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
 
   async deleteBooking(id: string) {
-    return this.postAction({ action: 'delete_booking', id });
-  },
-
-  async getMessages(bookingId: string) {
     try {
-      const url = `${WEBHOOK_URL}?action=get_messages&bookingId=${encodeURIComponent(bookingId)}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.messages || [];
-    } catch (e) {
-      return [];
+      await db.bookings.delete(id);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
     }
   }
 };

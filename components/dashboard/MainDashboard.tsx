@@ -15,7 +15,7 @@ import { MobileNav } from './MobileNav';
 import { ShowcaseBanner } from './ShowcaseBanner';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
 import { ShagLogo } from '../../App';
-import { Activity, Target } from 'lucide-react';
+import { Activity, Target, Database, Server, Check } from 'lucide-react';
 import { Footer } from '../Footer';
 
 interface MainDashboardProps {
@@ -121,6 +121,15 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
       <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       </div>
+
+      {/* SQL Engine Status Indicator */}
+      <div className="fixed top-6 right-6 z-[100] flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+         <div className="flex items-center gap-2">
+            <Database size={12} className="text-indigo-400" />
+            <span className="text-[8px] font-black uppercase tracking-widest text-white/60">SQL Engine: <span className="text-emerald-500">Local</span></span>
+            <Check size={10} className="text-emerald-500" />
+         </div>
+      </div>
       
       <div className="flex flex-1 relative z-10">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} onLogout={onLogout} />
@@ -163,7 +172,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
                 <div className="space-y-8 md:space-y-12">
-                  {/* Fixed Property 'avatarUrl' does not exist on type 'UserSession' by using mentorProfile?.avatarUrl which has the property */}
                   <ShowcaseBanner imageUrl={session.paymentUrl || mentorProfile?.avatarUrl} />
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
