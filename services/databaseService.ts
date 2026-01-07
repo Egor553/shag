@@ -1,165 +1,126 @@
 
-import { UserSession, Booking, ChatMessage, Service, Job, Transaction, UserRole } from '../types';
-import { db, initDefaultData } from './db';
+import { db } from './db';
+// Added Booking import to fix typing issues with status updates
+import { Booking } from '../types';
 
-const API_BASE = window.location.origin;
-
-const logDB = (op: string, data?: any) => {
-  console.log(`%c[DB_SYNC] ${op}`, 'color: #10b981; font-weight: bold;', data || '');
-};
-
-initDefaultData().catch(err => console.error('[DB_FATAL]', err));
+const API_BASE = '';
 
 export const dbService = {
-  async login(credentials: { email: string; password: string }) {
-    // В продакшене лучше проверять через API, но пока синхронизируем локально
-    const email = credentials.email.trim().toLowerCase();
-    const user = await db.users.get(email);
-
-    if (!user || String(user.password) !== credentials.password) {
-      throw new Error('Неверный логин или пароль');
-    }
-    
-    logDB('USER_AUTH_SUCCESS', email);
-    return { ...user, isLoggedIn: true } as UserSession;
-  },
-
-  async register(userData: any): Promise<{ result: string; user: any; message?: string }> {
-    try {
-      const email = userData.email.toLowerCase().trim();
-      const data = { 
-        ...userData,
-        email,
-        id: `u_${Math.random().toString(36).substr(2, 9)}`,
-        createdAt: new Date().toISOString(), 
-        balance: 0, 
-        status: userData.role === UserRole.ENTREPRENEUR ? 'pending' : 'active' 
-      };
-
-      // Пробуем сохранить на сервере
-      const response = await fetch(`${API_BASE}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        await db.users.put(data); // Дублируем в локальный кэш
-        return { result: 'success', user: data };
-      } else {
-        const err = await response.json();
-        return { result: 'error', user: null, message: err.message };
-      }
-    } catch (e: any) {
-      // Если сервер недоступен, работаем локально
-      await db.users.put(userData);
-      return { result: 'success', user: userData };
-    }
-  },
-
   async syncData(email?: string) {
     try {
-      const response = await fetch(`${API_BASE}/api/sync`);
-      if (response.ok) {
-        const serverData = await response.json();
-        
-        // Обновляем локальный Dexie данными с сервера
-        await Promise.all([
-          db.users.bulkPut(serverData.users || []),
-          db.services.bulkPut(serverData.services || []),
-          db.bookings.bulkPut(serverData.bookings || []),
-          db.jobs.bulkPut(serverData.jobs || []),
-          db.transactions.bulkPut(serverData.transactions || [])
-        ]);
-
-        return {
-          dynamicMentors: serverData.users as UserSession[],
-          services: serverData.services,
-          bookings: serverData.bookings,
-          jobs: serverData.jobs,
-          transactions: serverData.transactions
-        };
-      }
+      const res = await fetch(`${API_BASE}/api/sync`);
+      const data = await res.json();
+      
+      if (data.users) await db.users.bulkPut(data.users);
+      if (data.bookings) await db.bookings.bulkPut(data.bookings);
+      if (data.services) await db.services.bulkPut(data.services);
+      if (data.jobs) await db.jobs.bulkPut(data.jobs);
+      
+      return {
+        ...data,
+        dynamicMentors: data.users || []
+      };
     } catch (e) {
-      console.warn('[DB] Работа в офлайн режиме');
+      console.warn('Sync failed, using local DB');
+      const [u, s, b, j] = await Promise.all([
+        db.users.toArray(),
+        db.services.toArray(),
+        db.bookings.toArray(),
+        db.jobs.toArray()
+      ]);
+      return { users: u, dynamicMentors: u, services: s, bookings: b, jobs: j, transactions: [] };
     }
-
-    // Фолбэк на локальный Dexie
-    const [allUsers, services, bookings, jobs, transactions] = await Promise.all([
-      db.users.toArray(),
-      db.services.toArray(),
-      db.bookings.toArray(),
-      db.jobs.toArray(),
-      db.transactions.toArray()
-    ]);
-
-    return {
-      dynamicMentors: allUsers as UserSession[],
-      services,
-      bookings,
-      jobs,
-      transactions
-    };
   },
 
-  async updateProfile(email: string, updates: any): Promise<{ result: string; message?: string }> {
-    const cleanEmail = email.toLowerCase().trim();
-    try {
-      await fetch(`${API_BASE}/api/update-profile`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, updates })
-      });
-    } catch (e) {}
-    
-    await db.users.update(cleanEmail, updates);
-    return { result: 'success' };
+  async register(user: any) {
+    const res = await fetch(`${API_BASE}/api/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    });
+    if (!res.ok) throw new Error('Registration failed');
+    await db.users.put(user);
+    return { result: 'success', user, message: 'Успешно' };
   },
 
-  async saveBooking(booking: any): Promise<{ result: string; message?: string }> {
-    // В реальном приложении здесь должен быть POST запрос к API
+  async login(credentials: any) {
+    const user = await db.users.get(credentials.email.toLowerCase());
+    if (user && user.password === credentials.password) return { ...user, isLoggedIn: true };
+    throw new Error('Неверный логин или пароль');
+  },
+
+  // Added message property to the return object to satisfy component requirements
+  async saveBooking(booking: any) {
+    await fetch(`${API_BASE}/api/save-booking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking)
+    });
     await db.bookings.put(booking);
+    return { result: 'success', message: 'Запись успешно сохранена' };
+  },
+
+  // Added message property to the return object to satisfy component requirements
+  async saveService(service: any) {
+    await fetch(`${API_BASE}/api/save-service`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(service)
+    });
+    await db.services.put(service);
+    return { result: 'success', message: 'Сервис успешно сохранен' };
+  },
+
+  // Added message property to the return object to satisfy component requirements
+  async updateProfile(email: string, updates: any) {
+    await fetch(`${API_BASE}/api/update-profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, updates })
+    });
+    await db.users.update(email, updates);
+    return { result: 'success', message: 'Профиль успешно обновлен' };
+  },
+
+  async updateAvatar(email: string, paymentUrl: string) {
+    return this.updateProfile(email, { paymentUrl });
+  },
+
+  // Explicitly typed updates as Partial<Booking> to ensure status is correctly inferred as the union type
+  async cancelBooking(id: string, reason: string) {
+    const updates: Partial<Booking> = { status: 'cancelled' };
+    await fetch(`${API_BASE}/api/save-booking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates })
+    });
+    await db.bookings.update(id, updates);
+    return { result: 'success', message: 'Запись отменена' };
+  },
+
+  // Typed updates as Partial<Booking> for consistency and added message property
+  async rescheduleBooking(id: string, date: string, time: string) {
+    const updates: Partial<Booking> = { date, time };
+    await fetch(`${API_BASE}/api/save-booking`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates })
+    });
+    await db.bookings.update(id, updates);
+    return { result: 'success', message: 'Встреча успешно перенесена' };
+  },
+
+  async deleteBooking(id: string) {
+    await db.bookings.delete(id);
     return { result: 'success' };
   },
-
-  async saveService(service: any): Promise<{ result: string; message?: string }> {
-    const data = { ...service };
-    if (!data.id) data.id = `svc_${Math.random().toString(36).substr(2, 9)}`;
-    
-    try {
-      await fetch(`${API_BASE}/api/save-service`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-    } catch (e) {}
-
-    await db.services.put(data);
-    return { result: 'success' };
-  },
-
-  // Fix: Added explicit return types to satisfy property access in consumers like BookingModal.tsx
-  async rescheduleBooking(id: string, date: string, time: string): Promise<{ result: string; message?: string }> { 
-    await db.bookings.update(id, { date, time }); 
-    return { result: 'success' }; 
-  },
   
-  async cancelBooking(id: string, reason: string): Promise<{ result: string; message?: string }> { 
-    await db.bookings.update(id, { status: 'cancelled' }); 
-    return { result: 'success' }; 
-  },
-  
-  async deleteBooking(id: string): Promise<{ result: string; message?: string }> { 
-    await db.bookings.delete(id); 
-    return { result: 'success' }; 
-  },
-  
-  async getMessages(bookingId: string) { return db.messages.where('bookingId').equals(bookingId).sortBy('timestamp'); },
-  async sendMessage(message: ChatMessage) { await db.messages.put(message); return { result: 'success' }; },
+  async getMessages(bookingId: string) { return db.messages.where('bookingId').equals(bookingId).toArray(); },
+  async sendMessage(message: any) { await db.messages.put(message); return { result: 'success' }; },
   async deleteService(id: string) { await db.services.delete(id); return { result: 'success' }; },
-  async saveJob(job: any) { await db.jobs.put(job); return { result: 'success' }; },
+  // Added message property for consistency
+  async saveJob(job: any) { await db.jobs.put(job); return { result: 'success', message: 'Вакансия сохранена' }; },
   async deleteJob(id: string) { await db.jobs.delete(id); return { result: 'success' }; },
-  async updateAvatar(email: string, url: string) { await db.users.update(email.toLowerCase().trim(), { paymentUrl: url }); return { result: 'success' }; },
   async getUsers() { return db.users.toArray(); },
   async getServices() { return db.services.toArray(); },
   async getBookings() { return db.bookings.toArray(); },

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Loader2, ArrowRight, ShieldCheck, 
-  CreditCard, AlertCircle, CheckCircle2, Zap, ExternalLink, Lock, PartyPopper, ChevronRight, Heart
+  CreditCard, AlertCircle, CheckCircle2, Zap, ExternalLink, Heart
 } from 'lucide-react';
 import { yookassaService } from '../../services/yookassaService';
 
@@ -22,6 +22,7 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    // Проверяем, есть ли незавершенный платеж при загрузке
     const savedId = sessionStorage.getItem('last_payment_id');
     if (savedId && !isSuccess) {
       verifyPayment(savedId);
@@ -37,17 +38,17 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
         amount,
         description: `ШАГ Энергообмен: ${title}`,
         metadata: { bookingId },
-        return_url: window.location.origin + window.location.pathname // Возврат на главную
+        return_url: window.location.href // Возврат на ту же страницу
       });
 
       if (response.confirmation?.confirmation_url) {
         sessionStorage.setItem('last_payment_id', response.id);
         setCheckoutUrl(response.confirmation.confirmation_url);
         
-        // Пробуем автоматический переход
+        // Автоматический переход через секунду
         setTimeout(() => {
           window.location.href = response.confirmation!.confirmation_url;
-        }, 1000);
+        }, 1500);
       }
     } catch (e: any) {
       setError(e.message || "Ошибка соединения с ЮKassa.");
@@ -62,12 +63,12 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
       if (status === 'succeeded' || status === 'waiting_for_capture') {
         setIsSuccess(true);
         sessionStorage.removeItem('last_payment_id');
-        setTimeout(onSuccess, 1500);
+        setTimeout(onSuccess, 2000);
       } else {
-        setError("Платеж еще не подтвержден банком. Попробуйте проверить через минуту.");
+        setError("Платеж еще обрабатывается банком. Попробуйте нажать кнопку проверки через 30-60 секунд.");
       }
     } catch (e) {
-      setError("Не удалось проверить статус.");
+      setError("Не удалось связаться с платежным сервером.");
     } finally {
       setIsVerifying(false);
     }
@@ -79,7 +80,8 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
         <div className="w-32 h-32 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(16,185,129,0.4)]">
           <CheckCircle2 className="w-16 h-16 text-white animate-bounce" />
         </div>
-        <h3 className="text-3xl font-black text-slate-900 uppercase font-syne tracking-tighter">УСПЕШНО ОПЛАЧЕНО</h3>
+        <h3 className="text-3xl font-black text-slate-900 uppercase font-syne tracking-tighter">ОПЛАЧЕНО</h3>
+        <p className="text-slate-500 text-sm font-bold uppercase tracking-widest">ШАГ подтвержден</p>
       </div>
     );
   }
@@ -109,13 +111,13 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
               className="w-full flex items-center justify-between p-8 bg-emerald-600 text-white rounded-[32px] hover:bg-emerald-500 transition-all shadow-xl"
             >
               <div className="text-left">
-                <p className="text-base font-black uppercase font-syne">Перейти к оплате</p>
-                <p className="text-[9px] font-bold opacity-70 uppercase tracking-widest">Открыть шлюз ЮKassa</p>
+                <p className="text-base font-black uppercase font-syne">ПЕРЕЙТИ К ОПЛАТЕ</p>
+                <p className="text-[9px] font-bold opacity-70 uppercase tracking-widest">ЮKassa (КАРТЫ / СБП)</p>
               </div>
               <ExternalLink size={24} />
             </a>
             <p className="text-[9px] text-center text-slate-400 font-bold px-4">
-              Если страница оплаты не открылась автоматически, нажмите на кнопку выше
+              Окно оплаты откроется автоматически. Если нет — нажмите на кнопку выше.
             </p>
           </div>
         ) : (
@@ -128,8 +130,8 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
                   <CreditCard size={28} />
                </div>
                <div className="text-left">
-                  <p className="text-base font-black uppercase font-syne">Оплатить взнос</p>
-                  <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">Банковские карты / СБП</p>
+                  <p className="text-base font-black uppercase font-syne">ОПЛАТИТЬ ШАГ</p>
+                  <p className="text-[9px] font-bold opacity-60 uppercase tracking-widest">БЕЗОПАСНЫЙ ПЛАТЕЖ</p>
                </div>
             </div>
             <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
@@ -143,7 +145,7 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
             className="w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest text-emerald-600 border-2 border-emerald-100 hover:bg-emerald-50 transition-all flex items-center justify-center gap-3"
           >
             {isVerifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
-            Я оплатил, проверить статус
+            Я ОПЛАТИЛ, ПРОВЕРИТЬ СТАТУС
           </button>
         )}
       </div>
@@ -155,7 +157,7 @@ export const PaymentStub: React.FC<PaymentStubProps> = ({ amount, onSuccess, onC
         </div>
       )}
 
-      <button onClick={onCancel} className="w-full text-slate-400 font-black uppercase text-[10px] py-2 tracking-[0.3em] hover:text-slate-900 transition-colors">Вернуться в кабинет</button>
+      <button onClick={onCancel} className="w-full text-slate-400 font-black uppercase text-[10px] py-2 tracking-[0.3em] hover:text-slate-900 transition-colors">ОТМЕНИТЬ</button>
     </div>
   );
 };
