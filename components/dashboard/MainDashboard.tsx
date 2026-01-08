@@ -14,8 +14,7 @@ import { ResourcePlannerModal } from '../ResourcePlannerModal';
 import { MobileNav } from './MobileNav';
 import { ShowcaseBanner } from './ShowcaseBanner';
 import { AppTab, UserRole, UserSession, Mentor, Service, Booking, Job, Transaction } from '../../types';
-import { ShagLogo } from '../../App';
-import { Activity, Target, Database, Server, Check } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Footer } from '../Footer';
 
 interface MainDashboardProps {
@@ -113,72 +112,42 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN || session.email === 'admin';
 
-  const totalGlobalImpact = localBookings.filter(b => b.status === 'confirmed').reduce((acc, curr) => acc + (curr.price || 0), 0);
-  const totalMeetingsCount = localBookings.filter(b => b.status === 'confirmed').length;
-
   return (
-    <div className="min-h-screen bg-[#1a1d23] text-white flex flex-col font-['Inter'] relative">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+    <div className="min-h-screen bg-[#1a1d23] text-white flex flex-col font-['Inter'] relative overflow-x-hidden">
+      <div className="fixed inset-0 pointer-events-none opacity-[0.02] z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:60px_60px]"></div>
       </div>
 
-      {/* SQL Engine Status Indicator */}
-      <div className="fixed top-6 right-6 z-[100] flex items-center gap-3 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
-         <div className="flex items-center gap-2">
-            <Database size={12} className="text-indigo-400" />
-            <span className="text-[8px] font-black uppercase tracking-widest text-white/60">SQL Engine: <span className="text-emerald-500">Local</span></span>
-            <Check size={10} className="text-emerald-500" />
+      <div className="fixed top-6 right-6 z-[100] flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl">
+         <div className="flex items-center gap-3">
+            <ShieldCheck size={16} className="text-indigo-400" />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Secured Exchange Engine</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
          </div>
       </div>
       
       <div className="flex flex-1 relative z-10">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} session={session} onLogout={onLogout} />
 
-        <main className={`flex-1 transition-all duration-500 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 pt-6 md:pt-16 min-h-screen flex flex-col">
+        <main className={`flex-1 transition-all duration-700 relative z-10 ${isSidebarOpen ? 'md:ml-72' : 'md:ml-24'} pb-32 md:pb-12`}>
+          <div className="max-w-[1600px] mx-auto px-6 sm:px-10 md:px-16 pt-10 md:pt-20 min-h-screen flex flex-col">
             
-            {(activeTab === AppTab.CATALOG || activeTab === AppTab.MISSION) && (
-              <div className="mb-8 md:mb-20">
-                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
-                    <div className="col-span-2 md:col-span-1 bg-white/[0.05] border border-white/20 p-4 md:p-8 rounded-tl-[32px] md:rounded-tl-[40px] rounded-br-[32px] md:rounded-br-[40px] backdrop-blur-3xl flex items-center gap-4 md:gap-6 group hover:bg-white/[0.08] transition-all">
-                       <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center text-white shrink-0 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                          <Activity size={20} className="md:w-6 md:h-6" />
-                       </div>
-                       <div>
-                          <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-[0.4em] mb-0.5 md:mb-1">ПУЛЬС_ПЛАТФОРМЫ</p>
-                          <h4 className="text-sm md:text-xl font-black font-syne uppercase text-white leading-none">Энергообмен</h4>
-                       </div>
-                    </div>
-                    
-                    <div className="bg-white/[0.03] border border-white/10 p-4 md:p-8 rounded-tl-[16px] md:rounded-tl-[24px] rounded-br-[16px] md:rounded-br-[24px] flex flex-col justify-center">
-                       <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-none">Событий</p>
-                       <p className="text-xl md:text-3xl font-black font-syne text-white tracking-tighter">{totalMeetingsCount}</p>
-                    </div>
-
-                    <div className="bg-white/[0.03] border border-white/10 p-4 md:p-8 rounded-tr-[16px] md:rounded-tr-[24px] rounded-bl-[16px] md:rounded-bl-[24px] flex flex-col justify-center">
-                       <p className="text-[7px] md:text-[9px] font-black text-white/60 uppercase tracking-widest mb-1 leading-none">Вклад</p>
-                       <p className="text-xl md:text-3xl font-black font-syne text-white tracking-tighter">{totalGlobalImpact.toLocaleString()} ₽</p>
-                    </div>
-                 </div>
-              </div>
-            )}
-
             <div className="flex-1">
-              {activeTab === AppTab.CATALOG && <CatalogView services={services} mentors={allMentors} onServiceClick={handleServiceClick} />}
+              {activeTab === AppTab.CATALOG && <CatalogView services={services} mentors={allMentors} bookings={localBookings} onServiceClick={handleServiceClick} />}
               {activeTab === AppTab.JOBS && <JobsView jobs={jobs} session={session} onSaveJob={onSaveJob} onDeleteJob={onDeleteJob} />}
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
               {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
               {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
               {activeTab === AppTab.SERVICES && isEnt && (
-                <div className="space-y-8 md:space-y-12">
+                <div className="space-y-12 md:space-y-16">
                   <ShowcaseBanner imageUrl={session.paymentUrl || mentorProfile?.avatarUrl} />
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}
             </div>
             
-            <div className="mt-auto pt-16">
+            <div className="mt-auto pt-24">
               <Footer />
             </div>
           </div>

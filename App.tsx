@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserRole, UserSession, Service, Job } from './types';
 import { dbService } from './services/databaseService';
+import { initDefaultData } from './services/db';
 import { useShagData } from './hooks/useShagData';
 import { MainDashboard } from './components/dashboard/MainDashboard';
 import { RegistrationFlow } from './components/RegistrationFlow';
@@ -46,6 +47,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const initApp = async () => {
+      // Инициализируем БД стандартными пользователями, если она пуста
+      await initDefaultData();
+
       const saved = localStorage.getItem('shag_session');
       if (saved) {
         try {

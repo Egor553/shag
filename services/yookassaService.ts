@@ -1,24 +1,45 @@
 
 export const yookassaService = {
+  /**
+   * Создает платеж через серверную функцию.
+   * Возвращает объект с confirmation_url для редиректа.
+   */
   async createPayment(request: { amount: number; description: string; metadata?: any; return_url?: string }) {
-    const response = await fetch('/api/create-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    });
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.description || 'Ошибка ЮKassa');
+    try {
+      const response = await fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.description || data.error || 'Ошибка при создании платежа в ЮKassa');
+      }
+      
+      return data;
+    } catch (error: any) {
+      console.error('[ЮKassa] Create Payment Error:', error);
+      throw error;
     }
-    return await response.json();
   },
 
+  /**
+   * Проверяет текущий статус платежа.
+   */
   async checkPaymentStatus(paymentId: string) {
     try {
-      const response = await fetch(`/api/check-payment/${paymentId}`);
+      const response = await fetch(`/api/check-payment?id=${paymentId}`);
       const data = await response.json();
-      return data.status; // 'pending', 'succeeded', 'canceled'
-    } catch (e) {
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Не удалось проверить статус платежа');
+      }
+      
+      return data.status; // 'pending', 'succeeded', 'waiting_for_capture', 'canceled'
+    } catch (error) {
+      console.error('[ЮKassa] Check Status Error:', error);
       return 'pending';
     }
   }
