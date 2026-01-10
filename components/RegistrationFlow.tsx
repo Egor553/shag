@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserRole } from '../types';
-import { ArrowLeft, Loader2, ArrowRight, Check, ShieldCheck, Star, Layers } from 'lucide-react';
+import { ArrowLeft, Loader2, ArrowRight, Layers } from 'lucide-react';
 import { EntrepreneurRegForm } from './registration/EntrepreneurRegForm';
 import { YouthRegForm } from './registration/YouthRegForm';
 
@@ -32,7 +32,7 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 lg:p-12 font-['Inter'] relative overflow-x-hidden bg-[#1a1d23]">
-      {/* Архитектурные линии декора */}
+      {/* Декоративные элементы */}
       <div className="absolute inset-0 pointer-events-none opacity-10">
         <div className="absolute top-0 left-1/4 w-px h-full bg-gradient-to-b from-transparent via-[#ffffff] to-transparent" />
         <div className="absolute top-1/3 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#ffffff] to-transparent" />
@@ -40,12 +40,13 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
 
       <div className="w-full max-w-6xl flex flex-col lg:flex-row relative z-10 min-h-0">
         
-        {/* Левая панель - Навигация и Статус */}
+        {/* Левая панель */}
         <div className={`w-full lg:w-80 bg-[#252930] p-6 md:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/10 lg:rounded-l-[40px] rounded-t-[32px] lg:rounded-tr-none relative overflow-hidden shrink-0`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent lg:hidden" />
           
           <div className="space-y-8 lg:space-y-12 relative z-10">
             <button 
+              type="button"
               onClick={() => regStep === 1 ? onCancel() : setRegStep(regStep - 1)} 
               className="flex items-center gap-3 text-white/40 hover:text-white transition-all group font-black uppercase text-[10px] tracking-[0.3em]"
             >
@@ -75,10 +76,8 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
           </div>
         </div>
 
-        {/* Правая панель - Форма (Основной контент) */}
+        {/* Правая панель */}
         <div className="flex-1 bg-[#1d2127]/80 backdrop-blur-xl p-6 md:p-12 lg:p-24 lg:rounded-r-[40px] rounded-b-[32px] lg:rounded-bl-none border-t lg:border-t-0 lg:border-l border-white/5 relative">
-          <div className="absolute top-0 right-0 w-24 h-24 lg:w-32 lg:h-32 bg-[#2d323c] rounded-bl-[60px] lg:rounded-bl-[80px] border-l border-b border-white/5 hidden sm:block" />
-          
           <div className="max-w-3xl mx-auto space-y-10 lg:space-y-16">
             <div className="space-y-4 lg:space-y-6">
                <h3 className="text-4xl md:text-7xl font-black text-white uppercase font-syne tracking-tighter leading-none">
@@ -101,10 +100,11 @@ export const RegistrationFlow: React.FC<RegistrationFlowProps> = ({
               <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="hidden md:flex items-center gap-3 text-white/30">
                   <Layers className="w-4 h-4" />
-                  <span className="text-[9px] font-bold uppercase tracking-widest">Данные защищены шифрованием</span>
+                  <span className="text-[9px] font-bold uppercase tracking-widest">Данные защищены протоколом ШАГ</span>
                 </div>
                 
                 <button 
+                  type="submit"
                   disabled={isAuthLoading} 
                   className={`w-full md:w-auto px-10 lg:px-14 py-6 lg:py-8 rounded-tr-[30px] rounded-bl-[30px] font-black uppercase text-[11px] lg:text-[13px] tracking-[0.4em] text-white transition-all flex items-center justify-center gap-6 group overflow-hidden shadow-2xl ${isEnt ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-violet-600 hover:bg-violet-500'}`}
                 >

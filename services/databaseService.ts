@@ -1,11 +1,9 @@
-
 import { db } from './db';
 import { Booking, UserSession, Service, Job, Auction, Bid, Transaction } from '../types';
 
 const API_BASE = '';
 
-// Помощник для быстрых запросов (таймаут 500мс для локального режима)
-async function fetchWithTimeout(resource: string, options: any = {}, timeout = 500) {
+async function fetchWithTimeout(resource: string, options: any = {}, timeout = 3000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -23,20 +21,19 @@ async function fetchWithTimeout(resource: string, options: any = {}, timeout = 5
 
 export const dbService = {
   async syncData(email?: string) {
-    // Пытаемся синхронизироваться очень быстро, если не вышло — сразу отдаем локалку
     try {
+      // Пытаемся получить данные с сервера, если он настроен
       const res = await fetchWithTimeout(`${API_BASE}/api/sync`);
       if (res.ok) {
         const data = await res.json();
-        if (data.users) await db.users.bulkPut(data.users);
-        if (data.bookings) await db.bookings.bulkPut(data.bookings);
-        if (data.services) await db.services.bulkPut(data.services);
-        if (data.jobs) await db.jobs.bulkPut(data.jobs);
-        if (data.auctions) await db.auctions.bulkPut(data.auctions);
-        if (data.bids) await db.bids.bulkPut(data.bids);
+        if (data.users?.length) await db.users.bulkPut(data.users);
+        if (data.bookings?.length) await db.bookings.bulkPut(data.bookings);
+        if (data.services?.length) await db.services.bulkPut(data.services);
+        if (data.jobs?.length) await db.jobs.bulkPut(data.jobs);
       }
     } catch (e) {
-      // Игнорируем ошибки сети для мгновенного отклика
+      // Если сервер не отвечает, работаем полностью на локальной Dexie (IndexedDB)
+      console.log('API Offline: Using local storage');
     }
 
     const [u, s, b, j, t, auc, bids] = await Promise.all([
@@ -67,26 +64,24 @@ export const dbService = {
         ...user,
         email: cleanEmail,
         id: user.id || Math.random().toString(36).substr(2, 9),
-        // В локальном режиме для тестов можно сразу ставить active, 
-        // но оставим pending для логики модерации, просто ускорим процесс
         status: user.role === 'entrepreneur' ? 'pending' : 'active',
         balance: user.balance || 0,
         createdAt: new Date().toISOString()
       };
 
-      // Сначала пишем в локальную БД — это мгновенно
+      // Сохраняем локально немедленно
       await db.users.put(preparedUser);
 
-      // Синхронизацию с сервером запускаем, но не ждем её долго
-      fetchWithTimeout(`${API_BASE}/api/register`, {
+      // Фоновая попытка регистрации на сервере
+      fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(preparedUser)
-      }).catch(() => {}); 
+      }).catch(() => console.log('Server reg failed, local saved'));
 
       return { result: 'success', user: preparedUser };
     } catch (e: any) {
-      return { result: 'error', message: e.message || 'Ошибка локальной БД' };
+      return { result: 'error', message: 'Ошибка БД: ' + e.message };
     }
   },
 
@@ -147,33 +142,6 @@ export const dbService = {
     return { result: 'success' };
   },
 
-  async getAuctions() {
-    return db.auctions.toArray();
-  },
-
-  async placeBid(bid: Bid, currentAuction: Auction) {
-    try {
-      await db.bids.add(bid);
-      await db.auctions.update(currentAuction.id, {
-        currentBid: bid.amount,
-        bidsCount: (currentAuction.bidsCount || 0) + 1,
-        topBidderId: bid.userId
-      });
-      await this.addTransaction({
-        id: Math.random().toString(36).substr(2, 9),
-        userId: bid.userId,
-        amount: bid.amount,
-        type: 'debit',
-        description: `Ставка на аукцион: ${bid.auctionId}`,
-        status: 'completed',
-        date: new Date().toISOString()
-      });
-      return { result: 'success' };
-    } catch (e: any) {
-      throw new Error(e.message);
-    }
-  },
-
   async cancelBooking(id: string, reason: string): Promise<{ result: 'success' | 'error'; message?: string }> {
     try {
       await db.bookings.update(id, { status: 'cancelled' });
@@ -195,6 +163,20 @@ export const dbService = {
   async deleteBooking(id: string) {
     await db.bookings.delete(id);
     return { result: 'success' };
+  },
+
+  async placeBid(bid: Bid, auction: Auction): Promise<{ result: 'success' | 'error'; message?: string }> {
+    try {
+      await db.bids.put(bid);
+      await db.auctions.update(auction.id, {
+        currentBid: bid.amount,
+        bidsCount: auction.bidsCount + 1,
+        topBidderId: bid.userId
+      });
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
   },
   
   async getMessages(bookingId: string) { return db.messages.where('bookingId').equals(bookingId).toArray(); },

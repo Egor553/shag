@@ -33,13 +33,12 @@ export const AISearchModal: React.FC<AISearchModalProps> = ({ mentors, onClose, 
         });
       } else {
         alert("ИИ подбирает наиболее близкий вариант...");
-        // В случае ошибки или если не найден конкретный ID, попробуем еще раз с первым ментором для демонстрации
         if (mentors.length > 0) {
            setResult({
               mentor: mentors[0],
               reason: data.reason || "Этот ментор обладает схожими компетенциями для вашего запроса.",
               matchPercentage: data.matchPercentage || 85,
-              advice: data.advice || "Начните с четкого ТЗ вашего проекта."
+              advice: data.advice || "Начните с четкого описания вашего проекта."
            });
         }
       }
@@ -66,7 +65,7 @@ export const AISearchModal: React.FC<AISearchModalProps> = ({ mentors, onClose, 
               <div className="space-y-6">
                 <div className="flex items-center gap-4 text-indigo-500">
                   <Activity className="w-6 h-6 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.5em]">ШАГ_AI_MATCHMAKER</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.5em]">ШАГ_ИИ_ПОДБОР</span>
                 </div>
                 <h2 className="text-5xl md:text-8xl font-black text-white uppercase font-syne tracking-tighter leading-none">
                   НАЙДИ СВОЙ<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-violet-500">РЕЗОНАНС</span>
@@ -115,7 +114,7 @@ export const AISearchModal: React.FC<AISearchModalProps> = ({ mentors, onClose, 
                 <div className="space-y-4">
                   <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <Zap className="w-4 h-4 fill-current" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">MATCH: {result.matchPercentage}%</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">СОВПАДЕНИЕ: {result.matchPercentage}%</span>
                   </div>
                   <h3 className="text-6xl md:text-7xl font-black text-white uppercase font-syne tracking-tighter leading-none">
                     ВАШ<br/><span className="text-indigo-500">ПРОВОДНИК</span>

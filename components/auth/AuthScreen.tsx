@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { UserRole, UserSession } from '../../types';
 import { RegistrationFlow } from '../RegistrationFlow';
-import { Loader2, Lock, AlertTriangle, Zap, Star, ArrowLeft } from 'lucide-react';
+import { Loader2, Lock, AlertTriangle, Zap, Star } from 'lucide-react';
 
 interface AuthScreenProps {
   login: (email: string, pass: string) => Promise<boolean>;
@@ -34,10 +34,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
   const onRegisterSubmit = async (e: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (regStep < 3) { setRegStep(regStep + 1); return; }
     
+    // Если это не последний шаг, просто переключаем на следующий
+    if (regStep < 3) { 
+      setRegStep(prev => prev + 1); 
+      return; 
+    }
+    
+    // Финальная отправка данных в БД
     const success = await register(tempRole!, regData);
     if (success) {
+      // После успешной регистрации App.tsx подхватит сессию
+      // Сбрасываем локальное состояние только если нужно
       setAuthMode(null);
       setRegStep(1);
     }
@@ -53,7 +61,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           </div>
         )}
         <form onSubmit={onLoginSubmit} className="space-y-6">
-          <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="EMAIL" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold uppercase" />
+          <input required type="text" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="ПОЧТА / ЛОГИН" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold uppercase" />
           <input required type="password" value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="ПАРОЛЬ" className="w-full bg-white/5 border border-white/10 px-6 py-5 rounded-2xl text-white outline-none focus:border-indigo-600 font-bold" />
           <button disabled={isAuthLoading} className="w-full bg-indigo-600 text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-indigo-500 transition-all flex items-center justify-center">
             {isAuthLoading ? <Loader2 className="animate-spin w-5 h-5"/> : 'Войти'}
@@ -83,7 +91,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     <div className="text-center space-y-12 animate-in fade-in duration-1000">
        <div className="relative inline-block">
           <h1 className="text-7xl md:text-[10rem] font-black text-white tracking-tighter uppercase font-syne leading-none">ШАГ</h1>
-          <div className="absolute -top-4 -right-4 bg-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl">Beta</div>
+          <div className="absolute -top-4 -right-4 bg-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl">Бета</div>
        </div>
        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
           <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="p-8 md:p-12 bg-[#2d323c] border border-white/5 rounded-[40px] hover:border-indigo-600 transition-all text-left space-y-6 group relative overflow-hidden">
@@ -92,7 +100,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
              </div>
              <Zap className="text-indigo-600 w-10 h-10 group-hover:scale-110 transition-transform relative z-10" />
              <div className="relative z-10">
-                <h3 className="text-2xl font-black text-white font-syne uppercase">МЕНТОР</h3>
+                <h3 className="text-2xl font-black text-white font-syne uppercase">ПРЕДПРИНИМАТЕЛЬ</h3>
                 <p className="text-slate-400 text-sm mt-1">Делитесь опытом и нанимайте таланты</p>
              </div>
           </button>

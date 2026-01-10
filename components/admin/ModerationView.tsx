@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { UserSession } from '../../types';
-import { Check, X, Eye, Clock, Building, TrendingUp, ShieldCheck, Heart, User, Sparkles, Target, Video, Briefcase } from 'lucide-react';
+import { Check, X, Eye, ShieldCheck, Heart } from 'lucide-react';
 
 interface ModerationViewProps {
   pendingUsers: UserSession[];
@@ -49,7 +49,7 @@ export const ModerationView: React.FC<ModerationViewProps> = ({ pendingUsers, on
               <div className="space-y-1">
                  <div className="flex items-center gap-3">
                     <h3 className="text-2xl font-black text-white uppercase font-syne tracking-tight">{user.name}</h3>
-                    <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-500/20">Pending</span>
+                    <span className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-lg text-[8px] font-black uppercase tracking-widest border border-amber-500/20">На модерации</span>
                  </div>
                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{user.email}</p>
               </div>

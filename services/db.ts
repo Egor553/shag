@@ -1,4 +1,3 @@
-
 import { Dexie } from 'dexie';
 import type { Table } from 'dexie';
 import { UserSession, Service, Booking, Job, Transaction, ChatMessage, UserRole, Auction, Bid } from '../types';
@@ -17,8 +16,8 @@ export class ShagDatabase extends Dexie {
   constructor() {
     super('ShagDatabase');
     
-    // Fix: Using this.version to define the Dexie schema. Named imports ensure methods like version are correctly typed.
-    this.version(8).stores({
+    // Fix: Explicitly cast 'this' to 'Dexie' to resolve type inference issues where the inherited 'version' method was not found
+    (this as Dexie).version(8).stores({
       users: 'email, id, role, status',
       services: 'id, mentorId, category',
       bookings: 'id, mentorId, userEmail, status, date',
@@ -35,15 +34,14 @@ export const db = new ShagDatabase();
 
 export async function initDefaultData() {
   try {
-    // Проверяем наличие админа при каждом запуске
     const adminExists = await db.users.get('admin');
     
     if (!adminExists) {
-      console.log('[DB] Инициализация Root-доступа...');
+      console.log('[БД] Инициализация Главного Администратора...');
       await db.users.put({
         id: 'admin_root',
         email: 'admin',
-        name: 'Root Admin',
+        name: 'Главный Администратор',
         password: 'admin123',
         role: UserRole.ADMIN,
         isLoggedIn: false,
@@ -55,9 +53,8 @@ export async function initDefaultData() {
       });
     }
 
-    // Заполняем менторов, если база пуста
     const userCount = await db.users.count();
-    if (userCount <= 1) { // Если только админ
+    if (userCount <= 1) {
       for (const mentor of MENTORS) {
         await db.users.put({
           ...mentor,
@@ -71,6 +68,6 @@ export async function initDefaultData() {
       }
     }
   } catch (error) {
-    console.error('[DB] Ошибка инициализации:', error);
+    console.error('[БД] Ошибка инициализации:', error);
   }
 }

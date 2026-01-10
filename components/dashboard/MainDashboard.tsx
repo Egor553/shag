@@ -74,7 +74,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   }, [bookings]);
 
   const handleServiceClick = (service: Service) => {
-    // Ищем ментора в текущем списке
     const mentor = allMentors.find(m => 
       String(m.id) === String(service.mentorId) || 
       String(m.email).toLowerCase() === String(service.mentorId).toLowerCase()
@@ -86,8 +85,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
       setPendingPaymentBooking(null);
       setShowBooking(true);
     } else {
-      // Если ментор не найден в списке (например, сторонний), создаем временную сущность для отображения
-      // Это предотвращает "отсутствие реакции" при нажатии на карточку
       const fallbackMentor: any = {
         id: service.mentorId,
         email: service.mentorId,
@@ -129,7 +126,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
       <div className="fixed top-6 right-6 z-[100] hidden md:flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl">
          <div className="flex items-center gap-3">
             <ShieldCheck size={16} className="text-emerald-400" />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Secured Root Protocol</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Защищенный Root Протокол</span>
          </div>
       </div>
       
