@@ -1,5 +1,6 @@
 
-import Dexie, { type Table } from 'dexie';
+import { Dexie } from 'dexie';
+import type { Table } from 'dexie';
 import { UserSession, Service, Booking, Job, Transaction, ChatMessage, UserRole, Auction, Bid } from '../types';
 import { MENTORS } from '../constants';
 
@@ -10,15 +11,14 @@ export class ShagDatabase extends Dexie {
   jobs!: Table<Job>;
   transactions!: Table<Transaction>;
   messages!: Table<ChatMessage>;
-  // Added auctions and bids tables to support auction functionality
   auctions!: Table<Auction>;
   bids!: Table<Bid>;
 
   constructor() {
     super('ShagDatabase');
     
-    // Bumped version to 8 to include new tables in the schema
-    (this as Dexie).version(8).stores({
+    // Fix: Using this.version to define the Dexie schema. Named imports ensure methods like version are correctly typed.
+    this.version(8).stores({
       users: 'email, id, role, status',
       services: 'id, mentorId, category',
       bookings: 'id, mentorId, userEmail, status, date',
@@ -35,11 +35,11 @@ export const db = new ShagDatabase();
 
 export async function initDefaultData() {
   try {
-    const userCount = await db.users.count();
-    if (userCount === 0) {
-      console.log('[DB] Настройка чистой экосистемы ШАГ...');
-      
-      // Создаем только Root Admin
+    // Проверяем наличие админа при каждом запуске
+    const adminExists = await db.users.get('admin');
+    
+    if (!adminExists) {
+      console.log('[DB] Инициализация Root-доступа...');
       await db.users.put({
         id: 'admin_root',
         email: 'admin',
@@ -51,13 +51,13 @@ export async function initDefaultData() {
         balance: 1000000,
         direction: 'Управление платформой',
         city: 'Москва',
-        slots: JSON.stringify({
-          "2024-06-20": ["12:00", "15:00"],
-          "2024-06-21": ["10:00", "18:00"]
-        })
+        createdAt: new Date().toISOString()
       });
+    }
 
-      // Регистрируем менторов из констант (только профили)
+    // Заполняем менторов, если база пуста
+    const userCount = await db.users.count();
+    if (userCount <= 1) { // Если только админ
       for (const mentor of MENTORS) {
         await db.users.put({
           ...mentor,
@@ -69,8 +69,6 @@ export async function initDefaultData() {
           createdAt: new Date().toISOString()
         });
       }
-
-      console.log('[DB] Экосистема готова. Контент создается пользователями и Админом.');
     }
   } catch (error) {
     console.error('[DB] Ошибка инициализации:', error);
