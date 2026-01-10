@@ -1,9 +1,7 @@
 
 import { useState, useCallback } from 'react';
-import { Mentor, Service, Job, Booking, Transaction, UserSession, UserRole } from '../types';
+import { Mentor, Service, Job, Booking, Transaction, UserSession, UserRole, Auction, Bid } from '../types';
 import { dbService } from '../services/databaseService';
-import { shagService } from '../services/shagService';
-import { missionService } from '../services/missionService';
 import { MENTORS } from '../constants';
 
 export const useShagData = () => {
@@ -12,16 +10,17 @@ export const useShagData = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
   const [mentorProfile, setMentorProfile] = useState<Mentor | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const syncUserData = useCallback(async (email: string, session?: UserSession, updateSession?: (s: UserSession) => void) => {
+  const syncUserData = useCallback(async (email: string, currentSession?: UserSession, updateSession?: (s: UserSession) => void) => {
     setIsSyncing(true);
     try {
       const data = await dbService.syncData(email);
       
-      // Fix: Filter all users for mentors only and cast correctly
-      const allUsers = data.dynamicMentors || [];
+      const allUsers = data.users || [];
       const mentorsFromDb = allUsers.filter(u => u.role === UserRole.ENTREPRENEUR) as Mentor[];
       setAllMentors(mentorsFromDb.length > 0 ? mentorsFromDb : MENTORS);
       
@@ -34,78 +33,51 @@ export const useShagData = () => {
       setBookings(data.bookings || []);
       setJobs(data.jobs || []);
       setTransactions(data.transactions || []);
+      setAuctions(data.auctions || []);
+      setBids(data.bids || []);
       
-      // Ищем любого пользователя в базе по email для обновления сессии
-      const currentUser = allUsers.find((u: UserSession) => 
-        String(u.email).toLowerCase() === String(email).toLowerCase()
-      );
+      const currentUser = allUsers.find((u: UserSession) => u.email.toLowerCase() === email.toLowerCase());
 
       if (currentUser) {
-        // Fix: Cast currentUser to Mentor when the role matches
-        if (currentUser.role === UserRole.ENTREPRENEUR) {
+        if (currentUser.role === UserRole.ENTREPRENEUR || currentUser.role === UserRole.ADMIN) {
           setMentorProfile(currentUser as Mentor);
         }
-        
-        // Обновляем состояние сессии для любого пользователя
-        if (session && updateSession) {
-          updateSession({ 
-            ...session, 
-            ...currentUser, 
-            isLoggedIn: true, 
-            balance: Number(currentUser.balance) || 0 
-          });
+        if (currentSession && updateSession) {
+          updateSession({ ...currentSession, ...currentUser, isLoggedIn: true });
         }
       }
     } catch (e) {
-      console.error("Sync error:", e);
+      console.error("[SYNC] Error:", e);
     } finally {
       setIsSyncing(false);
     }
   }, []);
 
   const saveService = async (s: Partial<Service>, session: UserSession) => {
-    const serviceId = s.id || Math.random().toString(36).substr(2, 9);
-    const sToSave = { 
-      ...s, 
-      id: serviceId, 
-      mentorId: session.id || session.email, 
-      mentorName: session.name 
-    } as Service;
-    
-    if (s.id) {
-      await shagService.update(s.id, sToSave);
-    } else {
-      await shagService.save(sToSave);
-    }
+    const data = { ...s, mentorId: session.id || session.email, mentorName: session.name };
+    await dbService.saveService(data);
     await syncUserData(session.email);
   };
 
   const deleteService = async (id: string, email: string) => {
-    await shagService.delete(id);
+    await dbService.deleteService(id);
     await syncUserData(email);
   };
 
   const saveJob = async (j: Partial<Job>, session: UserSession) => {
-    const jobId = j.id || Math.random().toString(36).substr(2, 9);
-    const jToSave = { 
+    const data = { 
       ...j, 
-      id: jobId,
-      mentorId: session.id || session.email,
-      mentorName: session.name,
-      createdAt: new Date().toISOString(),
-      status: 'active'
-    } as Job;
-    
-    if (j.id) {
-      await missionService.update(j.id, jToSave);
-    } else {
-      await missionService.save(jToSave); 
-    }
+      mentorId: session.id || session.email, 
+      mentorName: session.name, 
+      createdAt: new Date().toISOString(), 
+      status: 'active' 
+    };
+    await dbService.saveJob(data);
     await syncUserData(session.email);
   };
 
   const deleteJob = async (id: string, email: string) => {
-    await missionService.delete(id);
+    await dbService.deleteJob(id);
     await syncUserData(email);
   };
 
@@ -115,19 +87,7 @@ export const useShagData = () => {
   };
 
   return {
-    allMentors,
-    services,
-    jobs,
-    bookings,
-    transactions,
-    mentorProfile,
-    isSyncing,
-    syncUserData,
-    saveService,
-    deleteService,
-    saveJob,
-    deleteJob,
-    updateProfile,
-    setMentorProfile
+    allMentors, services, jobs, bookings, transactions, auctions, bids, mentorProfile, isSyncing,
+    syncUserData, saveService, deleteService, saveJob, deleteJob, updateProfile, setMentorProfile
   };
 };

@@ -73,24 +73,35 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     setLocalBookings(bookings);
   }, [bookings]);
 
-  useEffect(() => {
-    if (session.role === UserRole.ENTREPRENEUR) {
-      const lastUpdate = session.lastWeeklyUpdate ? new Date(session.lastWeeklyUpdate) : null;
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      if (!lastUpdate || lastUpdate < oneWeekAgo) {
-        setShowPlanner(true);
-      }
-    }
-  }, [session.role, session.lastWeeklyUpdate]);
-
   const handleServiceClick = (service: Service) => {
+    // Ищем ментора в текущем списке
     const mentor = allMentors.find(m => 
       String(m.id) === String(service.mentorId) || 
-      String(m.ownerEmail || m.email).toLowerCase() === String(service.mentorId).toLowerCase()
+      String(m.email).toLowerCase() === String(service.mentorId).toLowerCase()
     );
+
     if (mentor) {
       setActiveMentor(mentor);
+      setSelectedService(service);
+      setPendingPaymentBooking(null);
+      setShowBooking(true);
+    } else {
+      // Если ментор не найден в списке (например, сторонний), создаем временную сущность для отображения
+      // Это предотвращает "отсутствие реакции" при нажатии на карточку
+      const fallbackMentor: any = {
+        id: service.mentorId,
+        email: service.mentorId,
+        name: service.mentorName || 'Ментор ШАГ',
+        role: UserRole.ENTREPRENEUR,
+        status: 'active',
+        isLoggedIn: false,
+        industry: service.category || 'Бизнес',
+        description: 'Опытный предприниматель сообщества ШАГ.',
+        avatarUrl: service.imageUrl || '',
+        singlePrice: service.price,
+        groupPrice: service.groupPrice || 0
+      };
+      setActiveMentor(fallbackMentor);
       setSelectedService(service);
       setPendingPaymentBooking(null);
       setShowBooking(true);
@@ -100,7 +111,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   const handlePayFromList = (booking: Booking) => {
     const mentor = allMentors.find(m => 
       String(m.id) === String(booking.mentorId) || 
-      String(m.ownerEmail || m.email).toLowerCase() === String(booking.mentorId).toLowerCase()
+      String(m.email).toLowerCase() === String(booking.mentorId).toLowerCase()
     );
     if (mentor) {
       setActiveMentor(mentor);
@@ -114,15 +125,11 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-[#1a1d23] text-white flex flex-col font-['Inter'] relative overflow-x-hidden">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.02] z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff12_1px,transparent_1px),linear-gradient(to_bottom,#ffffff12_1px,transparent_1px)] bg-[size:60px_60px]"></div>
-      </div>
-
-      <div className="fixed top-6 right-6 z-[100] flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl">
+      
+      <div className="fixed top-6 right-6 z-[100] hidden md:flex items-center gap-4 px-6 py-3 bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-2xl">
          <div className="flex items-center gap-3">
-            <ShieldCheck size={16} className="text-indigo-400" />
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Secured Exchange Engine</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+            <ShieldCheck size={16} className="text-emerald-400" />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Secured Root Protocol</span>
          </div>
       </div>
       
@@ -138,16 +145,16 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               {activeTab === AppTab.MEETINGS && <MeetingsListView bookings={localBookings} session={session} onPay={handlePayFromList} onRefresh={onRefresh} />}
               {activeTab === AppTab.MISSION && <MissionView />}
               {activeTab === AppTab.ADMIN && isAdmin && <AdminPanel onLogout={onLogout} session={session} />}
-              {activeTab === AppTab.PROFILE && (isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
-              {activeTab === AppTab.SERVICES && isEnt && (
-                <div className="space-y-12 md:space-y-16">
+              {activeTab === AppTab.PROFILE && (isAdmin || isEnt ? <EntrepreneurProfile session={session} mentorProfile={mentorProfile} isSavingProfile={isSavingProfile} onSaveProfile={() => onSaveProfile()} onUpdateMentorProfile={onUpdateMentorProfile} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} transactions={transactions} bookings={localBookings} services={services} jobs={jobs} /> : <YouthProfile session={session} onCatalogClick={() => setActiveTab(AppTab.CATALOG)} onLogout={onLogout} onUpdateAvatar={onUpdateAvatar} onSessionUpdate={onSessionUpdate} onSaveProfile={() => onSaveProfile()} isSavingProfile={isSavingProfile} bookings={localBookings} />)}
+              {activeTab === AppTab.SERVICES && (isEnt || isAdmin) && (
+                <div className="space-y-12">
                   <ShowcaseBanner imageUrl={session.paymentUrl || mentorProfile?.avatarUrl} />
                   <ServiceBuilder services={services.filter(s => String(s.mentorId) === String(session.id) || String(s.mentorId).toLowerCase() === String(session.email).toLowerCase())} onSave={onSaveService} onUpdate={onUpdateService} onDelete={onDeleteService} />
                 </div>
               )}
             </div>
             
-            <div className="mt-auto pt-24">
+            <div className="mt-auto pt-24 hidden md:block">
               <Footer />
             </div>
           </div>
@@ -156,7 +163,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} userRole={session.role} />
 
-      {showPlanner && isEnt && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onSaveProfile={onSaveProfile} onClose={() => setShowPlanner(false)} />}
+      {showPlanner && (isEnt || isAdmin) && <ResourcePlannerModal session={session} mentorProfile={mentorProfile} onSaveProfile={onSaveProfile} onClose={() => setShowPlanner(false)} />}
       {showBooking && activeMentor && <BookingModal mentor={activeMentor} service={selectedService || undefined} bookings={localBookings} session={session} existingBooking={pendingPaymentBooking || undefined} onClose={() => { setShowBooking(false); setSelectedService(null); setPendingPaymentBooking(null); }} onComplete={() => { if (onRefresh) onRefresh(); setShowBooking(false); }} />}
     </div>
   );

@@ -49,7 +49,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
         if (res.result === 'success') {
           onComplete({ id: existingBooking!.id, date: selectedDate, time: selectedSlot, status: 'confirmed' });
         } else {
-          alert('Ошибка при переносе: ' + res.message);
+          // Fix: Ensure message property is handled safely
+          alert('Ошибка при переносе: ' + (res.message || 'произошла непредвиденная ошибка'));
         }
       } catch (e) {
         alert('Ошибка связи с сервером');
@@ -88,7 +89,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
       if (res.result === 'success') {
         onComplete(bookingData);
       } else {
-        alert('Ошибка сохранения записи: ' + res.message);
+        // Fix: Ensure message property is handled safely
+        alert('Ошибка сохранения записи: ' + (res.message || 'произошла непредвиденная ошибка'));
       }
     } catch (e) {
       alert('Ошибка при сохранении бронирования');

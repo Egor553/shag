@@ -28,6 +28,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
   });
 
   const isEnt = session.role === UserRole.ENTREPRENEUR;
+  const isAdmin = session.role === UserRole.ADMIN;
 
   const handleOpenForm = () => {
     setFormData({
@@ -77,7 +78,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white/30 to-white/5 italic">ВАКАНСИИ</span>
           </h1>
         </div>
-        {isEnt && !isFormOpen && (
+        {(isEnt || isAdmin) && !isFormOpen && (
           <button onClick={handleOpenForm} className="bg-white text-black px-8 md:px-12 py-5 md:py-8 rounded-[24px] md:rounded-[40px] font-black uppercase text-[10px] md:text-[11px] tracking-widest flex items-center justify-center gap-3 md:gap-4 hover:scale-105 transition-all shadow-2xl active:scale-95">
             <Plus className="w-4 h-4 md:w-5 md:h-5" /> Создать вакансию
           </button>
@@ -135,7 +136,7 @@ export const JobsView: React.FC<JobsViewProps> = ({ jobs, session, onSaveJob, on
               <div className="flex justify-between mb-6">
                 <div className="px-3 py-1.5 bg-white/10 text-white rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest w-fit border border-white/10">{job.category}</div>
                 <div className="flex gap-2">
-                  {isMyJob && (
+                  {(isMyJob || isAdmin) && (
                     <button onClick={(e) => { e.stopPropagation(); onDeleteJob(job.id); }} className="p-2.5 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/40 transition-colors"><Trash2 className="w-4 h-4" /></button>
                   )}
                   {hasTg && (

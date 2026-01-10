@@ -1,5 +1,4 @@
 
-
 export enum UserRole {
   ENTREPRENEUR = 'entrepreneur',
   YOUTH = 'youth',
@@ -48,19 +47,18 @@ export interface UserSession {
   email: string;
   isLoggedIn: boolean;
   id: string;
-  password?: string; // Добавлено поле пароля для корректной работы локальной БД
-  status?: 'active' | 'pending' | 'rejected'; // Статус модерации
+  password?: string;
+  status?: 'active' | 'pending' | 'rejected';
   isVerified?: boolean;
   phone?: string;
   city?: string;
   companyName?: string;
   turnover?: string;
   direction?: string;
-  paymentUrl?: string; // Используется как Аватар
+  paymentUrl?: string;
   rating?: number;
   reviewsCount?: number;
   favorites?: string[]; 
-  // Поля анкет
   qualities?: string;
   requestToYouth?: string;
   videoUrl?: string;
@@ -71,8 +69,8 @@ export interface UserSession {
   expectations?: string;
   mutualHelp?: string;
   values?: string[];
-  businessClubs?: string; // Новое поле
-  lifestyle?: string; // Новое поле (спорт, семья)
+  businessClubs?: string;
+  lifestyle?: string;
   createdAt?: string;
   ownerEmail?: string;
   balance?: number;
@@ -145,5 +143,32 @@ export interface ChatMessage {
   senderEmail: string;
   senderName: string;
   text: string;
+  timestamp: string;
+}
+
+/**
+ * Interface representing an Auction lot for premium mentor meetings.
+ */
+export interface Auction {
+  id: string;
+  mentorId: string;
+  serviceId: string;
+  currentBid: number;
+  minStep: number;
+  endsAt: string;
+  bidsCount: number;
+  topBidderId?: string;
+}
+
+/**
+ * Interface representing a bid placed on an auction.
+ */
+export interface Bid {
+  id: string;
+  auctionId: string;
+  userId: string;
+  userName: string;
+  amount: number;
+  message: string;
   timestamp: string;
 }

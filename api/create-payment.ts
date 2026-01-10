@@ -9,6 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const { amount, description, metadata, return_url } = req.body;
+  
   // Fix: Use btoa to avoid 'Buffer' not found error in TypeScript environment without Node types
   const auth = btoa(`${SHOP_ID}:${SECRET_KEY}`);
   
@@ -18,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'Idempotence-Key': Date.now().toString()
+        'Idempotence-Key': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       },
       body: JSON.stringify({
         amount: { value: Number(amount).toFixed(2), currency: 'RUB' },
@@ -32,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data = await response.json();
     return res.status(response.status).json(data);
   } catch (e: any) {
-    return res.status(500).json({ error: e.message });
+    console.error('[API Create Payment] Error:', e);
+    return res.status(500).json({ error: e.message || 'Внутренняя ошибка сервера' });
   }
 }

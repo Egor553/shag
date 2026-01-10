@@ -26,17 +26,20 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
 
   return (
     <div 
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(mentor)}
-      className="group relative h-[480px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-700 hover:shadow-[0_0_50px_rgba(79,70,229,0.15)]"
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(mentor); }}
+      className="group relative h-[480px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-500 md:hover:shadow-[0_0_50px_rgba(79,70,229,0.15)] active:scale-[0.98] select-none touch-manipulation"
     >
       {/* Image with adaptive overlay */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-none">
         {!imgError && photoUrl ? (
           <img 
             src={photoUrl} 
             alt={mentor.name} 
             onError={() => setImgError(true)}
-            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-1000 md:group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black flex items-center justify-center">
@@ -61,7 +64,7 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
       </div>
 
       {/* Main Info */}
-      <div className="absolute inset-x-6 bottom-6 space-y-5 z-10">
+      <div className="absolute inset-x-6 bottom-6 space-y-5 z-10 pointer-events-none">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-indigo-400">
             <Zap className="w-3 h-3 fill-current" />

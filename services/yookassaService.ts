@@ -1,17 +1,21 @@
 
 export const yookassaService = {
   /**
-   * Создает платеж через серверную функцию.
-   * Возвращает объект с confirmation_url для редиректа.
+   * Создает платеж через серверную функцию с таймаутом.
    */
   async createPayment(request: { amount: number; description: string; metadata?: any; return_url?: string }) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 секунд на ответ от шлюза
+
     try {
       const response = await fetch('/api/create-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
+        signal: controller.signal
       });
       
+      clearTimeout(timeoutId);
       const data = await response.json();
       
       if (!response.ok) {
@@ -20,7 +24,11 @@ export const yookassaService = {
       
       return data;
     } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('[ЮKassa] Create Payment Error:', error);
+      if (error.name === 'AbortError') {
+        throw new Error('Платежный шлюз не ответил вовремя. Попробуйте еще раз или используйте тестовый режим.');
+      }
       throw error;
     }
   },
