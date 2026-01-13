@@ -1,9 +1,9 @@
 import { db } from './db';
 import { Booking, UserSession, Service, Job, Auction, Bid, Transaction } from '../types';
 
-const API_BASE = '';
+const API_BASE = ''; // Relative path, works with proxy and Vercel
 
-async function fetchWithTimeout(resource: string, options: any = {}, timeout = 3000) {
+async function fetchWithTimeout(resource: string, options: any = {}, timeout = 5000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -29,6 +29,7 @@ export const dbService = {
         if (data.bookings?.length) await db.bookings.bulkPut(data.bookings);
         if (data.services?.length) await db.services.bulkPut(data.services);
         if (data.jobs?.length) await db.jobs.bulkPut(data.jobs);
+        if (data.transactions?.length) await db.transactions.bulkPut(data.transactions);
       }
     } catch (e) {
       console.log('API Offline: Using local storage');
@@ -44,11 +45,11 @@ export const dbService = {
       db.bids.toArray()
     ]);
 
-    return { 
-      users: u, 
-      services: s, 
-      bookings: b, 
-      jobs: j, 
+    return {
+      users: u,
+      services: s,
+      bookings: b,
+      jobs: j,
       transactions: t,
       auctions: auc,
       bids: bids
@@ -71,15 +72,21 @@ export const dbService = {
         createdAt: new Date().toISOString()
       };
 
-      // КРИТИЧЕСКИ ВАЖНО: дожидаемся записи в локальную БД
-      await db.users.put(preparedUser);
-
-      // Фоновая отправка на сервер (не блокирует пользователя)
-      fetch(`${API_BASE}/api/register`, {
+      // 1. Send to Server First
+      const response = await fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(preparedUser)
-      }).catch(() => {});
+      });
+
+      const serverData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(serverData.message || 'Ошибка регистрации на сервере');
+      }
+
+      // 2. Save locally
+      await db.users.put(preparedUser);
 
       return { result: 'success', user: preparedUser };
     } catch (e: any) {
@@ -90,7 +97,27 @@ export const dbService = {
   async login(credentials: any) {
     if (!credentials.email) throw new Error('Введите email');
     const cleanEmail = credentials.email.toLowerCase().trim();
-    
+
+    // 1. Try Server Login
+    try {
+      const response = await fetch(`${API_BASE}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, password: credentials.password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.result === 'success') {
+        // Save/Update user in local DB
+        await db.users.put(data.user);
+        return { ...data.user, isLoggedIn: true };
+      }
+    } catch (e) {
+      console.warn('Server login failed, falling back to local', e);
+    }
+
+    // 2. Fallback to Local Login (Offline support)
     const user = await db.users.get(cleanEmail);
     if (user && String(user.password) === String(credentials.password)) {
       return { ...user, isLoggedIn: true };
@@ -100,7 +127,16 @@ export const dbService = {
 
   async saveBooking(booking: any): Promise<{ result: 'success' | 'error'; message?: string }> {
     try {
+      // Local
       await db.bookings.put(booking);
+
+      // Server
+      fetch(`${API_BASE}/api/save-booking`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(booking)
+      }).catch(console.error);
+
       if (booking.status === 'confirmed') {
         await this.addTransaction({
           id: Math.random().toString(36).substr(2, 9),
@@ -182,7 +218,7 @@ export const dbService = {
       return { result: 'error', message: e.message };
     }
   },
-  
+
   async getMessages(bookingId: string) { return db.messages.where('bookingId').equals(bookingId).toArray(); },
   async sendMessage(message: any) { await db.messages.put(message); return { result: 'success' }; },
   async deleteService(id: string) { await db.services.delete(id); return { result: 'success' }; },
