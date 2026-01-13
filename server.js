@@ -13,17 +13,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Config
 const YOOKASSA_SHOP_ID = process.env.YOOKASSA_SHOP_ID || '1239556';
 const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY || 'live_aIdOO3gb6gqDY-WYy9NpSnmPB0dt-_hJIa0iwNs2Jhg';
 
 // Database Setup
-const dbPath = path.resolve(__dirname, 'shag.db');
+// На Vercel можно писать только в /tmp
+const dbPath = process.env.VERCEL
+  ? path.join('/tmp', 'shag.db')
+  : path.resolve(__dirname, 'shag.db');
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error('Error opening database:', err.message);
-  else console.log('Connected to SQLite database.');
+  else console.log(`Connected to SQLite database at ${dbPath}`);
 });
 
 // Initialize Tables & Admin

@@ -1,9 +1,10 @@
 import { db } from './db';
 import { Booking, UserSession, Service, Job, Auction, Bid, Transaction } from '../types';
 
-const API_BASE = ''; // Relative path, works with proxy and Vercel
+const API_BASE = ''; // Relative path, works via proxy in dev and normal path in prod
 
-async function fetchWithTimeout(resource: string, options: any = {}, timeout = 5000) {
+// Fetch with timeout helper
+async function fetchWithTimeout(resource: string, options: any = {}, timeout = 8000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -23,7 +24,8 @@ export const dbService = {
   async syncData(email?: string) {
     try {
       const res = await fetchWithTimeout(`${API_BASE}/api/sync`);
-      if (res.ok) {
+      const contentType = res.headers.get("content-type");
+      if (res.ok && contentType && contentType.includes("application/json")) {
         const data = await res.json();
         if (data.users?.length) await db.users.bulkPut(data.users);
         if (data.bookings?.length) await db.bookings.bulkPut(data.bookings);
@@ -32,7 +34,7 @@ export const dbService = {
         if (data.transactions?.length) await db.transactions.bulkPut(data.transactions);
       }
     } catch (e) {
-      console.log('API Offline: Using local storage');
+      console.log('API Offline or invalid response: Using local storage');
     }
 
     const [u, s, b, j, t, auc, bids] = await Promise.all([
@@ -73,19 +75,26 @@ export const dbService = {
       };
 
       // 1. Send to Server First
-      const response = await fetch(`${API_BASE}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(preparedUser)
-      });
+      try {
+        const response = await fetchWithTimeout(`${API_BASE}/api/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(preparedUser)
+        });
 
-      const serverData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(serverData.message || 'Ошибка регистрации на сервере');
+        const contentType = response.headers.get("content-type");
+        if (response.ok && contentType && contentType.includes("application/json")) {
+          const serverData = await response.json();
+          if (serverData.result === 'error') throw new Error(serverData.message);
+        } else {
+          // If server returns HTML (proxy fail) or error
+          throw new Error('Server unavailable');
+        }
+      } catch (e) {
+        console.warn('Server reg failed, saving locally only', e);
       }
 
-      // 2. Save locally
+      // 2. Save locally (Always success if updated locally)
       await db.users.put(preparedUser);
 
       return { result: 'success', user: preparedUser };
@@ -100,24 +109,25 @@ export const dbService = {
 
     // 1. Try Server Login
     try {
-      const response = await fetch(`${API_BASE}/api/login`, {
+      const response = await fetchWithTimeout(`${API_BASE}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: credentials.password })
-      });
+      }, 5000);
 
-      const data = await response.json();
-
-      if (response.ok && data.result === 'success') {
-        // Save/Update user in local DB
-        await db.users.put(data.user);
-        return { ...data.user, isLoggedIn: true };
+      const contentType = response.headers.get("content-type");
+      if (response.ok && contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (data.result === 'success') {
+          await db.users.put(data.user);
+          return { ...data.user, isLoggedIn: true };
+        }
       }
     } catch (e) {
       console.warn('Server login failed, falling back to local', e);
     }
 
-    // 2. Fallback to Local Login (Offline support)
+    // 2. Fallback to Local Login
     const user = await db.users.get(cleanEmail);
     if (user && String(user.password) === String(credentials.password)) {
       return { ...user, isLoggedIn: true };
@@ -127,10 +137,8 @@ export const dbService = {
 
   async saveBooking(booking: any): Promise<{ result: 'success' | 'error'; message?: string }> {
     try {
-      // Local
       await db.bookings.put(booking);
 
-      // Server
       fetch(`${API_BASE}/api/save-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
