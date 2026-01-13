@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { UserSession, UserRole } from '../types';
 import { dbService } from '../services/databaseService';
@@ -18,8 +17,8 @@ export const useAuth = (onSuccessSync: (email: string, session: UserSession) => 
       localStorage.setItem('shag_session', JSON.stringify(sess));
       setSession(sess);
       
-      // Синхронизацию запускаем, но не ждем её для входа в UI
-      onSuccessSync(sess.email, sess);
+      // Синхронизацию запускаем в фоне
+      onSuccessSync(sess.email, sess).catch(console.error);
       return true;
     } catch (e: any) {
       setErrorMsg(e.message || 'Ошибка входа');
@@ -33,23 +32,27 @@ export const useAuth = (onSuccessSync: (email: string, session: UserSession) => 
     setIsAuthLoading(true);
     setErrorMsg(null);
     try {
+      if (!data.email || !data.password) {
+        throw new Error('Email и пароль обязательны');
+      }
+
       const newUser = { 
+        ...data,
         role, 
-        ...data, 
-        slots: typeof data.slots === 'string' ? data.slots : JSON.stringify(data.slots), 
+        slots: typeof data.slots === 'string' ? data.slots : JSON.stringify(data.slots || {}), 
         balance: 0 
       };
       
       const res = await dbService.register(newUser);
       
-      if (res.result === 'success') {
+      if (res.result === 'success' && res.user) {
         const sess = { ...res.user, isLoggedIn: true } as UserSession;
         
         localStorage.setItem('shag_session', JSON.stringify(sess));
         setSession(sess);
         
-        // Уведомляем систему о необходимости подгрузки данных
-        await onSuccessSync(newUser.email, sess);
+        // Уведомляем систему о необходимости подгрузки данных в фоне
+        onSuccessSync(newUser.email, sess).catch(console.error);
         return true;
       }
       throw new Error(res.message || 'Ошибка регистрации');

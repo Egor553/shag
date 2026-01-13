@@ -22,7 +22,6 @@ async function fetchWithTimeout(resource: string, options: any = {}, timeout = 3
 export const dbService = {
   async syncData(email?: string) {
     try {
-      // Пытаемся получить данные с сервера, если он настроен
       const res = await fetchWithTimeout(`${API_BASE}/api/sync`);
       if (res.ok) {
         const data = await res.json();
@@ -32,7 +31,6 @@ export const dbService = {
         if (data.jobs?.length) await db.jobs.bulkPut(data.jobs);
       }
     } catch (e) {
-      // Если сервер не отвечает, работаем полностью на локальной Dexie (IndexedDB)
       console.log('API Offline: Using local storage');
     }
 
@@ -59,6 +57,10 @@ export const dbService = {
 
   async register(user: any): Promise<{ result: 'success' | 'error'; user?: any; message?: string }> {
     try {
+      if (!user.email || !user.password) {
+        throw new Error('Email и пароль обязательны');
+      }
+
       const cleanEmail = user.email.toLowerCase().trim();
       const preparedUser = {
         ...user,
@@ -69,26 +71,28 @@ export const dbService = {
         createdAt: new Date().toISOString()
       };
 
-      // Сохраняем локально немедленно
+      // КРИТИЧЕСКИ ВАЖНО: дожидаемся записи в локальную БД
       await db.users.put(preparedUser);
 
-      // Фоновая попытка регистрации на сервере
+      // Фоновая отправка на сервер (не блокирует пользователя)
       fetch(`${API_BASE}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(preparedUser)
-      }).catch(() => console.log('Server reg failed, local saved'));
+      }).catch(() => {});
 
       return { result: 'success', user: preparedUser };
     } catch (e: any) {
-      return { result: 'error', message: 'Ошибка БД: ' + e.message };
+      return { result: 'error', message: e.message };
     }
   },
 
   async login(credentials: any) {
+    if (!credentials.email) throw new Error('Введите email');
     const cleanEmail = credentials.email.toLowerCase().trim();
+    
     const user = await db.users.get(cleanEmail);
-    if (user && user.password === credentials.password) {
+    if (user && String(user.password) === String(credentials.password)) {
       return { ...user, isLoggedIn: true };
     }
     throw new Error('Неверный логин или пароль');
@@ -170,7 +174,7 @@ export const dbService = {
       await db.bids.put(bid);
       await db.auctions.update(auction.id, {
         currentBid: bid.amount,
-        bidsCount: auction.bidsCount + 1,
+        bidsCount: (auction.bidsCount || 0) + 1,
         topBidderId: bid.userId
       });
       return { result: 'success' };

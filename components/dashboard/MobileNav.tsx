@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { LayoutGrid, UserPlus, Briefcase, Calendar as CalendarIcon, Target, UserCircle, ShieldCheck } from 'lucide-react';
+import { LayoutGrid, UserPlus, Briefcase, Calendar as CalendarIcon, UserCircle, ShieldCheck } from 'lucide-react';
 import { AppTab, UserRole } from '../../types';
 
 interface MobileNavProps {
@@ -23,21 +22,23 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, u
   ];
 
   return (
-    <nav className="fixed bottom-6 left-6 right-6 h-20 bg-white/[0.08] backdrop-blur-3xl border border-white/20 z-[100] md:hidden flex items-center justify-around rounded-[32px] shadow-[0_25px_60px_rgba(0,0,0,0.7)] px-2">
+    <nav className="fixed bottom-0 left-0 right-0 h-20 bg-black/40 backdrop-blur-2xl border-t border-white/10 z-[100] md:hidden flex items-center justify-around px-2 pb-safe">
       {mobileNavItems.map((item) => {
         const isActive = activeTab === item.id;
         return (
           <button 
             key={item.id} 
             onClick={() => setActiveTab(item.id as any)} 
-            className={`flex flex-col items-center justify-center gap-1.5 flex-1 transition-all relative ${isActive ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
+            className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all relative ${isActive ? 'text-white' : 'text-white/40'}`}
           >
-            <item.icon size={18} className={`${isActive ? 'scale-110 opacity-100' : 'opacity-60'}`} />
-            <span className={`text-[6px] font-black uppercase tracking-widest transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1 h-0 overflow-hidden'}`}>
+            <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : ''}`}>
+              <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+            </div>
+            <span className={`text-[7px] font-black uppercase tracking-widest transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
               {item.label}
             </span>
             {isActive && (
-              <div className="w-1 h-1 rounded-full bg-white absolute -bottom-1 shadow-[0_0_8px_#ffffff] animate-in fade-in" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-[0_0_10px_#6366f1]" />
             )}
           </button>
         );

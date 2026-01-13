@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Mentor } from '../types';
 import { MapPin, Zap, User } from 'lucide-react';
@@ -30,9 +29,8 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
       tabIndex={0}
       onClick={() => onClick(mentor)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(mentor); }}
-      className="group relative h-[480px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-500 md:hover:shadow-[0_0_50px_rgba(79,70,229,0.15)] active:scale-[0.98] select-none touch-manipulation"
+      className="group relative h-[420px] md:h-[620px] rounded-[32px] md:rounded-[40px] overflow-hidden cursor-pointer bg-[#0a0a0b] border border-white/5 transition-all duration-500 md:hover:shadow-[0_0_50px_rgba(79,70,229,0.15)] active:scale-[0.98] select-none touch-manipulation"
     >
-      {/* Image with adaptive overlay */}
       <div className="absolute inset-0 pointer-events-none">
         {!imgError && photoUrl ? (
           <img 
@@ -43,17 +41,15 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-900/40 to-black flex items-center justify-center">
-            <User className="w-24 h-24 text-white/10" />
+            <User className="w-16 md:w-24 h-16 md:h-24 text-white/10" />
           </div>
         )}
-        {/* Subtle decorative bottom gradient only */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/80 via-transparent to-transparent" />
       </div>
 
-      {/* Top Tags */}
-      <div className="absolute top-5 inset-x-5 flex justify-between items-start z-10">
+      <div className="absolute top-4 md:top-5 inset-x-4 md:inset-x-5 flex justify-between items-start z-10">
         <div className="flex flex-col gap-1.5">
-          <div className="px-3 py-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[8px] font-black text-white uppercase tracking-widest">
+          <div className="px-2.5 py-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-[7px] md:text-[8px] font-black text-white uppercase tracking-widest">
              {(mentor.industry || 'Business').split(' / ')[0]}
           </div>
           <div className="flex items-center gap-1.5 px-1 py-1 text-white/40 text-[7px] font-bold uppercase tracking-widest">
@@ -63,30 +59,29 @@ export const MentorCard: React.FC<MentorCardProps> = ({ mentor, onClick }) => {
         </div>
       </div>
 
-      {/* Main Info */}
-      <div className="absolute inset-x-6 bottom-6 space-y-5 z-10 pointer-events-none">
-        <div className="space-y-2">
+      <div className="absolute inset-x-5 md:inset-x-6 bottom-5 md:bottom-6 space-y-4 md:space-y-5 z-10 pointer-events-none">
+        <div className="space-y-1 md:space-y-2">
           <div className="flex items-center gap-2 text-indigo-400">
-            <Zap className="w-3 h-3 fill-current" />
-            <span className="text-[8px] font-black uppercase tracking-[0.4em]">ТОП МЕНТОР</span>
+            <Zap className="w-2.5 h-2.5 md:w-3 md:h-3 fill-current" />
+            <span className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.4em]">ТОП МЕНТОР</span>
           </div>
-          <h3 className="text-3xl md:text-5xl font-black text-white leading-none tracking-tighter uppercase font-syne">
+          <h3 className="text-2xl md:text-5xl font-black text-white leading-none tracking-tighter uppercase font-syne">
             {mentor.name.split(' ')[0]}<br/>
             <span className="opacity-40">{mentor.name.split(' ').slice(1).join(' ')}</span>
           </h3>
         </div>
 
-        <div className="pt-5 border-t border-white/10 flex items-center justify-between">
+        <div className="pt-4 md:pt-5 border-t border-white/10 flex items-center justify-between">
            <div className="space-y-0.5">
-              <span className="text-[7px] font-bold text-white/30 uppercase tracking-widest">Энергообмен</span>
-              <p className="text-xl md:text-3xl font-black text-white tracking-tighter leading-none font-syne">
-                {mentor.groupPrice || mentor.singlePrice} <span className="text-xs font-bold text-white/40">₽</span>
+              <span className="text-[6px] md:text-[7px] font-bold text-white/30 uppercase tracking-widest">Энергообмен</span>
+              <p className="text-lg md:text-3xl font-black text-white tracking-tighter leading-none font-syne">
+                {mentor.groupPrice || mentor.singlePrice} <span className="text-[10px] md:text-xs font-bold text-white/40">₽</span>
               </p>
            </div>
            
            <div className="flex items-center gap-1.5 text-white/60">
-             <MapPin className="w-3 h-3" />
-             <span className="text-[9px] font-bold uppercase tracking-widest">{mentor.city || 'Планета'}</span>
+             <MapPin className="w-2.5 h-2.5 md:w-3 md:h-3" />
+             <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-widest">{mentor.city || 'Планета'}</span>
            </div>
         </div>
       </div>

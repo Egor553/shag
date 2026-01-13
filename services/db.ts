@@ -16,8 +16,7 @@ export class ShagDatabase extends Dexie {
   constructor() {
     super('ShagDatabase');
     
-    // Fix: Explicitly cast 'this' to 'Dexie' to resolve type inference issues where the inherited 'version' method was not found
-    (this as Dexie).version(8).stores({
+    (this as Dexie).version(10).stores({
       users: 'email, id, role, status',
       services: 'id, mentorId, category',
       bookings: 'id, mentorId, userEmail, status, date',
@@ -34,14 +33,16 @@ export const db = new ShagDatabase();
 
 export async function initDefaultData() {
   try {
-    const adminExists = await db.users.get('admin');
+    // 1. Всегда проверяем и создаем админа, если его нет
+    const adminEmail = 'admin';
+    const existingAdmin = await db.users.get(adminEmail);
     
-    if (!adminExists) {
-      console.log('[БД] Инициализация Главного Администратора...');
+    if (!existingAdmin) {
+      console.log('[БД] Создание Root Администратора...');
       await db.users.put({
         id: 'admin_root',
-        email: 'admin',
-        name: 'Главный Администратор',
+        email: adminEmail,
+        name: 'Администратор ШАГ',
         password: 'admin123',
         role: UserRole.ADMIN,
         isLoggedIn: false,
@@ -53,8 +54,10 @@ export async function initDefaultData() {
       });
     }
 
+    // 2. Инициализируем демо-менторов только если база пуста (кроме админа)
     const userCount = await db.users.count();
     if (userCount <= 1) {
+      console.log('[БД] Загрузка начальных менторов...');
       for (const mentor of MENTORS) {
         await db.users.put({
           ...mentor,

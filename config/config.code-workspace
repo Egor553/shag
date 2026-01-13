@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../hooks"
+		},
+		{
+			"path": "../services"
+		},
+		{
+			"path": "../api"
+		},
+		{
+			"path": "../components"
+		}
+	],
+	"settings": {}
+}
