@@ -14,50 +14,35 @@ export class ShagDatabase extends Dexie {
   bids!: Table<Bid>;
 
   constructor() {
-    super('ShagDatabase');
-    
-    (this as Dexie).version(10).stores({
-      users: 'email, id, role, status',
-      services: 'id, mentorId, category',
-      bookings: 'id, mentorId, userEmail, status, date',
-      jobs: 'id, mentorId, status',
-      transactions: 'id, userId, date',
-      messages: 'id, bookingId, timestamp',
-      auctions: 'id, mentorId, serviceId',
-      bids: 'id, auctionId, userId'
+    super('ShagDatabaseV2'); // Изменили имя базы на V2, чтобы избежать конфликтов со старой версией
+
+    this.version(1).stores({
+      users: 'email, id, role',
+      services: 'id, mentorId',
+      bookings: 'id, userEmail',
+      jobs: 'id',
+      transactions: 'id, userId',
+      messages: 'id, bookingId',
+      auctions: 'id',
+      bids: 'id, auctionId'
     });
   }
 }
 
 export const db = new ShagDatabase();
 
+// Глобальный перехват ошибок открытия БД
+db.on('versionchange', () => {
+  db.close();
+  window.location.reload();
+});
+
 export async function initDefaultData() {
   try {
-    // 1. Всегда проверяем и создаем админа, если его нет
-    const adminEmail = 'admin';
-    const existingAdmin = await db.users.get(adminEmail);
-    
-    if (!existingAdmin) {
-      console.log('[БД] Создание Root Администратора...');
-      await db.users.put({
-        id: 'admin_root',
-        email: adminEmail,
-        name: 'Администратор ШАГ',
-        password: 'admin123',
-        role: UserRole.ADMIN,
-        isLoggedIn: false,
-        status: 'active',
-        balance: 1000000,
-        direction: 'Управление платформой',
-        city: 'Москва',
-        createdAt: new Date().toISOString()
-      });
-    }
-
-    // 2. Инициализируем демо-менторов только если база пуста (кроме админа)
     const userCount = await db.users.count();
-    if (userCount <= 1) {
-      console.log('[БД] Загрузка начальных менторов...');
+    if (userCount === 0) {
+      console.log('[БД] Инициализация начальных данных...');
+      // Добавляем менторов как начальных пользователей
       for (const mentor of MENTORS) {
         await db.users.put({
           ...mentor,
@@ -65,12 +50,17 @@ export async function initDefaultData() {
           status: 'active',
           isLoggedIn: false,
           balance: 0,
-          paymentUrl: mentor.avatarUrl,
           createdAt: new Date().toISOString()
-        });
+        } as any);
       }
     }
   } catch (error) {
-    console.error('[БД] Ошибка инициализации:', error);
+    console.error('[БД] Ошибка:', error);
+    // Если критическая ошибка - пробуем удалить базу и перезагрузить
+    if (error.name === 'UpgradeError') {
+      await Dexie.delete('ShagDatabase');
+      await Dexie.delete('ShagDatabaseV2');
+      window.location.reload();
+    }
   }
 }
