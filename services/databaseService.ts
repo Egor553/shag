@@ -208,6 +208,34 @@ export const dbService = {
     }
   },
 
+  async saveReview(review: any): Promise<{ result: 'success' | 'error'; message?: string }> {
+    try {
+      await (db as any).reviews.put(review);
+      fetch(`${API_BASE}/api/save-review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      }).catch(console.error);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
+  },
+
+  async updateBookingStatus(id: string, status: string): Promise<{ result: 'success' | 'error'; message?: string }> {
+    try {
+      await db.bookings.update(id, { status: status as any });
+      fetch(`${API_BASE}/api/bookings/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      }).catch(console.error);
+      return { result: 'success' };
+    } catch (e: any) {
+      return { result: 'error', message: e.message };
+    }
+  },
+
   async deleteBooking(id: string) {
     await db.bookings.delete(id);
     return { result: 'success' };
@@ -236,5 +264,9 @@ export const dbService = {
   async getServices() { return db.services.toArray(); },
   async getBookings() { return db.bookings.toArray(); },
   async getJobs() { return db.jobs.toArray(); },
-  async getTransactions() { return db.transactions.toArray(); }
+  async getTransactions() { return db.transactions.toArray(); },
+  async getReviews(mentorId?: string) {
+    if (mentorId) return (db as any).reviews.where('mentorId').equals(mentorId).toArray();
+    return (db as any).reviews.toArray();
+  }
 };

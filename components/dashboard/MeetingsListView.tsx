@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
 import { Booking, UserSession, UserRole } from '../../types';
-import { 
-  Calendar as CalendarIcon, Clock, User, 
-  Zap, ArrowRightLeft, Target, Heart, RefreshCcw, XCircle, CreditCard, Trash2
+import {
+  Calendar as CalendarIcon, Clock, User,
+  Zap, ArrowRightLeft, Target, Heart, RefreshCcw, XCircle, CreditCard, Trash2,
+  Mail, Building, MapPin, TrendingUp, Key, Briefcase, Sparkles, ShieldCheck, Phone
 } from 'lucide-react';
 import { dbService } from '../../services/databaseService';
+import { ReviewModal } from './ReviewModal';
 
 interface MeetingsListViewProps {
   bookings: Booking[];
@@ -15,29 +17,30 @@ interface MeetingsListViewProps {
   onRefresh?: () => void;
 }
 
-export const MeetingsListView: React.FC<MeetingsListViewProps> = ({ 
-  bookings, 
-  session, 
-  onPay, 
+export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
+  bookings,
+  session,
+  onPay,
   onReschedule,
-  onRefresh 
+  onRefresh
 }) => {
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [selectedReviewBooking, setSelectedReviewBooking] = useState<Booking | null>(null);
   const isEnt = session.role === UserRole.ENTREPRENEUR;
   const isAdmin = session.role === UserRole.ADMIN;
-  
-  const myBookings = [...bookings].filter(b => 
+
+  const myBookings = [...bookings].filter(b =>
     isAdmin ? true :
-    isEnt ? (String(b.mentorId) === String(session.id) || String(b.mentorId).toLowerCase() === String(session.email).toLowerCase())
-          : (String(b.userEmail).toLowerCase() === String(session.email).toLowerCase())
+      isEnt ? (String(b.mentorId) === String(session.id) || String(b.mentorId).toLowerCase() === String(session.email).toLowerCase())
+        : (String(b.userEmail).toLowerCase() === String(session.email).toLowerCase())
   ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleCancel = async (booking: Booking) => {
-    if (isEnt && !isAdmin) return; 
+    if (isEnt && !isAdmin) return;
 
     const personName = booking.mentorName || 'ментора';
     if (!confirm(`Вы уверены, что хотите отменить запись к ${personName}?`)) return;
-    
+
     setIsProcessing(booking.id);
     try {
       const res = await dbService.cancelBooking(booking.id, isAdmin ? 'Отменено администратором' : 'Отменено ментором');
@@ -105,7 +108,7 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
             <span className="text-indigo-500 font-bold text-[9px] uppercase tracking-[0.4em]">Exchange Calendar</span>
           </div>
           <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-none uppercase font-syne">
-            {isEnt ? 'ВАШИ' : 'ТВОИ'}<br/>СОБЫТИЯ
+            {isEnt ? 'ВАШИ' : 'ТВОИ'}<br />СОБЫТИЯ
           </h1>
         </div>
         <button onClick={onRefresh} className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:text-white transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-white/5">
@@ -121,12 +124,12 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
           const isConfirmed = booking.status === 'confirmed';
 
           return (
-            <div 
-              key={booking.id} 
+            <div
+              key={booking.id}
               className={`relative bg-[#0d0d0e] border rounded-[40px] overflow-hidden transition-all duration-500 shadow-2xl ${isCancelled ? 'opacity-40 grayscale border-red-500/20' : 'border-white/5 hover:border-white/10'}`}
             >
               <div className="p-6 md:p-10 flex flex-col lg:flex-row gap-8 items-start">
-                
+
                 <div className="flex flex-row lg:flex-col items-center justify-center gap-4 p-6 bg-white/[0.03] rounded-[28px] border border-white/5 w-full lg:w-32 shrink-0">
                   <div className="text-center">
                     <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest block">{month}</span>
@@ -167,38 +170,38 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                     {(isEnt || isAdmin) && booking.goal && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-6 bg-indigo-500/5 rounded-3xl border border-white/5 space-y-3">
-                           <div className="flex items-center gap-2 text-indigo-400">
-                             <Target size={14} />
-                             <span className="text-[9px] font-black uppercase tracking-widest">Запрос ментора</span>
-                           </div>
-                           <p className="text-xs text-slate-300 font-medium leading-relaxed italic">«{booking.goal}»</p>
+                          <div className="flex items-center gap-2 text-indigo-400">
+                            <Target size={14} />
+                            <span className="text-[9px] font-black uppercase tracking-widest">Запрос ментора</span>
+                          </div>
+                          <p className="text-xs text-slate-300 font-medium leading-relaxed italic">«{booking.goal}»</p>
                         </div>
                         <div className="p-6 bg-emerald-500/5 rounded-3xl border border-white/5 space-y-3">
-                           <div className="flex items-center gap-2 text-emerald-400">
-                             <Heart size={14} />
-                             <span className="text-[9px] font-black uppercase tracking-widest">Энергообмен</span>
-                           </div>
-                           <p className="text-xs text-slate-300 font-medium leading-relaxed italic">«{booking.exchange || 'Готов быть полезным'}»</p>
+                          <div className="flex items-center gap-2 text-emerald-400">
+                            <Heart size={14} />
+                            <span className="text-[9px] font-black uppercase tracking-widest">Энергообмен</span>
+                          </div>
+                          <p className="text-xs text-slate-300 font-medium leading-relaxed italic">«{booking.exchange || 'Готов быть полезным'}»</p>
                         </div>
                       </div>
                     )}
 
                     {!isEnt && (
-                       <h4 className="text-lg font-bold text-slate-400 uppercase font-syne tracking-tight">«{booking.serviceTitle}»</h4>
+                      <h4 className="text-lg font-bold text-slate-400 uppercase font-syne tracking-tight">«{booking.serviceTitle}»</h4>
                     )}
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 w-full lg:w-48 shrink-0 justify-center">
                   {(isConfirmed || isAdmin) && !isPast && !isCancelled && (
-                    <button 
+                    <button
                       onClick={() => onReschedule && onReschedule(booking)}
                       className="w-full py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 transition-all border border-white/10 active:scale-95"
                     >
                       <ArrowRightLeft size={16} /> {isAdmin ? 'Перенести' : 'Перенести встречу'}
                     </button>
                   )}
-                  
+
                   {isConfirmed && !isPast && !isEnt && !isCancelled && (
                     <p className="text-[8px] font-bold text-amber-500/60 uppercase text-center px-4 tracking-widest">
                       Активные подтвержденные записи нельзя отменять самостоятельно
@@ -206,9 +209,9 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                   )}
 
                   {!isConfirmed && !isPast && !isCancelled && !isEnt && (
-                    <button 
+                    <button
                       disabled={!!isProcessing}
-                      onClick={() => handleCancel(booking)} 
+                      onClick={() => handleCancel(booking)}
                       className="w-full py-5 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-red-500/20 transition-all border border-red-500/10"
                     >
                       {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <XCircle size={16} />} Отменить
@@ -216,9 +219,9 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                   )}
 
                   {isAdmin && !isCancelled && (
-                    <button 
+                    <button
                       disabled={!!isProcessing}
-                      onClick={() => handleCancel(booking)} 
+                      onClick={() => handleCancel(booking)}
                       className="w-full py-5 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 shadow-lg"
                     >
                       {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <XCircle size={16} />} ROOT ОТМЕНА
@@ -226,7 +229,7 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                   )}
 
                   {(isPast || isCancelled) && (
-                    <button 
+                    <button
                       disabled={!!isProcessing}
                       onClick={() => handleDelete(booking)}
                       className="w-full py-5 bg-white/5 text-slate-400 rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-3 hover:bg-red-500/10 hover:text-red-500 transition-all"
@@ -234,10 +237,19 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                       {isProcessing === booking.id ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Trash2 size={16} />} Удалить из истории
                     </button>
                   )}
-                  
+
                   {!isEnt && booking.status === 'pending' && !isPast && !isCancelled && (
                     <button onClick={() => onPay(booking)} className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl flex items-center justify-center gap-3">
                       <CreditCard size={16} /> Оплатить ШАГ
+                    </button>
+                  )}
+
+                  {!isEnt && isPast && isConfirmed && booking.status !== 'completed' && (
+                    <button
+                      onClick={() => setSelectedReviewBooking(booking)}
+                      className="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl flex items-center justify-center gap-3 animate-pulse"
+                    >
+                      <Sparkles size={16} /> Оставить отзыв
                     </button>
                   )}
                 </div>
@@ -247,6 +259,15 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
           );
         })}
       </div>
+
+      {selectedReviewBooking && (
+        <ReviewModal
+          booking={selectedReviewBooking}
+          session={session}
+          onClose={() => setSelectedReviewBooking(null)}
+          onSuccess={() => onRefresh && onRefresh()}
+        />
+      )}
     </div>
   );
 };

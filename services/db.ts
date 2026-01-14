@@ -24,7 +24,8 @@ export class ShagDatabase extends Dexie {
       transactions: 'id, userId',
       messages: 'id, bookingId',
       auctions: 'id',
-      bids: 'id, auctionId'
+      bids: 'id, auctionId',
+      reviews: 'id, mentorId, userEmail'
     });
   }
 }

@@ -61,6 +61,17 @@ const initDB = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`);
 
+      await client.query(`CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        mentor_id TEXT NOT NULL,
+        user_email TEXT,
+        user_name TEXT,
+        rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        is_anonymous BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`);
+
       // Create Admin if not exists
       const adminCheck = await client.query("SELECT * FROM users WHERE email = $1", ['admin']);
       if (adminCheck.rows.length === 0) {
@@ -204,11 +215,47 @@ app.get('/api/sync', async (req, res) => {
     const users = await pool.query("SELECT * FROM users");
     const bookings = await pool.query("SELECT * FROM bookings");
     const transactions = await pool.query("SELECT * FROM transactions");
+    const reviews = await pool.query("SELECT * FROM reviews");
     res.json({
       users: users.rows,
       bookings: bookings.rows,
-      transactions: transactions.rows
+      transactions: transactions.rows,
+      reviews: reviews.rows
     });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- API Отзывов ---
+app.post('/api/save-review', async (req, res) => {
+  const { mentor_id, user_email, user_name, rating, comment, is_anonymous } = req.body;
+  try {
+    await pool.query(
+      "INSERT INTO reviews (mentor_id, user_email, user_name, rating, comment, is_anonymous) VALUES ($1, $2, $3, $4, $5, $6)",
+      [mentor_id, user_email, is_anonymous ? 'Аноним' : user_name, rating, comment, is_anonymous]
+    );
+    res.json({ result: 'success' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/reviews/:mentorId', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM reviews WHERE mentor_id = $1 ORDER BY created_at DESC", [req.params.mentorId]);
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// --- API Статуса Бронирования ---
+app.patch('/api/bookings/:id/status', async (req, res) => {
+  const { status } = req.body;
+  try {
+    await pool.query("UPDATE bookings SET status = $1 WHERE id = $2", [status, req.params.id]);
+    res.json({ result: 'success' });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

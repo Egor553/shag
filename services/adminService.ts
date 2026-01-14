@@ -9,14 +9,15 @@ export const adminService = {
   async getFullRegistry() {
     // Simulate network delay
     await new Promise(r => setTimeout(r, 500));
-    
+
     // Await database calls to ensure data is returned correctly
     return {
       users: await dbService.getUsers(),
       services: await dbService.getServices(),
       bookings: await dbService.getBookings(),
       jobs: await dbService.getJobs(),
-      transactions: await dbService.getTransactions()
+      transactions: await dbService.getTransactions(),
+      reviews: await dbService.getReviews()
     };
   },
 
