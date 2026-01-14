@@ -219,8 +219,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                       <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="px-10 py-6">
                           <div className="flex items-center gap-4">
-                            {m.avatar ? (
-                              <img src={m.avatar} className="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                            {m.avatarUrl ? (
+                              <img src={m.avatarUrl} className="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40">
                                 <User size={16} />

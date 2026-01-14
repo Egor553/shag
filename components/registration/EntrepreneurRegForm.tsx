@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Building, MapPin, TrendingUp, Clock, Key, User, Briefcase, Sparkles, Target, Calendar as CalendarIcon, Heart, ShieldCheck, Zap } from 'lucide-react';
+import { Mail, Building, MapPin, TrendingUp, Clock, Key, User, Briefcase, Sparkles, Target, Calendar as CalendarIcon, Heart, ShieldCheck, Zap, Phone } from 'lucide-react';
 import { SlotCalendar } from '../SlotCalendar';
 
 interface EntrepreneurRegFormProps {
@@ -81,6 +81,11 @@ export const EntrepreneurRegForm: React.FC<EntrepreneurRegFormProps> = ({ regSte
             <GeometricTextArea label="Запрос к менторам" icon={Target} placeholder="КОГО ВЫ ИЩЕТЕ ДЛЯ ЭНЕРГООБМЕНА?" value={regData.requestToYouth} onChange={(v: string) => setRegData({ ...regData, requestToYouth: v })} required />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-10">
+            <GeometricTextArea label="Опыт (Биография)" icon={PieChart} placeholder="РАССКАЖИТЕ О ВАШЕМ ПУТИ..." value={regData.experience} onChange={(v: string) => setRegData({ ...regData, experience: v })} required />
+            <GeometricTextArea label="О чем будем говорить" icon={Star} placeholder="В ЧЕМ ВЫ МОЖЕТЕ БЫТЬ ПОЛЕЗНЫ?" value={regData.description} onChange={(v: string) => setRegData({ ...regData, description: v })} required />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
             <GeometricInput label="Бизнес-клубы" icon={ShieldCheck} placeholder="РЕЗИДЕНТСТВО" value={regData.businessClubs} onChange={(v: string) => setRegData({ ...regData, businessClubs: v })} />
             <GeometricInput label="Лайфстайл / Спорт" icon={Heart} placeholder="ХОББИ И УВЛЕЧЕНИЯ" value={regData.lifestyle} onChange={(v: string) => setRegData({ ...regData, lifestyle: v })} />
@@ -90,19 +95,53 @@ export const EntrepreneurRegForm: React.FC<EntrepreneurRegFormProps> = ({ regSte
 
       {regStep === 3 && (
         <div className="space-y-6 md:space-y-12">
-          <div className="flex flex-col md:flex-row items-center gap-5 md:gap-8 bg-white/[0.04] p-6 md:p-8 rounded-tr-[32px] md:rounded-tr-[50px] rounded-bl-[32px] md:rounded-bl-[50px] border border-white/15 shadow-inner">
-            <div className="w-14 h-14 md:w-20 md:h-20 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-white shrink-0 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-              <Clock className="w-6 h-6 md:w-10 md:h-10" />
-            </div>
-            <div className="flex-1 space-y-1.5 md:space-y-4 w-full">
-              <label className="text-[9px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.4em]">Распределение_Ресурса</label>
-              <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
+            <div className="flex items-center gap-5 md:gap-8 bg-white/[0.04] p-6 md:p-8 rounded-2xl border border-white/15 shadow-inner">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-white/10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <Clock className="w-5 h-5 md:w-7 h-7" />
+              </div>
+              <div className="flex-1">
+                <label className="text-[7px] md:text-[9px] font-black text-white/50 uppercase tracking-[0.4em]">ЧАСОВ_МЕС</label>
                 <input
                   required
                   value={regData.timeLimit}
                   onChange={e => setRegData({ ...regData, timeLimit: e.target.value })}
-                  placeholder="ЧАСОВ / МЕС"
-                  className="w-full bg-transparent border-b border-white/20 py-2 md:py-4 text-2xl md:text-4xl font-black text-white outline-none focus:border-white transition-all font-syne"
+                  placeholder="0"
+                  className="w-full bg-transparent border-b border-white/20 py-1 text-xl md:text-2xl font-black text-white outline-none focus:border-white transition-all font-syne"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5 md:gap-8 bg-white/[0.04] p-6 md:p-8 rounded-2xl border border-white/15 shadow-inner">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-white/10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <Zap className="w-5 h-5 md:w-7 h-7" />
+              </div>
+              <div className="flex-1">
+                <label className="text-[7px] md:text-[9px] font-black text-white/50 uppercase tracking-[0.4em]">ЦЕНА_1_НА_1</label>
+                <input
+                  required
+                  type="number"
+                  value={regData.singlePrice}
+                  onChange={e => setRegData({ ...regData, singlePrice: Number(e.target.value) })}
+                  placeholder="0 ₽"
+                  className="w-full bg-transparent border-b border-white/20 py-1 text-xl md:text-2xl font-black text-white outline-none focus:border-white transition-all font-syne"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-5 md:gap-8 bg-white/[0.04] p-6 md:p-8 rounded-2xl border border-white/15 shadow-inner">
+              <div className="w-10 h-10 md:w-14 md:h-14 bg-white/10 rounded-xl flex items-center justify-center text-white shrink-0">
+                <Users className="w-5 h-5 md:w-7 h-7" />
+              </div>
+              <div className="flex-1">
+                <label className="text-[7px] md:text-[9px] font-black text-white/50 uppercase tracking-[0.4em]">ЦЕНА_ГРУППА</label>
+                <input
+                  required
+                  type="number"
+                  value={regData.groupPrice}
+                  onChange={e => setRegData({ ...regData, groupPrice: Number(e.target.value) })}
+                  placeholder="0 ₽"
+                  className="w-full bg-transparent border-b border-white/20 py-1 text-xl md:text-2xl font-black text-white outline-none focus:border-white transition-all font-syne"
                 />
               </div>
             </div>

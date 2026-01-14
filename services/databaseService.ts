@@ -182,7 +182,7 @@ export const dbService = {
   },
 
   async updateAvatar(email: string, url: string): Promise<{ result: 'success' | 'error'; message?: string }> {
-    return this.updateProfile(email, { paymentUrl: url });
+    return this.updateProfile(email, { avatarUrl: url });
   },
 
   async addTransaction(tx: Transaction) {

@@ -38,8 +38,49 @@ const initDB = async () => {
         password TEXT NOT NULL,
         name TEXT,
         role TEXT DEFAULT 'user',
+        city TEXT,
+        phone TEXT,
+        birth_date TEXT,
+        company_name TEXT,
+        turnover TEXT,
+        direction TEXT,
+        qualities TEXT,
+        request_to_youth TEXT,
+        focus_goal TEXT,
+        expectations TEXT,
+        mutual_help TEXT,
+        time_limit TEXT,
+        slots TEXT,
+        business_clubs TEXT,
+        lifestyle TEXT,
+        status TEXT DEFAULT 'active',
+        experience TEXT,
+        description TEXT,
+        achievements TEXT,
+        single_price REAL DEFAULT 0,
+        group_price REAL DEFAULT 0,
+        avatar_url TEXT,
+        video_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`);
+
+      // Добавляем недостающие колонки если таблица уже создана
+      const columns = [
+        ['city', 'TEXT'], ['phone', 'TEXT'], ['birth_date', 'TEXT'],
+        ['company_name', 'TEXT'], ['turnover', 'TEXT'], ['direction', 'TEXT'],
+        ['qualities', 'TEXT'], ['request_to_youth', 'TEXT'], ['focus_goal', 'TEXT'],
+        ['expectations', 'TEXT'], ['mutual_help', 'TEXT'], ['time_limit', 'TEXT'],
+        ['slots', 'TEXT'], ['business_clubs', 'TEXT'], ['lifestyle', 'TEXT'],
+        ['status', 'TEXT'], ['experience', 'TEXT'], ['description', 'TEXT'],
+        ['achievements', 'TEXT'], ['single_price', 'REAL'], ['group_price', 'REAL'],
+        ['avatar_url', 'TEXT'], ['video_url', 'TEXT']
+      ];
+
+      for (const [col, type] of columns) {
+        try {
+          await client.query(`ALTER TABLE users ADD COLUMN ${col} ${type}`);
+        } catch (e) { /* Игнорируем если колонка уже есть */ }
+      }
 
       await client.query(`CREATE TABLE IF NOT EXISTS bookings (
         id SERIAL PRIMARY KEY,
@@ -95,6 +136,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(__dirname));
 
+// Helper for mapping snake_case from DB to camelCase for Frontend
+const toCamel = (obj) => {
+  if (!obj) return obj;
+  const newObj = {};
+  for (const key in obj) {
+    const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+    newObj[camelKey] = obj[key];
+  }
+  return newObj;
+};
+
 // --- API Пользователей ---
 
 // Логин
@@ -113,7 +165,7 @@ const handleLogin = async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM users WHERE email = $1 AND password = $2", [email, password]);
     if (result.rows.length > 0) {
-      res.json({ result: 'success', user: result.rows[0] });
+      res.json({ result: 'success', user: toCamel(result.rows[0]) });
     } else {
       res.status(401).json({ result: 'error', message: 'Неверный логин или пароль' });
     }
@@ -129,18 +181,41 @@ app.post('/api/вход-всистему', handleLogin); // Алиас без д
 
 // Регистрация
 const handleRegister = async (req, res) => {
-  const { email, password, name } = req.body;
+  const {
+    email, password, name, role, city, phone, birthDate,
+    companyName, turnover, direction, qualities, requestToYouth,
+    focusGoal, expectations, mutualHelp, timeLimit, slots,
+    businessClubs, lifestyle, status, experience, description,
+    achievements, singlePrice, groupPrice, avatarUrl, videoUrl
+  } = req.body;
+
   try {
     const check = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     if (check.rows.length > 0) {
       return res.status(400).json({ result: 'error', message: 'Пользователь уже существует' });
     }
+
     const insert = await pool.query(
-      "INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, 'user') RETURNING *",
-      [email, password, name]
+      `INSERT INTO users (
+        email, password, name, role, city, phone, birth_date,
+        company_name, turnover, direction, qualities, request_to_youth,
+        focus_goal, expectations, mutual_help, time_limit, slots,
+        business_clubs, lifestyle, status, experience, description,
+        achievements, single_price, group_price, avatar_url, video_url
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27) 
+      RETURNING *`,
+      [
+        email, password, name, role || 'user', city, phone, birthDate,
+        companyName, turnover, direction, qualities, requestToYouth,
+        focusGoal, expectations, mutualHelp, timeLimit, slots,
+        businessClubs, lifestyle, status || 'active', experience, description,
+        Array.isArray(achievements) ? JSON.stringify(achievements) : achievements,
+        singlePrice || 0, groupPrice || 0, avatarUrl, videoUrl
+      ]
     );
-    res.json({ result: 'success', user: insert.rows[0] });
+    res.json({ result: 'success', user: toCamel(insert.rows[0]) });
   } catch (e) {
+    console.error('Registration error:', e);
     res.status(500).json({ error: e.message });
   }
 };
@@ -217,10 +292,10 @@ app.get('/api/sync', async (req, res) => {
     const transactions = await pool.query("SELECT * FROM transactions");
     const reviews = await pool.query("SELECT * FROM reviews");
     res.json({
-      users: users.rows,
-      bookings: bookings.rows,
-      transactions: transactions.rows,
-      reviews: reviews.rows
+      users: users.rows.map(toCamel),
+      bookings: bookings.rows.map(toCamel),
+      transactions: transactions.rows.map(toCamel),
+      reviews: reviews.rows.map(toCamel)
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
