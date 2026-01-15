@@ -1,5 +1,4 @@
-import React from 'react';
-import { LayoutGrid, UserPlus, Briefcase, Calendar as CalendarIcon, UserCircle, ShieldCheck } from 'lucide-react';
+import { LayoutGrid, UserPlus, Briefcase, Calendar as CalendarIcon, UserCircle, ShieldCheck, Info } from 'lucide-react';
 import { AppTab, UserRole } from '../../types';
 
 interface MobileNavProps {
@@ -14,6 +13,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, u
 
   const mobileNavItems = [
     { id: AppTab.CATALOG, icon: LayoutGrid, label: 'ШАГи' },
+    { id: AppTab.MISSION, icon: Info, label: 'О нас' },
     ...((isEnt || isAdmin) ? [{ id: AppTab.SERVICES, icon: UserPlus, label: 'Витрина' }] : []),
     { id: AppTab.JOBS, icon: Briefcase, label: 'Миссии' },
     { id: AppTab.MEETINGS, icon: CalendarIcon, label: 'События' },
@@ -26,9 +26,9 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, u
       {mobileNavItems.map((item) => {
         const isActive = activeTab === item.id;
         return (
-          <button 
-            key={item.id} 
-            onClick={() => setActiveTab(item.id as any)} 
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id as any)}
             className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all relative ${isActive ? 'text-white' : 'text-white/40'}`}
           >
             <div className={`p-2 rounded-xl transition-all duration-300 ${isActive ? 'bg-white/10 scale-110 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : ''}`}>

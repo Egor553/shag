@@ -55,14 +55,14 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-8">
-          <div className="bg-[#0a0a0b] p-8 md:p-14 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
+          <div className="bg-[#0a0a0b] p-5 md:p-14 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden">
             <div className="flex flex-col md:flex-row items-center gap-10 mb-14 pb-12 border-b border-white/5">
               <div className="relative group shrink-0">
-                <div className="w-44 h-44 bg-slate-900 rounded-[52px] overflow-hidden border-4 border-white/5 shadow-2xl relative">
+                <div className="w-32 h-32 md:w-44 md:h-44 bg-slate-900 rounded-[52px] overflow-hidden border-4 border-white/5 shadow-2xl relative">
                   {session?.avatarUrl ? (
                     <img src={session.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white text-7xl font-black font-syne">
+                    <div className="w-full h-full flex items-center justify-center text-white text-6xl md:text-7xl font-black font-syne">
                       {session?.name ? session.name[0] : 'U'}
                     </div>
                   )}
@@ -120,7 +120,7 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
             </div>
           </div>
 
-          <div className="bg-violet-600 p-8 md:p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
+          <div className="bg-violet-600 p-6 md:p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
             <Sparkles className="absolute top-0 right-0 p-8 opacity-10 w-40 h-40 group-hover:scale-110 transition-transform" />
             <h4 className="text-3xl font-black font-syne relative z-10">Твой успех</h4>
             <p className="font-medium text-violet-100 text-lg relative z-10">Выбирай участников, учись у лучших и становись частью сильного сообщества!</p>

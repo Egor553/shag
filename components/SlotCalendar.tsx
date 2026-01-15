@@ -34,7 +34,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
   const isSelected = (date: string) => !!selectedSlots[date];
 
   return (
-    <div className="bg-white/[0.03] p-6 md:p-10 rounded-tr-[50px] rounded-bl-[50px] border border-white/10 relative overflow-hidden backdrop-blur-2xl">
+    <div className="bg-white/[0.03] p-5 md:p-10 rounded-tr-[50px] rounded-bl-[50px] border border-white/10 relative overflow-hidden backdrop-blur-2xl">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 p-8 opacity-[0.03] -rotate-12"><CalendarIcon size={160} /></div>
 
@@ -48,7 +48,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
           <button type="button" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} className="p-3 hover:bg-white/10 rounded-xl text-white/40 hover:text-white transition-all"><ChevronRight className="w-5 h-5" /></button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-7 gap-1 md:gap-3 mb-10 relative z-10">
         {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => <div key={d} className="text-center text-[10px] font-black text-white/40 uppercase tracking-widest py-3">{d}</div>)}
         {Array.from({ length: startOffset }).map((_, i) => <div key={`off-${i}`} className="p-2" />)}
@@ -57,7 +57,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
           const dateStr = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${day}`;
           const active = isSelected(dateStr);
           const current = selectedDate === dateStr;
-          
+
           return (
             <button
               key={day}
@@ -79,10 +79,10 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-500 relative z-10 pt-10 border-t border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-               <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]" />
-               <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] flex items-center gap-2">
-                 ДОСТУПНЫЕ_СЛОТЫ
-               </p>
+              <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]" />
+              <p className="text-[10px] font-black text-white uppercase tracking-[0.4em] flex items-center gap-2">
+                ДОСТУПНЫЕ_СЛОТЫ
+              </p>
             </div>
             <span className="text-[11px] font-black text-black bg-white px-5 py-2 rounded-full border border-white tracking-widest">{selectedDate.split('-').reverse().join('.')}</span>
           </div>
@@ -94,7 +94,7 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
                   key={time}
                   type="button"
                   onClick={() => toggleSlot(selectedDate, time)}
-                  className={`px-5 py-5 rounded-2xl text-[12px] font-black transition-all border flex items-center justify-center gap-3
+                  className={`p-3 md:p-5 rounded-2xl text-[12px] font-black transition-all border flex items-center justify-center gap-3
                     ${active ? `bg-white text-black border-white shadow-xl` : 'border-white/10 bg-white/5 text-white/40 hover:border-white/30 hover:text-white'}
                   `}
                 >
@@ -107,8 +107,8 @@ export const SlotCalendar: React.FC<SlotCalendarProps> = ({ selectedSlots, onCha
         </div>
       ) : (
         <div className="py-14 text-center border-t border-white/10 mt-6 flex flex-col items-center gap-5 group">
-           <Zap className="w-10 h-10 text-white opacity-20 group-hover:opacity-60 transition-opacity" />
-           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em]">Выберите дату для настройки ресурсов</p>
+          <Zap className="w-10 h-10 text-white opacity-20 group-hover:opacity-60 transition-opacity" />
+          <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em]">Выберите дату для настройки ресурсов</p>
         </div>
       )}
     </div>

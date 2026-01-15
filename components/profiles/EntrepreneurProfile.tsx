@@ -93,14 +93,14 @@ export const EntrepreneurProfile: React.FC<EntrepreneurProfileProps> = ({
       {activeSubTab === 'profile' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
           <div className="lg:col-span-2 space-y-8 md:space-y-10">
-            <div className="bg-[#0a0a0b] p-6 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 shadow-3xl relative overflow-hidden">
-              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-10 md:mb-16 pb-10 md:pb-14 border-b border-white/10">
+            <div className="bg-[#0a0a0b] p-5 md:p-16 rounded-[40px] md:rounded-[64px] border border-white/10 shadow-3xl relative overflow-hidden">
+              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-8 md:mb-16 pb-10 md:pb-14 border-b border-white/10">
                 <div className="relative group shrink-0">
-                  <div className="w-32 h-32 md:w-48 md:h-48 bg-[#1d2127] rounded-[40px] md:rounded-[56px] overflow-hidden border-2 md:border-4 border-white/10 shadow-2xl relative transition-transform hover:scale-105 duration-500">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 bg-[#1d2127] rounded-[32px] md:rounded-[56px] overflow-hidden border-2 md:border-4 border-white/10 shadow-2xl relative transition-transform hover:scale-105 duration-500">
                     {session?.avatarUrl ? (
                       <img src={session.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white text-5xl md:text-8xl font-black font-syne">
+                      <div className="w-full h-full flex items-center justify-center text-white text-4xl md:text-8xl font-black font-syne">
                         {session?.name ? session.name[0] : 'U'}
                       </div>
                     )}

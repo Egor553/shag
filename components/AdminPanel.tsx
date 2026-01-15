@@ -147,43 +147,43 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 
       {activeView === 'stats' && (
         <div className="space-y-10 animate-in fade-in duration-500">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             <AdminStatCard label="Всего участников" value={registry.users.length} icon={Users} />
             <AdminStatCard label="Активные ШАГи" value={registry.services.length} icon={Layers} />
             <AdminStatCard label="Бизнес-миссии" value={registry.jobs.length} icon={Briefcase} />
             <AdminStatCard label="Общий Оборот" value={totalRevenue} icon={TrendingUp} highlight suffix="₽" />
           </div>
 
-          <div className="bg-[#0a0a0b] rounded-[48px] border border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-              <h3 className="text-2xl font-black text-white uppercase font-syne">Последние транзакции</h3>
-              <TrendingUp className="text-indigo-500" />
+          <div className="bg-[#0a0a0b] rounded-[32px] md:rounded-[48px] border border-white/5 overflow-hidden shadow-2xl">
+            <div className="p-5 md:p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+              <h3 className="text-lg md:text-2xl font-black text-white uppercase font-syne">Последние транзакции</h3>
+              <TrendingUp className="text-indigo-500 w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-white/[0.01]">
-                    <th className="px-4 md:px-10 py-4 md:py-6">Дата</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6">Сумма</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6">Статус</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6">Описание</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Дата</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Сумма</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Статус</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Описание</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {registry.transactions.slice(0, 10).map((tx, i) => (
                     <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-4 md:px-10 py-4 md:py-6 text-xs text-white/60 font-medium">
+                      <td className="px-4 md:px-8 py-3 md:py-6 text-xs text-white/60 font-medium">
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
-                      <td className="px-4 md:px-10 py-4 md:py-6 text-sm font-black text-white uppercase">
+                      <td className="px-4 md:px-8 py-3 md:py-6 text-sm font-black text-white uppercase">
                         {tx.amount.toLocaleString()} ₽
                       </td>
-                      <td className="px-4 md:px-10 py-4 md:py-6">
-                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
+                      <td className="px-4 md:px-8 py-3 md:py-6">
+                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                           {tx.status}
                         </span>
                       </td>
-                      <td className="px-4 md:px-10 py-4 md:py-6 text-xs text-slate-500 italic">
+                      <td className="px-4 md:px-8 py-3 md:py-6 text-xs text-slate-500 italic">
                         {tx.description}
                       </td>
                     </tr>
@@ -196,19 +196,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
       )}
       {activeView === 'mentors' && (
         <div className="space-y-10 animate-in fade-in duration-500">
-          <div className="bg-[#0a0a0b] rounded-[48px] border border-white/5 overflow-hidden shadow-2xl">
-            <div className="p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-              <h3 className="text-2xl font-black text-white uppercase font-syne">Рейтинги Менторов</h3>
-              <Heart className="text-indigo-500" />
+          <div className="bg-[#0a0a0b] rounded-[32px] md:rounded-[48px] border border-white/5 overflow-hidden shadow-2xl">
+            <div className="p-5 md:p-10 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
+              <h3 className="text-lg md:text-2xl font-black text-white uppercase font-syne">Рейтинги Менторов</h3>
+              <Heart className="text-indigo-500 w-5 h-5 md:w-6 md:h-6" />
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-white/[0.01]">
-                    <th className="px-4 md:px-10 py-4 md:py-6">Ментор</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6">Специализация</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6 text-center">Рейтинг</th>
-                    <th className="px-4 md:px-10 py-4 md:py-6">Отзывы</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Ментор</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Специализация</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6 text-center">Рейтинг</th>
+                    <th className="px-4 md:px-8 py-3 md:py-6">Отзывы</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -217,36 +217,36 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                     const mentorReviews = registry.reviews?.filter(r => r.mentor_id === m.email || r.mentorId === m.email) || [];
                     return (
                       <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-4 md:px-10 py-4 md:py-6">
-                          <div className="flex items-center gap-4">
+                        <td className="px-4 md:px-8 py-3 md:py-6">
+                          <div className="flex items-center gap-3 md:gap-4">
                             {m.avatarUrl ? (
-                              <img src={m.avatarUrl} className="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                              <img src={m.avatarUrl} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40">
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40">
                                 <User size={16} />
                               </div>
                             )}
                             <div className="space-y-0.5">
-                              <p className="text-sm font-black text-white uppercase">{m.name}</p>
+                              <p className="text-xs md:text-sm font-black text-white uppercase">{m.name}</p>
                               <p className="text-[10px] text-slate-500 font-medium">{m.email}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 md:px-10 py-4 md:py-6">
-                          <span className="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-white/60 uppercase tracking-widest">
+                        <td className="px-4 md:px-8 py-3 md:py-6">
+                          <span className="px-2 py-1 md:px-3 bg-white/5 rounded-lg text-[8px] md:text-[9px] font-black text-white/60 uppercase tracking-widest whitespace-nowrap">
                             {m.direction || '—'}
                           </span>
                         </td>
-                        <td className="px-4 md:px-10 py-4 md:py-6 text-center">
+                        <td className="px-4 md:px-8 py-3 md:py-6 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <span className={`text-lg font-black ${Number(rating) >= 4.5 ? 'text-amber-400' : 'text-white'}`}>
+                            <span className={`text-sm md:text-lg font-black ${Number(rating) >= 4.5 ? 'text-amber-400' : 'text-white'}`}>
                               {Number(rating) > 0 ? rating : 'NEW'}
                             </span>
                             {Number(rating) > 0 && <Star size={14} className="text-amber-400 fill-amber-400" />}
                           </div>
                         </td>
-                        <td className="px-4 md:px-10 py-4 md:py-6">
-                          <p className="text-xs text-slate-500 italic truncate max-w-xs">
+                        <td className="px-4 md:px-8 py-3 md:py-6">
+                          <p className="text-xs text-slate-500 italic truncate max-w-[150px] md:max-w-xs">
                             {mentorReviews.length > 0
                               ? `"${mentorReviews[0].comment}"`
                               : 'Нет отзывов'}
@@ -276,9 +276,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 
       {inspectingUser && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-3xl">
-          <div className="w-full max-w-5xl h-[90vh] bg-[#1a1d23] rounded-[64px] border border-white/10 shadow-3xl overflow-y-auto no-scrollbar relative p-6 md:p-20">
-            <button onClick={() => setInspectingUser(null)} className="absolute top-6 right-6 md:top-10 md:right-10 p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all">
-              <X size={32} />
+          <div className="w-full max-w-5xl h-[85vh] md:h-[90vh] bg-[#1a1d23] rounded-[32px] md:rounded-[64px] border border-white/10 shadow-3xl overflow-y-auto no-scrollbar relative p-4 md:p-20">
+            <button onClick={() => setInspectingUser(null)} className="absolute top-4 right-4 md:top-10 md:right-10 p-3 md:p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all z-20">
+              <X className="w-5 h-5 md:w-8 md:h-8" />
             </button>
 
             {inspectingUser.role === UserRole.ENTREPRENEUR ? (
@@ -304,16 +304,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
               />
             )}
 
-            <div className="sticky bottom-0 mt-20 pt-10 border-t border-white/10 bg-[#1a1d23] flex gap-6">
+            <div className="sticky bottom-0 mt-10 md:mt-20 pt-6 md:pt-10 border-t border-white/10 bg-[#1a1d23] flex flex-col md:flex-row gap-4 md:gap-6 z-10 pb-2">
               <button
                 onClick={() => { handleModeration(inspectingUser, 'active'); setInspectingUser(null); }}
-                className="flex-1 bg-emerald-600 text-white py-6 rounded-[32px] font-black uppercase text-sm tracking-widest shadow-2xl"
+                className="flex-1 bg-emerald-600 text-white py-4 md:py-6 rounded-[24px] md:rounded-[32px] font-black uppercase text-xs md:text-sm tracking-widest shadow-2xl active:scale-95 transition-all"
               >
                 Одобрить анкету
               </button>
               <button
                 onClick={() => { handleModeration(inspectingUser, 'rejected'); setInspectingUser(null); }}
-                className="flex-1 bg-red-600 text-white py-6 rounded-[32px] font-black uppercase text-sm tracking-widest"
+                className="flex-1 bg-red-600 text-white py-4 md:py-6 rounded-[24px] md:rounded-[32px] font-black uppercase text-xs md:text-sm tracking-widest active:scale-95 transition-all"
               >
                 Отклонить
               </button>
