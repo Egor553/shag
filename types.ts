@@ -58,7 +58,7 @@ export interface UserSession {
   paymentUrl?: string;
   rating?: number;
   reviewsCount?: number;
-  favorites?: string[]; 
+  favorites?: string[];
   qualities?: string;
   requestToYouth?: string;
   videoUrl?: string;
@@ -74,8 +74,8 @@ export interface UserSession {
   createdAt?: string;
   ownerEmail?: string;
   balance?: number;
-  lastMonthlyUpdate?: string; 
-  lastWeeklyUpdate?: string; 
+  lastMonthlyUpdate?: string;
+  lastWeeklyUpdate?: string;
 }
 
 export interface Booking {
@@ -93,6 +93,7 @@ export interface Booking {
   price?: number;
   serviceId?: string;
   serviceTitle?: string;
+  telegramUsername?: string;
 }
 
 export interface Mentor extends UserSession {
@@ -102,7 +103,7 @@ export interface Mentor extends UserSession {
   achievements?: string[];
   singlePrice: number;
   groupPrice: number;
-  avatarUrl: string; 
+  avatarUrl: string;
 }
 
 export interface Service {
@@ -127,10 +128,10 @@ export interface Job {
   id: string;
   mentorId: string;
   mentorName: string;
-  telegram?: string; 
+  telegram?: string;
   title: string;
   description: string;
-  reward: string; 
+  reward: string;
   category: string;
   deadline?: string;
   status: 'active' | 'closed';

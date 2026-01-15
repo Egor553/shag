@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Mentor, MeetingFormat, Service, Booking, UserSession } from '../types';
-import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle, Eye, Loader2 } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Clock, CreditCard, Users as UsersIcon, User, ArrowRight, ShieldCheck, Zap, Sparkles, RefreshCw, AlertCircle, Eye, Loader2, CheckCircle } from 'lucide-react';
 import { PaymentStub } from './payment/PaymentStub';
 import { dbService } from '../services/databaseService';
 
 interface BookingModalProps {
   mentor: Mentor;
   service?: Service;
-  bookings: Booking[]; 
+  bookings: Booking[];
   session: UserSession;
   existingBooking?: Booking;
   onClose: () => void;
@@ -26,18 +26,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [telegramUsername, setTelegramUsername] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const isRescheduleMode = existingBooking?.status === 'confirmed';
   const isOwner = session.email === (mentor.ownerEmail || mentor.email);
 
   const getPrice = () => {
     if (existingBooking) return existingBooking.price || 0;
     if (service) {
-      return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE) 
-        ? (service.groupPrice || service.price) 
+      return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE)
+        ? (service.groupPrice || service.price)
         : service.price;
     }
-    return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE) 
-      ? mentor.groupPrice 
+    return (format === MeetingFormat.GROUP_OFFLINE || format === MeetingFormat.GROUP_ONLINE)
+      ? mentor.groupPrice
       : mentor.singlePrice;
   };
 
@@ -82,12 +85,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
         date: selectedDate || '',
         time: selectedSlot,
         price: getPrice(),
-        status: 'confirmed'
+        status: 'confirmed',
+        telegramUsername: telegramUsername
       };
 
       const res = await dbService.saveBooking(bookingData);
       if (res.result === 'success') {
-        onComplete(bookingData);
+        setShowSuccess(true);
       } else {
         // Fix: Ensure message property is handled safely
         alert('Ошибка сохранения записи: ' + (res.message || 'произошла непредвиденная ошибка'));
@@ -99,24 +103,49 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
     }
   };
 
+  const handleFinalClose = () => {
+    onComplete({});
+  };
+
   const slotsSource = service?.slots || mentor.slots || '{}';
   const availableSlots = typeof slotsSource === 'string' ? JSON.parse(slotsSource) : slotsSource;
+
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-sm">
+        <div className="bg-white w-full max-w-md rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-500 p-10 text-center space-y-8">
+          <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-700">
+            <CheckCircle className="w-12 h-12 text-white" />
+          </div>
+          <div className="space-y-4">
+            <h2 className="text-3xl font-black text-slate-900 uppercase font-syne leading-none">УСПЕШНО!</h2>
+            <p className="text-slate-500 text-sm font-medium leading-relaxed">
+              С вами скоро свяжется организатор по вашему юзернейму <span className="text-indigo-600 font-bold">@{telegramUsername}</span>, который вы оставили, и сообщит детали встречи.
+            </p>
+          </div>
+          <button onClick={handleFinalClose} className="w-full bg-[#5c56f2] text-white py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:scale-105 transition-all">
+            ОТЛИЧНО
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-0 md:p-6 bg-slate-950/90 backdrop-blur-sm">
       <div className="bg-white w-full h-full md:h-auto md:max-w-md md:rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-300 flex flex-col">
-        
+
         {/* Close Button */}
         <button onClick={onClose} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all z-20">
           <X className="w-5 h-5 text-slate-400" />
         </button>
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-8 md:p-10">
-          
+
           {/* Header Area */}
           <div className="flex items-center gap-5 mb-8 pt-4">
             <div className="w-14 h-14 bg-[#5c56f2] rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
-               {showPayment ? <CreditCard className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
+              {showPayment ? <CreditCard className="w-6 h-6 text-white" /> : <User className="w-6 h-6 text-white" />}
             </div>
             <div>
               <h2 className="text-xl md:text-2xl font-black text-slate-900 leading-[1.1] uppercase font-syne tracking-tight">
@@ -150,8 +179,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                   <div className="space-y-5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ФОРМАТ УЧАСТИЯ</label>
                     <div className="space-y-3">
-                      <button 
-                        onClick={() => setFormat(MeetingFormat.ONLINE_1_ON_1)} 
+                      <button
+                        onClick={() => setFormat(MeetingFormat.ONLINE_1_ON_1)}
                         className={`w-full p-4 md:p-5 rounded-[28px] border-2 transition-all flex items-center justify-between group ${format === MeetingFormat.ONLINE_1_ON_1 ? 'border-[#5c56f2] bg-white shadow-xl' : 'border-slate-50 bg-slate-50/50'}`}
                       >
                         <div className="flex items-center gap-4">
@@ -161,14 +190,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                           <p className={`font-black text-[10px] md:text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-400'}`}>Индивидуально</p>
                         </div>
                         <div className="text-right flex items-baseline gap-1 shrink-0">
-                           <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-300'}`}>{service?.price || mentor.singlePrice}</p>
-                           <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]/60' : 'text-slate-200'}`}>₽</p>
+                          <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]' : 'text-slate-300'}`}>{service?.price || mentor.singlePrice}</p>
+                          <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.ONLINE_1_ON_1 ? 'text-[#5c56f2]/60' : 'text-slate-200'}`}>₽</p>
                         </div>
                       </button>
 
                       {((service?.groupPrice || mentor.groupPrice || 0) > 0) && (
-                        <button 
-                          onClick={() => setFormat(MeetingFormat.GROUP_OFFLINE)} 
+                        <button
+                          onClick={() => setFormat(MeetingFormat.GROUP_OFFLINE)}
                           className={`w-full p-4 md:p-5 rounded-[28px] border-2 transition-all flex items-center justify-between group ${format === MeetingFormat.GROUP_OFFLINE ? 'border-emerald-500 bg-white shadow-xl' : 'border-slate-50 bg-slate-50/50'}`}
                         >
                           <div className="flex items-center gap-4">
@@ -178,10 +207,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                             <p className={`font-black text-[10px] md:text-[11px] uppercase tracking-tight transition-colors ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-600' : 'text-slate-400'}`}>Групповая встреча</p>
                           </div>
                           <div className="text-right flex items-baseline gap-1 shrink-0">
-                             <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500' : 'text-slate-300'}`}>{service?.groupPrice || mentor.groupPrice}</p>
-                             <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500/60' : 'text-slate-200'}`}>₽</p>
-                        </div>
-                      </button>
+                            <p className={`text-lg md:text-xl font-black font-syne leading-none ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500' : 'text-slate-300'}`}>{service?.groupPrice || mentor.groupPrice}</p>
+                            <p className={`text-[9px] font-bold uppercase ${format === MeetingFormat.GROUP_OFFLINE ? 'text-emerald-500/60' : 'text-slate-200'}`}>₽</p>
+                          </div>
+                        </button>
                       )}
                     </div>
                   </div>
@@ -190,24 +219,36 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
 
               {step === 2 && (
                 <div className="space-y-6 animate-in slide-in-from-right-4">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ВАШ ЗАПРОС</label>
-                  <textarea 
-                    value={goal} 
-                    onChange={(e) => setGoal(e.target.value)} 
-                    placeholder="В чем именно тебе нужна помощь наставника?" 
-                    className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-40 text-sm font-bold transition-all text-slate-900 resize-none" 
-                  />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ВАШ ТЕЛЕГРАМ (Без @)</label>
+                    <input
+                      type="text"
+                      value={telegramUsername}
+                      onChange={(e) => setTelegramUsername(e.target.value.replace(/@/g, ''))}
+                      placeholder="username"
+                      className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none text-sm font-bold transition-all text-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ВАШ ЗАПРОС</label>
+                    <textarea
+                      value={goal}
+                      onChange={(e) => setGoal(e.target.value)}
+                      placeholder="В чем именно тебе нужна помощь наставника?"
+                      className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-32 text-sm font-bold transition-all text-slate-900 resize-none"
+                    />
+                  </div>
                 </div>
               )}
 
               {step === 3 && (
                 <div className="space-y-6 animate-in slide-in-from-right-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ВАШ ВКЛАД</label>
-                  <textarea 
-                    value={exchange} 
-                    onChange={(e) => setExchange(e.target.value)} 
-                    placeholder="Чем ты можешь быть полезен ментору?" 
-                    className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-40 text-sm font-bold transition-all text-slate-900 resize-none" 
+                  <textarea
+                    value={exchange}
+                    onChange={(e) => setExchange(e.target.value)}
+                    placeholder="Чем ты можешь быть полезен ментору?"
+                    className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-40 text-sm font-bold transition-all text-slate-900 resize-none"
                   />
                 </div>
               )}
@@ -217,21 +258,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                   <div className="space-y-4">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">ДОСТУПНЫЕ ДАТЫ</label>
                     <div className="flex flex-wrap gap-2">
-                        {Object.keys(availableSlots).length > 0 ? Object.keys(availableSlots).map(date => (
-                          <button key={date} onClick={() => { setSelectedDate(date); setSelectedSlot(''); }} className={`px-5 py-3 rounded-xl border-2 font-black text-[9px] uppercase tracking-widest transition-all ${selectedDate === date ? 'border-[#5c56f2] bg-[#5c56f2] text-white' : 'border-slate-50 text-slate-600'}`}>
-                            {date.split('-').reverse().slice(0, 2).join('.')}
-                          </button>
-                        )) : (
-                          <p className="p-2 text-slate-400 text-[10px] font-bold uppercase italic">Нет свободных окон</p>
-                        )}
+                      {Object.keys(availableSlots).length > 0 ? Object.keys(availableSlots).map(date => (
+                        <button key={date} onClick={() => { setSelectedDate(date); setSelectedSlot(''); }} className={`px-5 py-3 rounded-xl border-2 font-black text-[9px] uppercase tracking-widest transition-all ${selectedDate === date ? 'border-[#5c56f2] bg-[#5c56f2] text-white' : 'border-slate-50 text-slate-600'}`}>
+                          {date.split('-').reverse().slice(0, 2).join('.')}
+                        </button>
+                      )) : (
+                        <p className="p-2 text-slate-400 text-[10px] font-bold uppercase italic">Нет свободных окон</p>
+                      )}
                     </div>
                   </div>
                   {selectedDate && availableSlots[selectedDate] && (
                     <div className="space-y-4 animate-in fade-in">
                       <div className="grid grid-cols-3 gap-2">
-                          {availableSlots[selectedDate].map((slot: string) => (
-                            <button key={slot} onClick={() => setSelectedSlot(slot)} className={`p-4 rounded-xl border-2 font-black text-[11px] transition-all ${selectedSlot === slot ? 'border-[#5c56f2] bg-[#5c56f2]/5 text-[#5c56f2]' : 'border-slate-50 text-slate-600'}`}>{slot}</button>
-                          ))}
+                        {availableSlots[selectedDate].map((slot: string) => (
+                          <button key={slot} onClick={() => setSelectedSlot(slot)} className={`p-4 rounded-xl border-2 font-black text-[11px] transition-all ${selectedSlot === slot ? 'border-[#5c56f2] bg-[#5c56f2]/5 text-[#5c56f2]' : 'border-slate-50 text-slate-600'}`}>{slot}</button>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -240,9 +281,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
 
               {/* Action Button */}
               <div className="pt-6">
-                <button 
-                  disabled={(step === 2 && !goal) || (step === 3 && !exchange) || (step === 4 && !selectedSlot) || isRescheduling} 
-                  onClick={handleAction} 
+                <button
+                  disabled={(step === 2 && (!goal || !telegramUsername)) || (step === 3 && !exchange) || (step === 4 && !selectedSlot) || isRescheduling}
+                  onClick={handleAction}
                   className="w-full bg-[#5c56f2] text-white py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl flex items-center justify-center gap-4 active:scale-95 disabled:opacity-30 transition-all"
                 >
                   {isRescheduling ? <Loader2 className="w-5 h-5 animate-spin" /> : (
@@ -255,11 +296,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
               </div>
             </div>
           ) : (
-            <PaymentStub 
-              amount={getPrice()} 
-              title={existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'} 
-              onSuccess={handlePaySuccess} 
-              onCancel={() => existingBooking ? onClose() : setShowPayment(false)} 
+            <PaymentStub
+              amount={getPrice()}
+              title={existingBooking?.serviceTitle || service?.title || 'Персональный ШАГ'}
+              onSuccess={handlePaySuccess}
+              onCancel={() => existingBooking ? onClose() : setShowPayment(false)}
               bookingId={existingBooking?.id}
             />
           )}

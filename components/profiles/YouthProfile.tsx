@@ -101,16 +101,16 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
             </div>
 
             <div className="mt-16 flex justify-end">
-              <button onClick={onSaveProfile} disabled={isSavingProfile} className="bg-white text-black px-12 py-6 rounded-[24px] font-black uppercase text-xs tracking-widest flex items-center gap-3">
+              <button onClick={onSaveProfile} disabled={isSavingProfile} className="w-full md:w-auto bg-white text-black px-8 md:px-12 py-6 rounded-[24px] font-black uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl">
                 {isSavingProfile ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                Обновить
+                ОБНОВИТЬ
               </button>
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-[#0a0a0b] p-8 rounded-[40px] border border-white/5 flex items-center gap-5">
+          <div className="bg-[#0a0a0b] p-6 md:p-8 rounded-[40px] border border-white/5 flex items-center gap-5 shadow-xl">
             <div className="w-12 h-12 bg-violet-600/10 rounded-2xl flex items-center justify-center text-violet-400">
               <Clock size={24} />
             </div>
@@ -120,11 +120,11 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
             </div>
           </div>
 
-          <div className="bg-violet-600 p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
+          <div className="bg-violet-600 p-8 md:p-10 rounded-[48px] shadow-3xl text-white space-y-8 relative overflow-hidden h-fit group">
             <Sparkles className="absolute top-0 right-0 p-8 opacity-10 w-40 h-40 group-hover:scale-110 transition-transform" />
-            <h4 className="text-3xl font-black font-syne">Твой успех</h4>
-            <p className="font-medium text-violet-100 text-lg">Выбирай участников, учись у лучших и становись частью сильного сообщества!</p>
-            <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10">Найти участника</button>
+            <h4 className="text-3xl font-black font-syne relative z-10">Твой успех</h4>
+            <p className="font-medium text-violet-100 text-lg relative z-10">Выбирай участников, учись у лучших и становись частью сильного сообщества!</p>
+            <button onClick={onCatalogClick} className="w-full bg-white text-violet-600 py-6 rounded-[24px] font-black uppercase text-sm tracking-widest shadow-2xl relative z-10 hover:scale-[1.02] active:scale-95 transition-all">Найти участника</button>
           </div>
         </div>
       </div>
@@ -134,9 +134,9 @@ export const YouthProfile: React.FC<YouthProfileProps> = ({
 
 const YouthField = ({ label, icon: Icon, value, onChange }: any) => (
   <div className="space-y-3">
-    <label className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest font-syne">
-      <Icon className="w-3 h-3" /> {label}
+    <label className="flex items-center gap-2 text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest font-syne">
+      <Icon className="w-3.5 md:w-4 h-3.5 md:h-4" /> {label}
     </label>
-    <input value={value} onChange={e => onChange(e.target.value)} className="w-full bg-white/5 p-5 rounded-2xl text-white font-bold outline-none focus:border-violet-500 border border-transparent transition-all" />
+    <input value={value} onChange={e => onChange(e.target.value)} className="w-full bg-white/5 p-4 md:p-6 rounded-2xl text-white font-bold text-sm md:text-base outline-none focus:border-violet-500 border border-transparent transition-all shadow-inner" />
   </div>
 );

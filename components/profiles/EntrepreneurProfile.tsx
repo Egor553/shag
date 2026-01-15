@@ -252,7 +252,7 @@ const QuickStat = ({ label, value, icon: Icon }: any) => (
       <Icon size={20} className="md:w-6 md:h-6" />
     </div>
     <div>
-      <p className="text-[7px] md:text-[9px] font-black text-white/40 uppercase tracking-[0.3em] mb-0.5 md:mb-1">{label}</p>
+      <p className="text-[9px] md:text-[11px] font-black text-white/40 uppercase tracking-[0.3em] mb-0.5 md:mb-1">{label}</p>
       <p className="text-xl md:text-3xl font-black text-white font-syne tracking-tighter">{value}</p>
     </div>
   </div>
@@ -260,8 +260,8 @@ const QuickStat = ({ label, value, icon: Icon }: any) => (
 
 const ProfileField = ({ label, icon: Icon, value, onChange }: any) => (
   <div className="space-y-2 md:space-y-4">
-    <label className="flex items-center gap-2 md:gap-3 text-[8px] md:text-[10px] font-black text-white/50 uppercase tracking-[0.5em] font-syne">
-      <Icon className="w-3 md:w-3.5 h-3 md:h-3.5" /> {label}
+    <label className="flex items-center gap-2 md:gap-3 text-[10px] md:text-[12px] font-black text-white/50 uppercase tracking-[0.5em] font-syne">
+      <Icon className="w-3.5 md:w-4 h-3.5 md:h-4" /> {label}
     </label>
     <input
       value={value}

@@ -163,27 +163,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-white/[0.01]">
-                    <th className="px-10 py-6">Дата</th>
-                    <th className="px-10 py-6">Сумма</th>
-                    <th className="px-10 py-6">Статус</th>
-                    <th className="px-10 py-6">Описание</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Дата</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Сумма</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Статус</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Описание</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {registry.transactions.slice(0, 10).map((tx, i) => (
                     <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                      <td className="px-10 py-6 text-xs text-white/60 font-medium">
+                      <td className="px-4 md:px-10 py-4 md:py-6 text-xs text-white/60 font-medium">
                         {new Date(tx.date).toLocaleDateString()}
                       </td>
-                      <td className="px-10 py-6 text-sm font-black text-white uppercase">
+                      <td className="px-4 md:px-10 py-4 md:py-6 text-sm font-black text-white uppercase">
                         {tx.amount.toLocaleString()} ₽
                       </td>
-                      <td className="px-10 py-6">
+                      <td className="px-4 md:px-10 py-4 md:py-6">
                         <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                           {tx.status}
                         </span>
                       </td>
-                      <td className="px-10 py-6 text-xs text-slate-500 italic">
+                      <td className="px-4 md:px-10 py-4 md:py-6 text-xs text-slate-500 italic">
                         {tx.description}
                       </td>
                     </tr>
@@ -205,10 +205,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-white/[0.01]">
-                    <th className="px-10 py-6">Ментор</th>
-                    <th className="px-10 py-6">Специализация</th>
-                    <th className="px-10 py-6 text-center">Рейтинг</th>
-                    <th className="px-10 py-6">Отзывы</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Ментор</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Специализация</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6 text-center">Рейтинг</th>
+                    <th className="px-4 md:px-10 py-4 md:py-6">Отзывы</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -217,7 +217,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                     const mentorReviews = registry.reviews?.filter(r => r.mentor_id === m.email || r.mentorId === m.email) || [];
                     return (
                       <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-10 py-6">
+                        <td className="px-4 md:px-10 py-4 md:py-6">
                           <div className="flex items-center gap-4">
                             {m.avatarUrl ? (
                               <img src={m.avatarUrl} className="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" />
@@ -232,12 +232,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                             </div>
                           </div>
                         </td>
-                        <td className="px-10 py-6">
+                        <td className="px-4 md:px-10 py-4 md:py-6">
                           <span className="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-white/60 uppercase tracking-widest">
                             {m.direction || '—'}
                           </span>
                         </td>
-                        <td className="px-10 py-6 text-center">
+                        <td className="px-4 md:px-10 py-4 md:py-6 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <span className={`text-lg font-black ${Number(rating) >= 4.5 ? 'text-amber-400' : 'text-white'}`}>
                               {Number(rating) > 0 ? rating : 'NEW'}
@@ -245,7 +245,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
                             {Number(rating) > 0 && <Star size={14} className="text-amber-400 fill-amber-400" />}
                           </div>
                         </td>
-                        <td className="px-10 py-6">
+                        <td className="px-4 md:px-10 py-4 md:py-6">
                           <p className="text-xs text-slate-500 italic truncate max-w-xs">
                             {mentorReviews.length > 0
                               ? `"${mentorReviews[0].comment}"`
@@ -276,8 +276,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout, session }) => 
 
       {inspectingUser && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-3xl">
-          <div className="w-full max-w-5xl h-[90vh] bg-[#1a1d23] rounded-[64px] border border-white/10 shadow-3xl overflow-y-auto no-scrollbar relative p-10 md:p-20">
-            <button onClick={() => setInspectingUser(null)} className="absolute top-10 right-10 p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all">
+          <div className="w-full max-w-5xl h-[90vh] bg-[#1a1d23] rounded-[64px] border border-white/10 shadow-3xl overflow-y-auto no-scrollbar relative p-6 md:p-20">
+            <button onClick={() => setInspectingUser(null)} className="absolute top-6 right-6 md:top-10 md:right-10 p-4 bg-white/5 rounded-full text-slate-500 hover:text-white transition-all">
               <X size={32} />
             </button>
 

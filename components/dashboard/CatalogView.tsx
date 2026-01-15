@@ -20,7 +20,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
 
   useEffect(() => {
     const total = bookings.filter(b => b.status === 'confirmed').reduce((acc, b) => acc + (b.price || 0), 0);
-    setPulseValue(total + 2450000); 
+    setPulseValue(total + 2450000);
   }, [bookings]);
 
   const filteredServices = services.filter(s => activeCategory === 'Все' || s.category === activeCategory);
@@ -31,11 +31,11 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
         <div className="flex flex-col lg:flex-row gap-12 lg:items-end justify-between border-b border-white/5 pb-16">
           <div className="space-y-8 max-w-4xl">
             <div className="flex items-center gap-4 text-white/40">
-               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-               <span className="text-[10px] font-black uppercase tracking-[0.5em]">ПУЛЬС_ПЛАТФОРМЫ_LIVE</span>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em]">ПУЛЬС_ПЛАТФОРМЫ_LIVE</span>
             </div>
             <h1 className="text-[10vw] md:text-[8rem] font-black text-white tracking-tighter leading-[0.8] uppercase font-syne">
-              ВИТРИНА<br/>
+              ВИТРИНА<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-white to-violet-500 italic">ОПЫТА</span>
             </h1>
             <p className="text-slate-500 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
@@ -44,7 +44,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
           </div>
 
           <div className="flex flex-col gap-6 lg:mb-4">
-            <button 
+            <button
               onClick={() => setShowAIModal(true)}
               className="group relative p-8 bg-indigo-600 rounded-[40px] shadow-2xl overflow-hidden hover:scale-105 transition-all duration-500"
             >
@@ -58,14 +58,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
             </button>
 
             <div className="p-8 md:p-10 bg-white/[0.03] border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-4 min-w-[300px]">
-               <div className="flex justify-between items-start relative z-10">
-                  <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Объем энергообмена</p>
-                  <Activity className="w-4 h-4 text-indigo-500" />
-               </div>
-               <div className="flex items-baseline gap-2 relative z-10">
-                  <span className="text-5xl font-black text-white font-syne tracking-tighter">{pulseValue.toLocaleString()}</span>
-                  <span className="text-lg font-bold text-white/30">₽</span>
-               </div>
+              <div className="flex justify-between items-start relative z-10">
+                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Объем энергообмена</p>
+                <Activity className="w-4 h-4 text-indigo-500" />
+              </div>
+              <div className="flex items-baseline gap-2 relative z-10">
+                <span className="text-5xl font-black text-white font-syne tracking-tighter">{pulseValue.toLocaleString()}</span>
+                <span className="text-lg font-bold text-white/30">₽</span>
+              </div>
             </div>
           </div>
         </div>
@@ -77,11 +77,10 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${
-                activeCategory === cat 
-                ? 'bg-white text-black border-white' 
+              className={`px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${activeCategory === cat
+                ? 'bg-white text-black border-white'
                 : 'bg-white/5 text-white/40 border-white/5 hover:border-white/20'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -91,29 +90,32 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
 
       <div className="space-y-12">
         <div className="flex items-center gap-4">
-           <Layers className="text-indigo-500" />
-           <h2 className="text-3xl font-black text-white uppercase font-syne tracking-tight">ДОСТУПНЫЕ ШАГИ</h2>
+          <Layers className="text-indigo-500" />
+          <h2 className="text-3xl font-black text-white uppercase font-syne tracking-tight">ДОСТУПНЫЕ ШАГИ</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-14">
           {filteredServices.length > 0 ? (
-            filteredServices.map((service) => (
-              <div key={service.id} className="animate-in slide-in-from-bottom-8 duration-700">
-                <ServiceCard service={service} onClick={() => onServiceClick(service)} />
-              </div>
-            ))
+            filteredServices.map((service) => {
+              const mentor = mentors.find(m => m.id === service.mentorId);
+              return (
+                <div key={service.id} className="animate-in slide-in-from-bottom-8 duration-700">
+                  <ServiceCard service={service} mentorName={mentor?.name} onClick={() => onServiceClick(service)} />
+                </div>
+              );
+            })
           ) : (
             <div className="col-span-full py-32 flex flex-col items-center justify-center text-center space-y-6 opacity-20">
-               <Layers className="w-16 h-16" />
-               <p className="text-[10px] font-black uppercase tracking-[0.5em]">В этой категории еще нет предложений</p>
+              <Layers className="w-16 h-16" />
+              <p className="text-[10px] font-black uppercase tracking-[0.5em]">В этой категории еще нет предложений</p>
             </div>
           )}
         </div>
       </div>
 
       {showAIModal && (
-        <AISearchModal 
-          mentors={mentors} 
-          onClose={() => setShowAIModal(false)} 
+        <AISearchModal
+          mentors={mentors}
+          onClose={() => setShowAIModal(false)}
           onSelectMentor={(mentor) => {
             const firstService = services.find(s => String(s.mentorId) === String(mentor.id) || String(s.mentorId).toLowerCase() === String(mentor.email).toLowerCase());
             if (firstService) onServiceClick(firstService);

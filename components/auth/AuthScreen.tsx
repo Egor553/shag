@@ -89,36 +89,36 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   }
 
   return (
-    <div className="text-center space-y-12 animate-in fade-in duration-1000">
-      <div className="relative inline-block">
-        <h1 className="text-7xl md:text-[10rem] font-black text-white tracking-tighter uppercase font-syne leading-none">ШАГ</h1>
-        <div className="absolute -top-4 -right-4 bg-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl">Бета</div>
+    <div className="text-center space-y-8 md:space-y-12 animate-in fade-in duration-1000 px-4">
+      <div className="relative inline-block mt-8 md:mt-0">
+        <h1 className="text-6xl sm:text-8xl md:text-[10rem] font-black text-white tracking-tighter uppercase font-syne leading-none">ШАГ</h1>
+        <div className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-indigo-600 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest shadow-2xl">Бета</div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl px-4">
-        <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="p-8 md:p-12 bg-[#2d323c] border border-white/5 rounded-[40px] hover:border-indigo-600 transition-all text-left space-y-6 group relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-            <Zap size={120} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl mx-auto">
+        <button onClick={() => { setTempRole(UserRole.ENTREPRENEUR); setAuthMode('register'); setRegStep(1); }} className="p-6 sm:p-8 md:p-12 bg-[#2d323c] border border-white/5 rounded-[32px] md:rounded-[40px] hover:border-indigo-600 transition-all text-left space-y-4 md:space-y-6 group relative overflow-hidden active:scale-95 duration-200">
+          <div className="absolute top-0 right-0 p-6 md:p-8 opacity-5 group-hover:scale-110 transition-transform">
+            <Zap size={80} className="md:w-[120px] md:h-[120px]" />
           </div>
-          <Zap className="text-indigo-600 w-10 h-10 group-hover:scale-110 transition-transform relative z-10" />
+          <Zap className="text-indigo-600 w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform relative z-10" />
           <div className="relative z-10">
-            <h3 className="text-2xl font-black text-white font-syne uppercase">ПРЕДПРИНИМАТЕЛЬ</h3>
-            <p className="text-slate-400 text-sm mt-1">Делитесь опытом и нанимайте таланты</p>
+            <h3 className="text-xl md:text-2xl font-black text-white font-syne uppercase">ПРЕДПРИНИМАТЕЛЬ</h3>
+            <p className="text-slate-400 text-xs md:text-sm mt-1 leading-relaxed">Делитесь опытом и нанимайте таланты</p>
           </div>
         </button>
-        <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="p-8 md:p-12 bg-[#2d323c] border border-white/5 rounded-[40px] hover:border-violet-500 transition-all text-left space-y-6 group relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-            <Star size={120} />
+        <button onClick={() => { setTempRole(UserRole.YOUTH); setAuthMode('register'); setRegStep(1); }} className="p-6 sm:p-8 md:p-12 bg-[#2d323c] border border-white/5 rounded-[32px] md:rounded-[40px] hover:border-violet-500 transition-all text-left space-y-4 md:space-y-6 group relative overflow-hidden active:scale-95 duration-200">
+          <div className="absolute top-0 right-0 p-6 md:p-8 opacity-5 group-hover:scale-110 transition-transform">
+            <Star size={80} className="md:w-[120px] md:h-[120px]" />
           </div>
-          <Star className="text-violet-500 w-10 h-10 group-hover:scale-110 transition-transform relative z-10" />
+          <Star className="text-violet-500 w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform relative z-10" />
           <div className="relative z-10">
-            <h3 className="text-2xl font-black text-white font-syne uppercase">УЧАСТНИК</h3>
-            <p className="text-slate-400 text-sm mt-1">Найдите наставника и работу мечты</p>
+            <h3 className="text-xl md:text-2xl font-black text-white font-syne uppercase">УЧАСТНИК</h3>
+            <p className="text-slate-400 text-xs md:text-sm mt-1 leading-relaxed">Найдите наставника и работу мечты</p>
           </div>
         </button>
       </div>
-      <div className="flex flex-col items-center gap-6">
-        <button onClick={() => setAuthMode('login')} className="text-white border-2 border-white/20 hover:border-indigo-500 uppercase tracking-[0.4em] font-black text-[11px] py-6 px-12 rounded-full transition-all hover:bg-white/5">Уже в ШАГе? Войти</button>
-        <button onClick={() => setAuthMode('login')} className="flex items-center gap-2 text-slate-600 hover:text-indigo-400 transition-all font-black uppercase text-[9px] tracking-[0.3em]"><Lock size={12} /> Вход для персонала</button>
+      <div className="flex flex-col items-center gap-4 md:gap-6 pb-8">
+        <button onClick={() => setAuthMode('login')} className="w-full sm:w-auto text-white border-2 border-white/20 hover:border-indigo-500 uppercase tracking-[0.3em] md:tracking-[0.4em] font-black text-[10px] md:text-[11px] py-5 md:py-6 px-8 md:px-12 rounded-full transition-all hover:bg-white/5 active:scale-95">Уже в ШАГе? Войти</button>
+        <button onClick={() => setAuthMode('login')} className="flex items-center gap-2 text-slate-600 hover:text-indigo-400 transition-all font-black uppercase text-[8px] md:text-[9px] tracking-[0.3em] py-2"><Lock size={12} /> Вход для персонала</button>
       </div>
     </div>
   );

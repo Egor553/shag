@@ -164,6 +164,13 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
                       <div>
                         <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">{isEnt ? 'Ментор' : 'Участник'}</p>
                         <h3 className="text-2xl font-black text-white uppercase font-syne">{isEnt ? booking.userName : (booking.mentorName || 'Ментор')}</h3>
+                        {isEnt && booking.telegramUsername && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-bold text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded cursor-pointer hover:bg-indigo-400/20 transition-colors" title="Telegram username">
+                              @{booking.telegramUsername.replace('@', '')}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
