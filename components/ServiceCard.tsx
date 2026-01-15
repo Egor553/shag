@@ -21,7 +21,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, mentorName, o
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') onClick(service);
       }}
-      className="group relative bg-[#0d0d0f] rounded-[48px] border border-white/5 overflow-hidden cursor-pointer hover:border-indigo-500/30 active:scale-[0.98] transition-all duration-300 flex flex-col h-[520px] shadow-2xl select-none touch-manipulation"
+      className="group relative bg-[#0d0d0f] rounded-[48px] border border-white/5 overflow-hidden cursor-pointer hover:border-indigo-500/30 active:scale-[0.98] transition-all duration-300 flex flex-col h-[420px] md:h-[520px] shadow-2xl select-none touch-manipulation"
     >
       {/* Media Header (Charity Lot Style) */}
       <div className="h-2/3 relative overflow-hidden shrink-0 pointer-events-none">
@@ -33,7 +33,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, mentorName, o
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#1a1d23] to-black flex items-center justify-center">
-            <span className="text-white/5 font-black text-6xl font-syne tracking-tighter uppercase">ЛОТ</span>
+            <span className="text-white/5 font-black text-4xl md:text-6xl font-syne tracking-tighter uppercase">ЛОТ</span>
           </div>
         )}
 
@@ -63,7 +63,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, mentorName, o
       </div>
 
       {/* Content Body */}
-      <div className="p-8 md:p-10 flex flex-col justify-between flex-1">
+      <div className="p-6 md:p-10 flex flex-col justify-between flex-1">
         <div className="space-y-3 md:space-y-4">
           <h3 className="text-xl md:text-2xl font-black text-white leading-[1.1] uppercase font-syne tracking-tight md:group-hover:text-indigo-400 transition-colors">
             {service.title}
@@ -77,7 +77,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({ service, mentorName, o
           <div className="space-y-1">
             <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest block">Энергообмен</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl md:text-3xl font-black text-white font-syne tracking-tighter">{service.price.toLocaleString()}</span>
+              <span className="text-xl md:text-3xl font-black text-white font-syne tracking-tighter">{service.price.toLocaleString()}</span>
               <span className="text-xs font-bold text-white/20 uppercase">₽</span>
             </div>
           </div>

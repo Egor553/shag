@@ -10,13 +10,13 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfileClick, onHomeClick }) => {
   return (
     <header className="sticky top-0 z-[60] bg-[#0a0a0b]/80 backdrop-blur-xl border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
-        <div 
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between">
+        <div
           className="flex items-center gap-4 cursor-pointer group"
           onClick={onHomeClick}
         >
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center overflow-hidden">
-             <img src="https://s5.iimage.su/s/01/uK0lK8nxZppHltfQVmPpMgi2r1MXOiTdLgwF9qev.png" className="w-7 h-7 object-contain" alt="ШАГ" />
+            <img src="https://s5.iimage.su/s/01/uK0lK8nxZppHltfQVmPpMgi2r1MXOiTdLgwF9qev.png" className="w-7 h-7 object-contain" alt="ШАГ" />
           </div>
           <div className="flex flex-col">
             <span className="text-2xl font-black tracking-tight text-white font-syne uppercase leading-none">ШАГ</span>
@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onHomeClick }) =
           <button className="p-3 text-white/20 hover:text-white transition-all">
             <Bell className="w-5 h-5" />
           </button>
-          <button 
+          <button
             onClick={onProfileClick}
             className="flex items-center gap-3 pl-2 pr-6 py-2 rounded-full bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
           >

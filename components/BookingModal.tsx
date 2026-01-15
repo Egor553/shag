@@ -113,7 +113,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
   if (showSuccess) {
     return (
       <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-sm">
-        <div className="bg-white w-full max-w-md rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-500 p-10 text-center space-y-8">
+        <div className="bg-white w-full max-w-md rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-500 p-6 md:p-10 text-center space-y-8">
           <button onClick={handleFinalClose} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all z-20">
             <X className="w-5 h-5 text-slate-400" />
           </button>
@@ -126,7 +126,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
               Ваш заказ успешно оплачен. С вами скоро свяжется организатор по вашему юзернейму <span className="text-indigo-600 font-bold">@{telegramUsername}</span> и сообщит детали встречи.
             </p>
           </div>
-          <button onClick={handleFinalClose} className="w-full bg-[#5c56f2] text-white py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:scale-105 transition-all">
+          <button onClick={handleFinalClose} className="w-full bg-[#5c56f2] text-white py-5 md:py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:scale-105 transition-all">
             ВЕРНУТЬСЯ
           </button>
         </div>
@@ -143,7 +143,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
           <X className="w-5 h-5 text-slate-400" />
         </button>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar p-8 md:p-10">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-5 md:p-10">
 
           {/* Header Area */}
           <div className="flex items-center gap-5 mb-8 pt-4">
@@ -229,7 +229,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                       value={telegramUsername}
                       onChange={(e) => setTelegramUsername(e.target.value.replace(/@/g, ''))}
                       placeholder="username"
-                      className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none text-sm font-bold transition-all text-slate-900"
+                      className="w-full p-4 md:p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none text-sm font-bold transition-all text-slate-900"
                     />
                   </div>
                   <div className="space-y-2">
@@ -238,7 +238,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       placeholder="В чем именно тебе нужна помощь наставника?"
-                      className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-32 text-sm font-bold transition-all text-slate-900 resize-none"
+                      className="w-full p-4 md:p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-32 text-sm font-bold transition-all text-slate-900 resize-none"
                     />
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
                     value={exchange}
                     onChange={(e) => setExchange(e.target.value)}
                     placeholder="Чем ты можешь быть полезен ментору?"
-                    className="w-full p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-40 text-sm font-bold transition-all text-slate-900 resize-none"
+                    className="w-full p-4 md:p-6 rounded-[28px] border-2 border-slate-50 focus:border-[#5c56f2] bg-slate-50/30 outline-none h-40 text-sm font-bold transition-all text-slate-900 resize-none"
                   />
                 </div>
               )}
