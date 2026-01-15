@@ -46,7 +46,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
           <div className="flex flex-col gap-6 lg:mb-4">
             <button
               onClick={() => setShowAIModal(true)}
-              className="group relative p-8 bg-indigo-600 rounded-[40px] shadow-2xl overflow-hidden hover:scale-105 transition-all duration-500"
+              className="group relative p-6 md:p-8 bg-indigo-600 rounded-[40px] shadow-2xl overflow-hidden hover:scale-105 transition-all duration-500 w-full"
             >
               <div className="relative z-10 flex flex-col items-start gap-4 text-left">
                 <Sparkles className="w-8 h-8 text-white" />
@@ -57,13 +57,13 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
               </div>
             </button>
 
-            <div className="p-8 md:p-10 bg-white/[0.03] border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-4 min-w-[300px]">
+            <div className="p-6 md:p-10 bg-white/[0.03] border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-4 w-full">
               <div className="flex justify-between items-start relative z-10">
                 <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Объем энергообмена</p>
                 <Activity className="w-4 h-4 text-indigo-500" />
               </div>
               <div className="flex items-baseline gap-2 relative z-10">
-                <span className="text-5xl font-black text-white font-syne tracking-tighter">{pulseValue.toLocaleString()}</span>
+                <span className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-syne tracking-tighter break-all">{pulseValue.toLocaleString()}</span>
                 <span className="text-lg font-bold text-white/30">₽</span>
               </div>
             </div>

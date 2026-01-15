@@ -114,17 +114,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({ mentor, service, boo
     return (
       <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-950/90 backdrop-blur-sm">
         <div className="bg-white w-full max-w-md rounded-[48px] shadow-3xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-500 p-10 text-center space-y-8">
+          <button onClick={handleFinalClose} className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-all z-20">
+            <X className="w-5 h-5 text-slate-400" />
+          </button>
           <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-700">
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
           <div className="space-y-4">
-            <h2 className="text-3xl font-black text-slate-900 uppercase font-syne leading-none">УСПЕШНО!</h2>
+            <h2 className="text-3xl font-black text-slate-900 uppercase font-syne leading-none">СДЕЛКА СОЗДАНА!</h2>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">
-              С вами скоро свяжется организатор по вашему юзернейму <span className="text-indigo-600 font-bold">@{telegramUsername}</span>, который вы оставили, и сообщит детали встречи.
+              Ваш заказ успешно оплачен. С вами скоро свяжется организатор по вашему юзернейму <span className="text-indigo-600 font-bold">@{telegramUsername}</span> и сообщит детали встречи.
             </p>
           </div>
           <button onClick={handleFinalClose} className="w-full bg-[#5c56f2] text-white py-6 rounded-[28px] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:scale-105 transition-all">
-            ОТЛИЧНО
+            ВЕРНУТЬСЯ
           </button>
         </div>
       </div>
