@@ -26,7 +26,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
   const filteredServices = services.filter(s => activeCategory === 'Все' || s.category === activeCategory);
 
   return (
-    <div className="space-y-16 md:space-y-24 animate-in fade-in duration-1000 pb-32">
+    <div className="space-y-10 md:space-y-24 animate-in fade-in duration-1000 pb-32">
       <div className="relative pt-6">
         <div className="flex flex-col lg:flex-row gap-12 lg:items-end justify-between border-b border-white/5 pb-16">
           <div className="space-y-8 max-w-4xl">
@@ -34,7 +34,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               <span className="text-[10px] font-black uppercase tracking-[0.5em]">ПУЛЬС_ПЛАТФОРМЫ_LIVE</span>
             </div>
-            <h1 className="text-[10vw] md:text-[8rem] font-black text-white tracking-tighter leading-[0.8] uppercase font-syne">
+            <h1 className="text-5xl sm:text-7xl md:text-[8rem] font-black text-white tracking-tighter leading-[0.8] uppercase font-syne">
               ВИТРИНА<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-white to-violet-500 italic">ОПЫТА</span>
             </h1>
@@ -46,7 +46,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
           <div className="flex flex-col gap-6 lg:mb-4">
             <button
               onClick={() => setShowAIModal(true)}
-              className="group relative p-6 md:p-8 bg-indigo-600 rounded-[40px] shadow-2xl overflow-hidden hover:scale-105 transition-all duration-500 w-full"
+              className="group relative p-5 md:p-8 bg-indigo-600 rounded-[40px] shadow-2xl overflow-hidden hover:scale-105 transition-all duration-500 w-full"
             >
               <div className="relative z-10 flex flex-col items-start gap-4 text-left">
                 <Sparkles className="w-8 h-8 text-white" />
@@ -57,7 +57,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({ services, mentors, boo
               </div>
             </button>
 
-            <div className="p-6 md:p-10 bg-white/[0.03] border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-4 w-full">
+            <div className="p-5 md:p-10 bg-white/[0.03] border border-white/10 rounded-[40px] backdrop-blur-3xl space-y-4 w-full">
               <div className="flex justify-between items-start relative z-10">
                 <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Объем энергообмена</p>
                 <Activity className="w-4 h-4 text-indigo-500" />

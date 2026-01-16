@@ -107,7 +107,7 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
             <div className="w-8 h-px bg-indigo-500" />
             <span className="text-indigo-500 font-bold text-[9px] uppercase tracking-[0.4em]">Exchange Calendar</span>
           </div>
-          <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-none uppercase font-syne">
+          <h1 className="text-4xl md:text-8xl font-black text-white tracking-tighter leading-none uppercase font-syne">
             {isEnt ? 'ВАШИ' : 'ТВОИ'}<br />СОБЫТИЯ
           </h1>
         </div>
@@ -128,9 +128,9 @@ export const MeetingsListView: React.FC<MeetingsListViewProps> = ({
               key={booking.id}
               className={`relative bg-[#0d0d0e] border rounded-[40px] overflow-hidden transition-all duration-500 shadow-2xl ${isCancelled ? 'opacity-40 grayscale border-red-500/20' : 'border-white/5 hover:border-white/10'}`}
             >
-              <div className="p-6 md:p-10 flex flex-col lg:flex-row gap-8 items-start">
+              <div className="p-5 md:p-10 flex flex-col lg:flex-row gap-8 items-start">
 
-                <div className="flex flex-row lg:flex-col items-center justify-center gap-4 p-6 bg-white/[0.03] rounded-[28px] border border-white/5 w-full lg:w-32 shrink-0">
+                <div className="flex flex-row lg:flex-col items-center justify-center gap-4 p-4 bg-white/[0.03] rounded-[28px] border border-white/5 w-full lg:w-32 shrink-0">
                   <div className="text-center">
                     <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest block">{month}</span>
                     <span className="text-3xl font-black font-syne text-white">{day}</span>
